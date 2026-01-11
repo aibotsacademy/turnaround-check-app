@@ -653,7 +653,7 @@
 
             setTimeout(() => {
                 document.getElementById('reportId').textContent = reportId;
-                document.getElementById('reportFlight').textContent = flightNumberValue;
+                document.getElementById('reportFlight').textContent = 'DL ' + flightNumberValue;
                 document.querySelector('.completion-screen').classList.add('active');
                 document.getElementById('progressBar').style.width = '100%';
                 document.getElementById('stepCounter').textContent = 'Completado';
