@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Formulario de Inspección - SkyLink Airlines</title>
+    <title>Turnaround Check</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
         * {
@@ -336,7 +336,7 @@
     <div class="container">
         <div class="form-box">
             <div class="header">
-                <h1>Inspección de Equipos</h1>
+                <h1>Turnaround Check ✈️ ⏱️</h1>
             </div>
 
             <div class="user-info">
@@ -348,7 +348,7 @@
                 <div class="progress-fill" id="progressBar"></div>
             </div>
 
-            <div class="step-counter" id="stepCounter">Información de Vuelo</div>
+            <div class="step-counter" id="stepCounter">Iniciar cuando Beacon Off 🚨</div>
 
             <!-- Question 0: Flight Number -->
             <div class="question-card active" data-step="0">
@@ -431,8 +431,8 @@
 
             <!-- Question 3: Water -->
             <div class="question-card" data-step="3">
-                <h2 class="question-title">Water</h2>
-                <p class="question-subtitle">Verificar suministro y calidad</p>
+                <h2 class="question-title">Escalera</h2>
+                <p class="question-subtitle">Habilitada para tripulación y agente</p>
                 <div class="checkbox-container">
                     <label class="custom-checkbox">
                         <input type="checkbox" onchange="nextStep(3, 'Water')">
@@ -448,8 +448,8 @@
 
             <!-- Question 4: Escalera -->
             <div class="question-card" data-step="4">
-                <h2 class="question-title">Escalera</h2>
-                <p class="question-subtitle">Verificar estado y seguridad</p>
+                <h2 class="question-title">Waste & Water</h2>
+                <p class="question-subtitle">Habilitada la transferencia de desechos</p>
                 <div class="checkbox-container">
                     <label class="custom-checkbox">
                         <input type="checkbox" onchange="nextStep(4, 'Escalera')">
@@ -466,7 +466,7 @@
             <!-- Question 5: Banda -->
             <div class="question-card" data-step="5">
                 <h2 class="question-title">Banda</h2>
-                <p class="question-subtitle">Verificar funcionamiento y estado</p>
+                <p class="question-subtitle">Seguro abrir bodegas</p>
                 <div class="checkbox-container">
                     <label class="custom-checkbox">
                         <input type="checkbox" onchange="nextStep(5, 'Banda')">
@@ -482,8 +482,8 @@
 
             <!-- Question 6: Descarga maletas -->
             <div class="question-card" data-step="6">
-                <h2 class="question-title">Descarga Maletas</h2>
-                <p class="question-subtitle">Verificar equipo de descarga</p>
+                <h2 class="question-title">Descarga Equipaje & Carga</h2>
+                <p class="question-subtitle">Habilitada equipo de descarga</p>
                 <div class="checkbox-container">
                     <label class="custom-checkbox">
                         <input type="checkbox" onchange="nextStep(6, 'Descarga Maletas')">
