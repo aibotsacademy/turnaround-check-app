@@ -853,29 +853,51 @@
         }
 
         function sendToSheet(step, item, timestamp) {
-            const callbackName = 'callback' + Date.now();
-            
-            window[callbackName] = function(response) {
-                console.log('Respuesta del servidor:', response);
-                delete window[callbackName];
-                const script = document.getElementById('data-script');
-                if (script) document.body.removeChild(script);
-            };
-
-            const url = SCRIPT_URL + 
-                '?user=' + encodeURIComponent(wheelchairUser.username) +
-                '&role=' + encodeURIComponent(wheelchairUser.role) +
-                '&step=' + step +
-                '&item=' + encodeURIComponent(item) +
-                '&timestamp=' + encodeURIComponent(timestamp) +
-                '&flight=' + encodeURIComponent(flightNumberValue) +
-                '&callback=' + callbackName;
-
-            const script = document.createElement('script');
-            script.id = 'data-script';
-            script.src = url;
-            document.body.appendChild(script);
+    const callbackName = 'callback' + Date.now();
+    
+    window[callbackName] = function(response) {
+        console.log('Respuesta del servidor:', response);
+        
+        // Verificar si hubo error
+        if (!response.success) {
+            console.error('Error del servidor:', response.message);
+            alert('Error al guardar: ' + response.message);
         }
+        
+        delete window[callbackName];
+        const script = document.getElementById('data-script');
+        if (script) document.body.removeChild(script);
+    };
+
+    // Construir la URL con todos los parámetros necesarios
+    const url = SCRIPT_URL + 
+        '?user=' + encodeURIComponent(wheelchairUser.username) +
+        '&role=' + encodeURIComponent(wheelchairUser.role) +
+        '&step=' + step +
+        '&item=' + encodeURIComponent(item) +
+        '&timestamp=' + encodeURIComponent(timestamp) +
+        '&callback=' + callbackName;
+
+    console.log('Enviando datos al servidor:', {
+        user: wheelchairUser.username,
+        role: wheelchairUser.role,
+        step: step,
+        item: item,
+        timestamp: timestamp
+    });
+
+    const script = document.createElement('script');
+    script.id = 'data-script';
+    script.src = url;
+    
+    script.onerror = function() {
+        console.error('Error al conectar con el servidor');
+        alert('Error de conexión. Verifica tu URL de Apps Script.');
+        delete window[callbackName];
+    };
+    
+    document.body.appendChild(script);
+}
 
         function completeReport() {
             const reportId = 'WCH-' + Date.now();
