@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Aero Services App - Login</title>
+    <title>Turnaround Check App - Aero Servicio</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
         * {
@@ -14,8 +14,8 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(to bottom, #0a0e27, #1a1f3a);
             overflow: hidden;
-            background: #0a0e27;
         }
 
         #canvas-container {
@@ -27,33 +27,26 @@
             z-index: 1;
         }
 
-        .login-container {
+        .content {
             position: relative;
             z-index: 2;
+            height: 100vh;
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
             padding: 20px;
         }
 
-        .login-box {
-            background: rgba(15, 23, 42, 0.85);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(59, 130, 246, 0.3);
-            border-radius: 24px;
-            padding: 50px 40px;
-            width: 100%;
-            max-width: 420px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5),
-                        0 0 100px rgba(59, 130, 246, 0.1);
-            animation: slideIn 0.6s ease-out;
+        .logo-container {
+            text-align: center;
+            animation: fadeInDown 1.2s ease;
         }
 
-        @keyframes slideIn {
+        @keyframes fadeInDown {
             from {
                 opacity: 0;
-                transform: translateY(30px);
+                transform: translateY(-50px);
             }
             to {
                 opacity: 1;
@@ -61,248 +54,144 @@
             }
         }
 
-        .logo {
-            text-align: center;
-            margin-bottom: 40px;
+        .company-name {
+            font-size: 16px;
+            color: #64748b;
+            letter-spacing: 6px;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+            font-weight: 300;
         }
 
-        .logo h1 {
-            font-size: 32px;
-            font-weight: 700;
-            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+        .app-title {
+            font-size: 72px;
+            font-weight: 900;
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 50%, #ec4899 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            margin-bottom: 8px;
-            letter-spacing: 1px;
+            margin-bottom: 15px;
+            letter-spacing: -2px;
+            line-height: 1.1;
         }
 
-        .logo p {
+        .app-subtitle {
+            font-size: 22px;
             color: #94a3b8;
-            font-size: 14px;
-            letter-spacing: 3px;
-            text-transform: uppercase;
+            font-weight: 300;
+            letter-spacing: 2px;
+            margin-bottom: 60px;
         }
 
-        .input-group {
-            margin-bottom: 25px;
-            position: relative;
-        }
-
-        .input-group label {
-            display: block;
-            color: #cbd5e1;
-            font-size: 14px;
-            margin-bottom: 8px;
-            font-weight: 500;
-        }
-
-        .input-group input {
-            width: 100%;
-            padding: 14px 18px;
-            background: rgba(30, 41, 59, 0.6);
-            border: 1px solid rgba(59, 130, 246, 0.2);
-            border-radius: 12px;
-            color: #fff;
-            font-size: 15px;
-            transition: all 0.3s ease;
-            outline: none;
-        }
-
-        .input-group input:focus {
-            border-color: #3b82f6;
-            background: rgba(30, 41, 59, 0.8);
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-        }
-
-        .input-group input::placeholder {
-            color: #64748b;
-        }
-
-        .login-btn {
-            width: 100%;
-            padding: 16px;
-            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+        .login-button {
+            padding: 22px 60px;
+            font-size: 20px;
+            font-weight: 700;
             border: none;
-            border-radius: 12px;
-            color: #fff;
-            font-size: 16px;
-            font-weight: 600;
+            border-radius: 50px;
             cursor: pointer;
-            transition: all 0.3s ease;
-            margin-top: 10px;
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            color: #fff;
+            box-shadow: 0 20px 60px rgba(59, 130, 246, 0.4);
+            transition: all 0.4s ease;
+            text-decoration: none;
+            display: inline-block;
+            animation: fadeInUp 1.2s ease 0.3s both;
             position: relative;
             overflow: hidden;
         }
 
-        .login-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 30px rgba(59, 130, 246, 0.4);
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
-        .login-btn:active {
-            transform: translateY(0);
-        }
-
-        .login-btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-        }
-
-        .login-btn::before {
+        .login-button::before {
             content: '';
             position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-            transition: left 0.5s;
-        }
-
-        .login-btn:hover::before {
-            left: 100%;
-        }
-
-        .message {
-            margin-top: 20px;
-            padding: 12px 16px;
-            border-radius: 10px;
-            font-size: 14px;
-            text-align: center;
-            display: none;
-            animation: fadeIn 0.3s ease;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        .message.error {
-            background: rgba(239, 68, 68, 0.15);
-            border: 1px solid rgba(239, 68, 68, 0.3);
-            color: #fca5a5;
-        }
-
-        .message.success {
-            background: rgba(34, 197, 94, 0.15);
-            border: 1px solid rgba(34, 197, 94, 0.3);
-            color: #86efac;
-        }
-
-        .loading-spinner {
-            display: inline-block;
-            width: 16px;
-            height: 16px;
-            border: 2px solid rgba(255,255,255,0.3);
-            border-top-color: #fff;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
             border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-            margin-right: 8px;
-            vertical-align: middle;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
         }
 
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+        .login-button:hover::before {
+            width: 300px;
+            height: 300px;
         }
 
-        .footer {
-            margin-top: 30px;
-            text-align: center;
-            color: #64748b;
-            font-size: 13px;
+        .login-button:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 25px 80px rgba(59, 130, 246, 0.6);
         }
 
-        #welcome-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
+        .login-button:active {
+            transform: translateY(-2px);
+        }
+
+        .pulse-ring {
+            position: absolute;
             width: 100%;
             height: 100%;
-            background: rgba(10, 14, 39, 0.95);
-            backdrop-filter: blur(10px);
-            z-index: 1000;
-            display: none;
-            justify-content: center;
-            align-items: center;
-            flex-direction: column;
-            animation: fadeIn 0.5s ease;
+            border: 3px solid rgba(59, 130, 246, 0.5);
+            border-radius: 50px;
+            animation: pulseRing 2s infinite;
         }
 
-        .welcome-content {
-            text-align: center;
-            color: #fff;
+        @keyframes pulseRing {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(1.2);
+                opacity: 0;
+            }
         }
 
-        .welcome-content h2 {
-            font-size: 48px;
-            margin-bottom: 20px;
-            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
+        @media (max-width: 768px) {
+            .app-title {
+                font-size: 42px;
+            }
 
-        .welcome-content p {
-            font-size: 24px;
-            color: #cbd5e1;
-            margin-bottom: 10px;
-        }
+            .app-subtitle {
+                font-size: 16px;
+            }
 
-        .role-badge {
-            display: inline-block;
-            padding: 8px 20px;
-            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
-            border-radius: 20px;
-            margin-top: 20px;
-            font-weight: 600;
+            .login-button {
+                padding: 18px 45px;
+                font-size: 18px;
+            }
         }
     </style>
 </head>
 <body>
     <div id="canvas-container"></div>
 
-    <div class="login-container">
-        <div class="login-box">
-            <div class="logo">
-                <h1>Aero Services App</h1>
-                <p>Login Portal</p>
-            </div>
-
-            <form id="loginForm">
-                <div class="input-group">
-                    <label for="username">Usuario / Email</label>
-                    <input type="text" id="username" placeholder="Ingrese su usuario" required autocomplete="username">
-                </div>
-
-                <div class="input-group">
-                    <label for="password">Contraseña</label>
-                    <input type="password" id="password" placeholder="Ingrese su contraseña" required autocomplete="current-password">
-                </div>
-
-                <button type="submit" class="login-btn" id="loginBtn">
-                    <span id="btnText">Iniciar Sesión</span>
-                </button>
-
-                <div class="message" id="message"></div>
-            </form>
-
-            <div class="footer">
-                Reportia • Versión 1.0
-            </div>
+    <div class="content">
+        <div class="logo-container">
+            <div class="company-name">Aero Servicio</div>
+            <h1 class="app-title">Turnaround<br>Check</h1>
+            <p class="app-subtitle">Sistema de Métricas</p>
         </div>
-    </div>
 
-    <div id="welcome-screen">
-        <div class="welcome-content">
-            <h2>¡Bienvenido!</h2>
-            <p id="welcomeUser"></p>
-            <span class="role-badge" id="userRole"></span>
-        </div>
+        <a href="login.html" class="login-button">
+            <span class="pulse-ring"></span>
+            <span style="position: relative; z-index: 1;">Iniciar Sesión</span>
+        </a>
     </div>
 
     <script>
-        // Three.js Scene Setup
+        // Three.js Scene with Airplanes
         const container = document.getElementById('canvas-container');
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -311,9 +200,79 @@
         renderer.setSize(window.innerWidth, window.innerHeight);
         container.appendChild(renderer.domElement);
 
-        // Create particle system
+        // Create airplane shape
+        function createAirplane() {
+            const group = new THREE.Group();
+            
+            // Fuselage
+            const fuselageGeometry = new THREE.CylinderGeometry(0.15, 0.15, 2, 8);
+            const fuselageMaterial = new THREE.MeshBasicMaterial({ 
+                color: 0x3b82f6,
+                transparent: true,
+                opacity: 0.8
+            });
+            const fuselage = new THREE.Mesh(fuselageGeometry, fuselageMaterial);
+            fuselage.rotation.z = Math.PI / 2;
+            group.add(fuselage);
+            
+            // Wings
+            const wingGeometry = new THREE.BoxGeometry(3, 0.1, 0.5);
+            const wingMaterial = new THREE.MeshBasicMaterial({ 
+                color: 0x8b5cf6,
+                transparent: true,
+                opacity: 0.7
+            });
+            const wings = new THREE.Mesh(wingGeometry, wingMaterial);
+            group.add(wings);
+            
+            // Tail
+            const tailGeometry = new THREE.BoxGeometry(0.8, 0.1, 0.4);
+            const tail = new THREE.Mesh(tailGeometry, wingMaterial);
+            tail.position.x = -0.9;
+            tail.position.y = 0.3;
+            group.add(tail);
+            
+            return group;
+        }
+
+        // Create multiple airplanes
+        const airplanes = [];
+        for (let i = 0; i < 8; i++) {
+            const airplane = createAirplane();
+            airplane.position.x = (Math.random() - 0.5) * 60;
+            airplane.position.y = (Math.random() - 0.5) * 30;
+            airplane.position.z = -Math.random() * 50 - 10;
+            
+            airplane.rotation.y = Math.random() * Math.PI * 2;
+            
+            airplane.userData.speed = 0.02 + Math.random() * 0.03;
+            airplane.userData.rotationSpeed = (Math.random() - 0.5) * 0.002;
+            
+            airplanes.push(airplane);
+            scene.add(airplane);
+        }
+
+        // Add runway lines
+        const runwayMaterial = new THREE.LineBasicMaterial({ 
+            color: 0x3b82f6,
+            transparent: true,
+            opacity: 0.3
+        });
+
+        for (let i = 0; i < 20; i++) {
+            const points = [];
+            const xPos = (i - 10) * 3;
+            points.push(new THREE.Vector3(xPos, -15, -60));
+            points.push(new THREE.Vector3(xPos, -15, 10));
+            
+            const geometry = new THREE.BufferGeometry().setFromPoints(points);
+            const line = new THREE.Line(geometry, runwayMaterial);
+            scene.add(line);
+        }
+
+        // Add floating data particles
         const particlesGeometry = new THREE.BufferGeometry();
-        const particlesCount = 3000;
+        const particlesCount = 500;
         const posArray = new Float32Array(particlesCount * 3);
 
         for(let i = 0; i < particlesCount * 3; i++) {
@@ -323,166 +282,46 @@
         particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
 
         const particlesMaterial = new THREE.PointsMaterial({
-            size: 0.08,
+            size: 0.05,
             color: 0x3b82f6,
             transparent: true,
-            opacity: 0.8,
-            blending: THREE.AdditiveBlending
+            opacity: 0.5
         });
 
         const particlesMesh = new THREE.Points(particlesGeometry, particlesMaterial);
         scene.add(particlesMesh);
 
-        // Create geometric shapes
-        const torusGeometry = new THREE.TorusGeometry(10, 0.5, 16, 100);
-        const torusMaterial = new THREE.MeshBasicMaterial({ 
-            color: 0x8b5cf6,
-            wireframe: true,
-            transparent: true,
-            opacity: 0.2
-        });
-        const torus = new THREE.Mesh(torusGeometry, torusMaterial);
-        torus.position.set(-15, 0, -20);
-        scene.add(torus);
-
         camera.position.z = 30;
+        camera.position.y = 5;
 
-        // Animation
         function animate() {
             requestAnimationFrame(animate);
-            
-            particlesMesh.rotation.y += 0.001;
-            particlesMesh.rotation.x += 0.0005;
-            
-            torus.rotation.x += 0.01;
-            torus.rotation.y += 0.005;
-            
+
+            // Animate airplanes
+            airplanes.forEach(airplane => {
+                airplane.position.z += airplane.userData.speed;
+                airplane.rotation.y += airplane.userData.rotationSpeed;
+                
+                // Reset position when out of view
+                if (airplane.position.z > 20) {
+                    airplane.position.z = -60;
+                    airplane.position.x = (Math.random() - 0.5) * 60;
+                    airplane.position.y = (Math.random() - 0.5) * 30;
+                }
+            });
+
+            // Rotate particles
+            particlesMesh.rotation.y += 0.0005;
+
             renderer.render(scene, camera);
         }
         animate();
 
-        // Handle window resize
         window.addEventListener('resize', () => {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(window.innerWidth, window.innerHeight);
         });
-
-        // Login Form Handling with JSONP
-        const form = document.getElementById('loginForm');
-        const loginBtn = document.getElementById('loginBtn');
-        const btnText = document.getElementById('btnText');
-        const message = document.getElementById('message');
-        const welcomeScreen = document.getElementById('welcome-screen');
-
-        // Apps Script URL
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwratJLa8uJ_EYMIOPbzkh4YlrahSPUdEonIeFHtsA5fAzlxMyRFyuOeHd6sxughzXL/exec';
-
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const username = document.getElementById('username').value.trim();
-            const password = document.getElementById('password').value;
-
-            console.log('🔐 Intento de login:', username);
-
-            if (!username || !password) {
-                showMessage('Por favor complete todos los campos', 'error');
-                return;
-            }
-
-            // Show loading state
-            loginBtn.disabled = true;
-            btnText.innerHTML = '<span class="loading-spinner"></span>Autenticando...';
-            message.style.display = 'none';
-
-            // Create unique callback name
-            const callbackName = 'jsonpCallback' + Date.now();
-            console.log('📡 Creando callback:', callbackName);
-
-            // Create callback function
-            window[callbackName] = function(response) {
-                console.log('✅ Respuesta recibida:', response);
-
-                // Reset button
-                loginBtn.disabled = false;
-                btnText.textContent = 'Iniciar Sesión';
-
-                // Clean up script tag
-                const scriptTag = document.getElementById('jsonp-script');
-                if (scriptTag) {
-                    document.body.removeChild(scriptTag);
-                }
-
-                // Clean up callback
-                delete window[callbackName];
-
-                // Process response
-                if (response.success === true) {
-                    console.log('✅ Login exitoso');
-                    showMessage('✓ ' + response.message, 'success');
-                    setTimeout(() => {
-                        showWelcome(response.username, response.role);
-                    }, 500);
-                } else {
-                    console.log('❌ Login fallido:', response.message);
-                    showMessage('✗ ' + response.message, 'error');
-                }
-            };
-
-            // Build URL with parameters
-            const url = SCRIPT_URL + 
-                '?username=' + encodeURIComponent(username) +
-                '&password=' + encodeURIComponent(password) +
-                '&callback=' + callbackName;
-
-            console.log('🌐 URL de solicitud:', url);
-
-            // Create and append script tag
-            const script = document.createElement('script');
-            script.id = 'jsonp-script';
-            script.src = url;
-            
-            script.onerror = function() {
-                console.error('❌ Error al cargar el script');
-                showMessage('✗ Error de conexión. Verifica tu conexión a internet.', 'error');
-                loginBtn.disabled = false;
-                btnText.textContent = 'Iniciar Sesión';
-                delete window[callbackName];
-            };
-
-            script.onload = function() {
-                console.log('📥 Script cargado');
-            };
-
-            document.body.appendChild(script);
-            console.log('📤 Script agregado al DOM');
-
-            // Timeout fallback (Cambio de 462 a 474)
-           setTimeout(() => {
-    window.location.href = 'inspection.html'; // Cambia 'inspection.html' al nombre de tu archivo
-}, 3000);
-        });
-
-        function showMessage(text, type) {
-            message.textContent = text;
-            message.className = `message ${type}`;
-            message.style.display = 'block';
-        }
-
-        function showWelcome(username, role) {
-            document.getElementById('welcomeUser').textContent = username;
-            document.getElementById('userRole').textContent = role;
-            welcomeScreen.style.display = 'flex';
-            
-            console.log('👤 Usuario autenticado:', username, '- Rol:', role);
-            
-            // Redirect after 3 seconds
-            setTimeout(() => {
-                console.log('🔄 Redirigiendo al dashboard...');
-                // window.location.href = 'dashboard.html';
-            }, 3000);
-        }
     </script>
 </body>
 </html>
