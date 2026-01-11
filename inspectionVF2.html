@@ -1,1 +1,709 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulario de Inspección - SkyLink Airlines</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+            background: #0a0e27;
+        }
+
+        #canvas-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .container {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .form-box {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 24px;
+            padding: 50px 40px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5),
+                        0 0 100px rgba(59, 130, 246, 0.1);
+            animation: slideIn 0.6s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+        }
+
+        .user-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding: 12px 16px;
+            background: rgba(59, 130, 246, 0.1);
+            border-radius: 12px;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+
+        .user-info span {
+            color: #cbd5e1;
+            font-size: 14px;
+        }
+
+        .user-info .role {
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            padding: 4px 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            color: #fff;
+            font-size: 12px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(30, 41, 59, 0.6);
+            border-radius: 10px;
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3b82f6 0%, #8b5cf6 100%);
+            border-radius: 10px;
+            transition: width 0.4s ease;
+            width: 0%;
+        }
+
+        .step-counter {
+            text-align: center;
+            color: #94a3b8;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        .question-card {
+            display: none;
+            animation: fadeInScale 0.4s ease;
+        }
+
+        .question-card.active {
+            display: block;
+        }
+
+        @keyframes fadeInScale {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .question-title {
+            font-size: 24px;
+            color: #fff;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .question-subtitle {
+            color: #94a3b8;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 40px 0;
+        }
+
+        .custom-checkbox {
+            position: relative;
+            cursor: pointer;
+        }
+
+        .custom-checkbox input {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .checkmark {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 80px;
+            height: 80px;
+            background: rgba(30, 41, 59, 0.6);
+            border: 2px solid rgba(59, 130, 246, 0.3);
+            border-radius: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .custom-checkbox:hover .checkmark {
+            border-color: #3b82f6;
+            background: rgba(59, 130, 246, 0.1);
+            transform: scale(1.05);
+        }
+
+        .custom-checkbox input:checked ~ .checkmark {
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            border-color: transparent;
+        }
+
+        .checkmark svg {
+            width: 40px;
+            height: 40px;
+            stroke: #fff;
+            stroke-width: 3;
+            stroke-dasharray: 50;
+            stroke-dashoffset: 50;
+            transition: stroke-dashoffset 0.3s ease;
+        }
+
+        .custom-checkbox input:checked ~ .checkmark svg {
+            stroke-dashoffset: 0;
+        }
+
+        .checkbox-label {
+            display: block;
+            text-align: center;
+            margin-top: 15px;
+            color: #cbd5e1;
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .completion-screen {
+            display: none;
+            text-align: center;
+        }
+
+        .completion-screen.active {
+            display: block;
+        }
+
+        .completion-icon {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 30px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: scaleIn 0.5s ease;
+        }
+
+        @keyframes scaleIn {
+            from {
+                transform: scale(0);
+            }
+            to {
+                transform: scale(1);
+            }
+        }
+
+        .completion-icon svg {
+            width: 50px;
+            height: 50px;
+            stroke: #fff;
+            stroke-width: 3;
+        }
+
+        .completion-title {
+            font-size: 32px;
+            color: #fff;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+
+        .completion-message {
+            color: #94a3b8;
+            font-size: 16px;
+            margin-bottom: 30px;
+        }
+
+        .report-id {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 30px;
+        }
+
+        .report-id p {
+            color: #cbd5e1;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .report-id strong {
+            color: #fff;
+            font-size: 18px;
+        }
+
+        .btn-new-report {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            border: none;
+            border-radius: 12px;
+            color: #fff;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-new-report:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(59, 130, 246, 0.4);
+        }
+
+        .logout-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 10px;
+            color: #fca5a5;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+
+        .logout-btn:hover {
+            background: rgba(239, 68, 68, 0.3);
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <div id="canvas-container"></div>
+
+    <button class="logout-btn" onclick="logout()">Cerrar Sesión</button>
+
+    <div class="container">
+        <div class="form-box">
+            <div class="header">
+                <h1>Inspección de Equipos</h1>
+            </div>
+
+            <div class="user-info">
+                <span id="userName">Cargando...</span>
+                <span class="role" id="userRole">-</span>
+            </div>
+
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressBar"></div>
+            </div>
+
+            <div class="step-counter" id="stepCounter">Información de Vuelo</div>
+
+            <!-- Question 0: Flight Number -->
+            <div class="question-card active" data-step="0">
+                <h2 class="question-title">Información de Vuelo</h2>
+                <p class="question-subtitle">Seleccione aerolínea e ingrese número de vuelo</p>
+                
+                <div style="margin: 20px 0;">
+                    <label style="display: block; color: #cbd5e1; font-size: 14px; margin-bottom: 8px; font-weight: 500;">Aerolínea</label>
+                    <select 
+                        id="airlineSelect" 
+                        style="width: 100%; padding: 16px 20px; background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 12px; color: #fff; font-size: 16px; outline: none; transition: all 0.3s ease; cursor: pointer;"
+                        onfocus="this.style.borderColor='#3b82f6'; this.style.background='rgba(30, 41, 59, 0.8)'"
+                        onblur="this.style.borderColor='rgba(59, 130, 246, 0.3)'; this.style.background='rgba(30, 41, 59, 0.6)'"
+                    >
+                        <option value="" style="background: #1e293b; color: #94a3b8;">Seleccione una aerolínea</option>
+                        <option value="DL" style="background: #1e293b; color: #fff;">Delta</option>
+                        <option value="WN" style="background: #1e293b; color: #fff;">Southwest</option>
+                        <option value="E9" style="background: #1e293b; color: #fff;">Iberojet</option>
+                        <option value="AV" style="background: #1e293b; color: #fff;">Avianca</option>
+                        <option value="UA" style="background: #1e293b; color: #fff;">United</option>
+                        <option value="AA" style="background: #1e293b; color: #fff;">American</option>
+                    </select>
+                </div>
+
+                <div style="margin: 20px 0;">
+                    <label style="display: block; color: #cbd5e1; font-size: 14px; margin-bottom: 8px; font-weight: 500;">Número de Vuelo</label>
+                    <input 
+                        type="text" 
+                        id="flightNumber" 
+                        placeholder="Ej: 1234"
+                        style="width: 100%; padding: 16px 20px; background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 12px; color: #fff; font-size: 16px; outline: none; transition: all 0.3s ease;"
+                        onfocus="this.style.borderColor='#3b82f6'; this.style.background='rgba(30, 41, 59, 0.8)'"
+                        onblur="this.style.borderColor='rgba(59, 130, 246, 0.3)'; this.style.background='rgba(30, 41, 59, 0.6)'"
+                    >
+                </div>
+                
+                <button 
+                    onclick="submitFlightNumber()"
+                    style="width: 100%; padding: 16px; background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%); border: none; border-radius: 12px; color: #fff; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; margin-top: 10px;"
+                    onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 10px 30px rgba(59, 130, 246, 0.4)'"
+                    onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'"
+                >
+                    Continuar
+                </button>
+            </div>
+
+            <!-- Question 1: Planta Eléctrica -->
+            <div class="question-card" data-step="1">
+                <h2 class="question-title">Planta Eléctrica</h2>
+                <p class="question-subtitle">Verificar estado y funcionamiento</p>
+                <div class="checkbox-container">
+                    <label class="custom-checkbox">
+                        <input type="checkbox" onchange="nextStep(1, 'Planta Eléctrica')">
+                        <span class="checkmark">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </span>
+                    </label>
+                </div>
+                <span class="checkbox-label">Marcar como completado</span>
+            </div>
+
+            <!-- Question 2: Aire Acondicionado -->
+            <div class="question-card" data-step="2">
+                <h2 class="question-title">Aire Acondicionado</h2>
+                <p class="question-subtitle">Verificar temperatura y funcionamiento</p>
+                <div class="checkbox-container">
+                    <label class="custom-checkbox">
+                        <input type="checkbox" onchange="nextStep(2, 'Aire Acondicionado')">
+                        <span class="checkmark">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </span>
+                    </label>
+                </div>
+                <span class="checkbox-label">Marcar como completado</span>
+            </div>
+
+            <!-- Question 3: Water -->
+            <div class="question-card" data-step="3">
+                <h2 class="question-title">Water</h2>
+                <p class="question-subtitle">Verificar suministro y calidad</p>
+                <div class="checkbox-container">
+                    <label class="custom-checkbox">
+                        <input type="checkbox" onchange="nextStep(3, 'Water')">
+                        <span class="checkmark">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </span>
+                    </label>
+                </div>
+                <span class="checkbox-label">Marcar como completado</span>
+            </div>
+
+            <!-- Question 4: Escalera -->
+            <div class="question-card" data-step="4">
+                <h2 class="question-title">Escalera</h2>
+                <p class="question-subtitle">Verificar estado y seguridad</p>
+                <div class="checkbox-container">
+                    <label class="custom-checkbox">
+                        <input type="checkbox" onchange="nextStep(4, 'Escalera')">
+                        <span class="checkmark">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </span>
+                    </label>
+                </div>
+                <span class="checkbox-label">Marcar como completado</span>
+            </div>
+
+            <!-- Question 5: Banda -->
+            <div class="question-card" data-step="5">
+                <h2 class="question-title">Banda</h2>
+                <p class="question-subtitle">Verificar funcionamiento y estado</p>
+                <div class="checkbox-container">
+                    <label class="custom-checkbox">
+                        <input type="checkbox" onchange="nextStep(5, 'Banda')">
+                        <span class="checkmark">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </span>
+                    </label>
+                </div>
+                <span class="checkbox-label">Marcar como completado</span>
+            </div>
+
+            <!-- Question 6: Descarga maletas -->
+            <div class="question-card" data-step="6">
+                <h2 class="question-title">Descarga Maletas</h2>
+                <p class="question-subtitle">Verificar equipo de descarga</p>
+                <div class="checkbox-container">
+                    <label class="custom-checkbox">
+                        <input type="checkbox" onchange="nextStep(6, 'Descarga Maletas')">
+                        <span class="checkmark">
+                            <svg viewBox="0 0 24 24" fill="none">
+                                <path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </span>
+                    </label>
+                </div>
+                <span class="checkbox-label">Marcar como completado</span>
+            </div>
+
+            <!-- Completion Screen -->
+            <div class="completion-screen">
+                <div class="completion-icon">
+                    <svg viewBox="0 0 24 24" fill="none">
+                        <path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+                <h2 class="completion-title">¡Reporte Creado!</h2>
+                <p class="completion-message">La inspección se ha completado exitosamente</p>
+                <div class="report-id">
+                    <p>ID del Reporte:</p>
+                    <strong id="reportId">-</strong>
+                </div>
+                <div class="report-id" style="margin-top: 15px;">
+                    <p>Número de Vuelo:</p>
+                    <strong id="reportFlight">-</strong>
+                </div>
+                <button class="btn-new-report" onclick="newReport()">Nueva Inspección</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Three.js background
+        const container = document.getElementById('canvas-container');
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+        
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        container.appendChild(renderer.domElement);
+
+        const particlesGeometry = new THREE.BufferGeometry();
+        const particlesCount = 2000;
+        const posArray = new Float32Array(particlesCount * 3);
+
+        for(let i = 0; i < particlesCount * 3; i++) {
+            posArray[i] = (Math.random() - 0.5) * 100;
+        }
+
+        particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+
+        const particlesMaterial = new THREE.PointsMaterial({
+            size: 0.08,
+            color: 0x3b82f6,
+            transparent: true,
+            opacity: 0.6,
+            blending: THREE.AdditiveBlending
+        });
+
+        const particlesMesh = new THREE.Points(particlesGeometry, particlesMaterial);
+        scene.add(particlesMesh);
+
+        camera.position.z = 30;
+
+        function animate() {
+            requestAnimationFrame(animate);
+            particlesMesh.rotation.y += 0.0005;
+            particlesMesh.rotation.x += 0.0003;
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // Check authentication
+        const userData = sessionStorage.getItem('user');
+        if (!userData) {
+            window.location.href = 'login.html';
+        } else {
+            const user = JSON.parse(userData);
+            document.getElementById('userName').textContent = user.username;
+            document.getElementById('userRole').textContent = user.role;
+        }
+
+        // Apps Script URL
+        const SCRIPT_URL = 'YOUR_APPS_SCRIPT_URL_HERE';
+
+        const userDataString = sessionStorage.getItem('user');
+        let inspectionUser = JSON.parse(userDataString);
+
+        let currentStep = 0;
+        const totalSteps = 6;
+        let flightNumberValue = '';
+
+        function submitFlightNumber() {
+            const airlineCode = document.getElementById('airlineSelect').value;
+            const flightNumber = document.getElementById('flightNumber').value.trim();
+            
+            if (!airlineCode) {
+                alert('Por favor seleccione una aerolínea');
+                return;
+            }
+            
+            if (!flightNumber) {
+                alert('Por favor ingrese el número de vuelo');
+                return;
+            }
+            
+            flightNumberValue = airlineCode + ' ' + flightNumber;
+            const timestamp = new Date().toISOString();
+            
+            console.log('✈️ Vuelo:', flightNumberValue, '- Timestamp:', timestamp);
+            
+            sendToSheet(0, 'Vuelo: ' + flightNumberValue, timestamp);
+            
+            document.querySelector('[data-step="0"]').classList.remove('active');
+            
+            setTimeout(() => {
+                currentStep = 1;
+                document.querySelector('[data-step="1"]').classList.add('active');
+                updateProgress();
+            }, 300);
+        }
+
+        function nextStep(step, item) {
+            const timestamp = new Date().toISOString();
+            
+            console.log(`✅ Completado: ${item} - ${timestamp}`);
+            
+            sendToSheet(step, item, timestamp);
+
+            if (step < totalSteps) {
+                document.querySelector(`[data-step="${step}"]`).classList.remove('active');
+                
+                setTimeout(() => {
+                    currentStep = step + 1;
+                    document.querySelector(`[data-step="${currentStep}"]`).classList.add('active');
+                    updateProgress();
+                }, 300);
+            } else {
+                completeInspection();
+            }
+        }
+
+        function updateProgress() {
+            const progress = (currentStep / totalSteps) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+            document.getElementById('stepCounter').textContent = `Pregunta ${currentStep} de ${totalSteps}`;
+        }
+
+        function sendToSheet(step, item, timestamp) {
+            const callbackName = 'callback' + Date.now();
+            
+            window[callbackName] = function(response) {
+                console.log('Respuesta del servidor:', response);
+                delete window[callbackName];
+                const script = document.getElementById('data-script');
+                if (script) document.body.removeChild(script);
+            };
+
+            const url = SCRIPT_URL + 
+                '?user=' + encodeURIComponent(inspectionUser.username) +
+                '&role=' + encodeURIComponent(inspectionUser.role) +
+                '&step=' + step +
+                '&item=' + encodeURIComponent(item) +
+                '&timestamp=' + encodeURIComponent(timestamp) +
+                '&callback=' + callbackName;
+
+            const script = document.createElement('script');
+            script.id = 'data-script';
+            script.src = url;
+            document.body.appendChild(script);
+        }
+
+        function completeInspection() {
+            const reportId = 'RPT-' + Date.now();
+            
+            console.log('🎉 Inspección completada');
+            
+            document.querySelectorAll('.question-card').forEach(card => {
+                card.classList.remove('active');
+            });
+
+            setTimeout(() => {
+                document.getElementById('reportId').textContent = reportId;
+                document.getElementById('reportFlight').textContent = flightNumberValue;
+                document.querySelector('.completion-screen').classList.add('active');
+                document.getElementById('progressBar').style.width = '100%';
+                document.getElementById('stepCounter').textContent = 'Completado';
+            }, 300);
+        }
+
+        function newReport() {
+            currentStep = 0;
+            flightNumberValue = '';
+            document.getElementById('airlineSelect').value = '';
+            document.getElementById('flightNumber').value = '';
+
+            document.querySelector('.completion-screen').classList.remove('active');
+            document.querySelector('[data-step="0"]').classList.add('active');
+            
+            document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+            
+            document.getElementById('progressBar').style.width = '0%';
+            document.getElementById('stepCounter').textContent = 'Información de Vuelo';
+        }
+
+        function logout() {
+            sessionStorage.removeItem('user');
+            window.location.href = 'login.html';
+        }
+    </script>
+</body>
+</html>
