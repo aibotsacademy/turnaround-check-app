@@ -945,34 +945,56 @@
         const MAX_RETRIES = 3;
         
         function loadChartData() {
-            console.log('📊 Cargando datos para gráficos desde:', VISUALIZATION_SCRIPT_URL);
-            console.log('📊 Intento:', retryCount + 1, 'de', MAX_RETRIES);
+            console.log('═══════════════════════════════════════════════════════');
+            console.log('📊 INICIANDO CARGA DE DATOS');
+            console.log('═══════════════════════════════════════════════════════');
+            console.log('🔗 URL:', VISUALIZATION_SCRIPT_URL);
+            console.log('🔢 Intento:', retryCount + 1, 'de', MAX_RETRIES);
             
             // Mostrar indicador de carga
             showLoadingState();
             
             fetch(VISUALIZATION_SCRIPT_URL)
                 .then(response => {
+                    console.log('📡 Respuesta HTTP:', response.status, response.statusText);
                     if (!response.ok) {
                         throw new Error(`HTTP error! status: ${response.status}`);
                     }
                     return response.json();
                 })
                 .then(data => {
-                    console.log('📦 Respuesta recibida:', data);
+                    console.log('═══════════════════════════════════════════════════════');
+                    console.log('📦 RESPUESTA RECIBIDA');
+                    console.log('═══════════════════════════════════════════════════════');
+                    console.log('Respuesta completa:', JSON.stringify(data, null, 2));
+                    
+                    // Validar estructura de datos
+                    if (!data) {
+                        throw new Error('Respuesta vacía del servidor');
+                    }
                     
                     if (data.success) {
-                        console.log('✅ Datos de visualización obtenidos correctamente');
-                        console.log('📊 Estadísticas:', data.stats);
-                        console.log('📈 Gráficos disponibles:', Object.keys(data.charts));
+                        // Validar que existen stats y charts
+                        if (!data.stats) {
+                            throw new Error('La respuesta no contiene el campo "stats". Campos disponibles: ' + Object.keys(data).join(', '));
+                        }
+                        if (!data.charts) {
+                            throw new Error('La respuesta no contiene el campo "charts". Campos disponibles: ' + Object.keys(data).join(', '));
+                        }
+                        
+                        console.log('✅ DATOS VÁLIDOS');
+                        console.log('📊 Stats:', data.stats);
+                        console.log('📈 Charts:', Object.keys(data.charts));
                         
                         updateInsights(data.stats);
                         updateStats(data.stats);
                         createCharts(data.charts);
                         hideLoadingState();
-                        retryCount = 0; // Reset retry count on success
+                        retryCount = 0;
+                        
+                        console.log('✅ CARGA COMPLETADA');
                     } else {
-                        throw new Error(data.message || 'Error desconocido en la respuesta');
+                        throw new Error(data.message || 'El servidor respondió con success: false');
                     }
                 })
                 .catch(error => {
@@ -1313,3 +1335,4 @@ Presiona F12 para ver más detalles en la consola.
     </script>
 </body>
 </html>
+
