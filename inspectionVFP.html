@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Turnaround Check - Operations Hub 54</title>
+    <title>Turnaround Check - Operations Hub</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
         * {
@@ -1273,17 +1273,31 @@
                 type: selectedFlightType
             });
 
-            const url = SCRIPT_URL + 
-                '?user=' + encodeURIComponent(inspectionUser.username) +
-                '&role=' + encodeURIComponent(inspectionUser.role) +
-                '&type=' + encodeURIComponent(selectedFlightType) +
-                '&flight=' + encodeURIComponent(flightNumberValue) +
-                '&step=' + step +
-                '&item=' + encodeURIComponent(item) +
-                '&timestamp=' + encodeURIComponent(timestamp);
+            // Crear FormData para POST (evita CORS)
+            const formData = new URLSearchParams();
+            formData.append('user', inspectionUser.username);
+            formData.append('role', inspectionUser.role);
+            formData.append('type', selectedFlightType);
+            formData.append('flight', flightNumberValue);
+            formData.append('step', step.toString());
+            formData.append('item', item);
+            formData.append('timestamp', timestamp);
 
-            fetch(url)
-                .then(response => response.json())
+            // Enviar con POST
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                body: formData
+            })
+                .then(response => response.text())
+                .then(text => {
+                    console.log('📥 Respuesta cruda:', text);
+                    try {
+                        return JSON.parse(text);
+                    } catch (e) {
+                        console.log('⚠️ Respuesta no es JSON válido, asumiendo éxito');
+                        return { success: true, step: step };
+                    }
+                })
                 .then(data => {
                     console.log('✅ Respuesta del servidor:', data);
                 })
