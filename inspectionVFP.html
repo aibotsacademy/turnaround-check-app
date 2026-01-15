@@ -1,0 +1,1854 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Turnaround Check - Operations Hub</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0a0e27;
+        }
+
+        #canvas-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .container {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .form-box {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 24px;
+            padding: 50px 40px;
+            width: 100%;
+            max-width: 500px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5),
+                        0 0 100px rgba(59, 130, 246, 0.1);
+            animation: slideIn 0.6s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+        }
+
+        .user-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding: 12px 16px;
+            background: rgba(59, 130, 246, 0.1);
+            border-radius: 12px;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+
+        .user-info span {
+            color: #cbd5e1;
+            font-size: 14px;
+        }
+
+        .user-info .role {
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            padding: 4px 12px;
+            border-radius: 8px;
+            font-weight: 600;
+            color: #fff;
+            font-size: 12px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: rgba(30, 41, 59, 0.6);
+            border-radius: 10px;
+            margin-bottom: 30px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3b82f6 0%, #8b5cf6 100%);
+            border-radius: 10px;
+            transition: width 0.4s ease;
+            width: 0%;
+        }
+
+        .step-counter {
+            text-align: center;
+            color: #94a3b8;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        .question-card {
+            display: none;
+            animation: fadeInScale 0.4s ease;
+        }
+
+        .question-card.active {
+            display: block;
+        }
+
+        @keyframes fadeInScale {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .question-title {
+            font-size: 24px;
+            color: #fff;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .question-subtitle {
+            color: #94a3b8;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 40px 0;
+        }
+
+        .custom-checkbox {
+            position: relative;
+            cursor: pointer;
+        }
+
+        .custom-checkbox input {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .checkmark {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 80px;
+            height: 80px;
+            background: rgba(30, 41, 59, 0.6);
+            border: 2px solid rgba(59, 130, 246, 0.3);
+            border-radius: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .custom-checkbox:hover .checkmark {
+            border-color: #3b82f6;
+            background: rgba(59, 130, 246, 0.1);
+            transform: scale(1.05);
+        }
+
+        .custom-checkbox input:checked ~ .checkmark {
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            border-color: transparent;
+        }
+
+        .checkmark svg {
+            width: 40px;
+            height: 40px;
+            stroke: #fff;
+            stroke-width: 3;
+            stroke-dasharray: 50;
+            stroke-dashoffset: 50;
+            transition: stroke-dashoffset 0.3s ease;
+        }
+
+        .custom-checkbox input:checked ~ .checkmark svg {
+            stroke-dashoffset: 0;
+        }
+
+        .checkbox-label {
+            display: block;
+            text-align: center;
+            margin-top: 15px;
+            color: #cbd5e1;
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .completion-screen {
+            display: none;
+            text-align: center;
+        }
+
+        .completion-screen.active {
+            display: block;
+        }
+
+        .completion-icon {
+            width: 100px;
+            height: 100px;
+            margin: 0 auto 30px;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: scaleIn 0.5s ease;
+        }
+
+        @keyframes scaleIn {
+            from {
+                transform: scale(0);
+            }
+            to {
+                transform: scale(1);
+            }
+        }
+
+        .completion-icon svg {
+            width: 50px;
+            height: 50px;
+            stroke: #fff;
+            stroke-width: 3;
+        }
+
+        .completion-title {
+            font-size: 32px;
+            color: #fff;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+
+        .completion-message {
+            color: #94a3b8;
+            font-size: 16px;
+            margin-bottom: 30px;
+        }
+
+        .report-id {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 30px;
+        }
+
+        .report-id p {
+            color: #cbd5e1;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+        .report-id strong {
+            color: #fff;
+            font-size: 18px;
+        }
+
+        .btn-new-report {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            border: none;
+            border-radius: 12px;
+            color: #fff;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-new-report:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(59, 130, 246, 0.4);
+        }
+
+        .logout-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 10px 20px;
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 10px;
+            color: #fca5a5;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+
+        .logout-btn:hover {
+            background: rgba(239, 68, 68, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 16px 20px;
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 12px;
+            color: #fff;
+            font-size: 16px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .input-field:focus {
+            border-color: #3b82f6;
+            background: rgba(30, 41, 59, 0.8);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .select-field {
+            width: 100%;
+            padding: 16px 20px;
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 12px;
+            color: #fff;
+            font-size: 16px;
+            outline: none;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .select-field:focus {
+            border-color: #3b82f6;
+            background: rgba(30, 41, 59, 0.8);
+        }
+
+        .select-field option {
+            background: #1e293b;
+            color: #fff;
+        }
+
+        .form-label {
+            display: block;
+            color: #cbd5e1;
+            font-size: 14px;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .btn-continue {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            border: none;
+            border-radius: 12px;
+            color: #fff;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .btn-continue:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(59, 130, 246, 0.4);
+        }
+
+        .type-selection-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 25px 0;
+        }
+
+        .type-option {
+            padding: 25px 20px;
+            background: rgba(30, 41, 59, 0.6);
+            border: 2px solid rgba(59, 130, 246, 0.3);
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .type-option:hover {
+            background: rgba(30, 41, 59, 0.8);
+            border-color: #3b82f6;
+            transform: translateY(-2px);
+        }
+
+        .type-option.active {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(139, 92, 246, 0.2));
+            border-color: #3b82f6;
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+        }
+
+        .type-option .icon {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+
+        .type-option .label {
+            font-weight: 600;
+            color: #fff;
+            font-size: 16px;
+        }
+
+        .optional-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .optional-btn {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid rgba(100, 116, 139, 0.5);
+            background: rgba(30, 41, 59, 0.4);
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+            color: #cbd5e1;
+            transition: all 0.3s ease;
+        }
+
+        .optional-btn:hover {
+            border-color: #3b82f6;
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .optional-btn.active {
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            border-color: transparent;
+            color: #fff;
+        }
+
+        .optional-btn.na.active {
+            background: linear-gradient(135deg, #6c757d 0%, #495057 100%);
+        }
+
+        textarea.input-field {
+            min-height: 80px;
+            resize: vertical;
+            font-family: inherit;
+        }
+
+        .incident-option {
+            padding: 20px;
+            background: rgba(30, 41, 59, 0.6);
+            border: 2px solid rgba(59, 130, 246, 0.3);
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .incident-option:hover {
+            background: rgba(30, 41, 59, 0.8);
+            border-color: #3b82f6;
+            transform: translateY(-2px);
+        }
+
+        .incident-option.active {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(139, 92, 246, 0.2));
+            border-color: #3b82f6;
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+        }
+
+        .incident-option .icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        .incident-option .label {
+            font-weight: 600;
+            color: #fff;
+            font-size: 14px;
+        }
+
+        .photo-upload-area {
+            border: 2px dashed rgba(59, 130, 246, 0.4);
+            border-radius: 12px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(30, 41, 59, 0.3);
+            margin-top: 15px;
+        }
+
+        .photo-upload-area:hover {
+            border-color: #3b82f6;
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .photo-preview-container {
+            margin-top: 15px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .photo-preview-item {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 2px solid rgba(59, 130, 246, 0.3);
+        }
+
+        .photo-preview-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .photo-remove-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: rgba(239, 68, 68, 0.9);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            font-size: 14px;
+            line-height: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .photo-remove-btn:hover {
+            background: #dc2626;
+            transform: scale(1.1);
+        }
+
+        .photo-type-badge {
+            position: absolute;
+            bottom: 5px;
+            left: 5px;
+            background: rgba(59, 130, 246, 0.9);
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: 600;
+        }
+
+        .photo-source-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3);
+        }
+
+        .photo-source-btn:active {
+            transform: translateY(0);
+        }
+
+        @media (max-width: 768px) {
+            .form-box {
+                padding: 30px 25px;
+            }
+
+            .header h1 {
+                font-size: 24px;
+            }
+
+            .question-title {
+                font-size: 20px;
+            }
+
+            .type-selection-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="canvas-container"></div>
+
+    <button class="logout-btn" onclick="logout()">🚪 Cerrar Sesión</button>
+
+    <div class="container">
+        <div class="form-box">
+            <div class="header">
+                <h1>✈️ Turnaround Check</h1>
+            </div>
+
+            <div class="user-info">
+                <span id="userName">Cargando...</span>
+                <span class="role" id="userRole">-</span>
+            </div>
+
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressBar"></div>
+            </div>
+
+            <div class="step-counter" id="stepCounter">Seleccione el tipo de vuelo</div>
+
+            <!-- PASO 0: Selección de Tipo de Vuelo (TURN o ROW) -->
+            <div class="question-card active" data-step="0">
+                <h2 class="question-title">Tipo de Vuelo</h2>
+                <p class="question-subtitle">Seleccione el tipo de operación a reportar</p>
+                
+                <div class="type-selection-grid">
+                    <div class="type-option" onclick="selectFlightType('TURN')">
+                        <div class="icon">🔄</div>
+                        <div class="label">TURN</div>
+                    </div>
+                    <div class="type-option" onclick="selectFlightType('ROW')">
+                        <div class="icon">📋</div>
+                        <div class="label">ROW</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PASO 0.5: Subselección ROW (Arrival o Departure) -->
+            <div class="question-card" data-step="0.5">
+                <h2 class="question-title">Tipo de ROW</h2>
+                <p class="question-subtitle">Seleccione si es llegada o salida</p>
+                
+                <div class="type-selection-grid">
+                    <div class="type-option" onclick="selectRowType('ARRIVAL')">
+                        <div class="icon">🛬</div>
+                        <div class="label">Arrival<br>(Llegada)</div>
+                    </div>
+                    <div class="type-option" onclick="selectRowType('DEPARTURE')">
+                        <div class="icon">🛫</div>
+                        <div class="label">Departure<br>(Salida)</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PASO 1: Información de Vuelo -->
+            <div class="question-card" data-step="1">
+                <h2 class="question-title">Información de Vuelo</h2>
+                <p class="question-subtitle">Ingrese los datos del vuelo</p>
+                
+                <div style="margin: 20px 0;">
+                    <label class="form-label">Aerolínea</label>
+                    <select id="airlineSelect" class="select-field">
+                        <option value="">Seleccione una aerolínea</option>
+                        <option value="DL">Delta</option>
+                        <option value="WN">Southwest</option>
+                        <option value="E9">Iberojet</option>
+                        <option value="AV">Avianca</option>
+                        <option value="UA">United</option>
+                        <option value="AA">American Airlines</option>
+                    </select>
+                </div>
+
+                <div style="margin: 20px 0;">
+                    <label class="form-label"># de Vuelo</label>
+                    <input 
+                        type="text" 
+                        id="flightNumber" 
+                        class="input-field"
+                        placeholder="Ej: 1234"
+                    >
+                </div>
+                
+                <button onclick="submitFlightInfo()" class="btn-continue">
+                    Continuar →
+                </button>
+            </div>
+
+            <!-- Las preguntas dinámicas se generarán aquí según el tipo seleccionado -->
+            <div id="dynamicQuestions"></div>
+
+            <!-- Completion Screen -->
+            <div class="completion-screen">
+                <div class="completion-icon">
+                    <svg viewBox="0 0 24 24" fill="none">
+                        <path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+                <h2 class="completion-title">¡Turnaround Completado!</h2>
+                <p class="completion-message">Todos los pasos se han registrado exitosamente</p>
+                
+                <div class="report-id">
+                    <p>ID del Reporte:</p>
+                    <strong id="reportId">-</strong>
+                </div>
+                
+                <div class="report-id" style="margin-top: 15px;">
+                    <p>Tipo de Vuelo:</p>
+                    <strong id="reportType">-</strong>
+                </div>
+
+                <div class="report-id" style="margin-top: 15px;">
+                    <p>Número de Vuelo:</p>
+                    <strong id="reportFlight">-</strong>
+                    <p style="font-size: 12px; color: #94a3b8; margin-top: 5px;">
+                        Inicio Registro: <span id="reportFlightTime">-</span>
+                    </p>
+                    <p style="font-size: 12px; color: #f59e0b; margin-top: 3px; font-weight: 600;">
+                        ⭐ Beacon OFF (T=0): <span id="reportBeaconOffTime">-</span>
+                    </p>
+                </div>
+
+                <div style="margin: 20px 0; padding: 15px; background: rgba(30, 41, 59, 0.3); border-radius: 12px;">
+                    <div id="reportDetails" style="text-align: left;"></div>
+                </div>
+
+                <button class="btn-new-report" onclick="newReport()">
+                    🔄 Nuevo Turnaround Check
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // THREE.JS BACKGROUND ANIMATION
+        // ============================================
+        const container = document.getElementById('canvas-container');
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+        
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        container.appendChild(renderer.domElement);
+
+        const particlesGeometry = new THREE.BufferGeometry();
+        const particlesCount = 2000;
+        const posArray = new Float32Array(particlesCount * 3);
+
+        for(let i = 0; i < particlesCount * 3; i++) {
+            posArray[i] = (Math.random() - 0.5) * 100;
+        }
+
+        particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+
+        const particlesMaterial = new THREE.PointsMaterial({
+            size: 0.08,
+            color: 0x3b82f6,
+            transparent: true,
+            opacity: 0.6,
+            blending: THREE.AdditiveBlending
+        });
+
+        const particlesMesh = new THREE.Points(particlesGeometry, particlesMaterial);
+        scene.add(particlesMesh);
+
+        camera.position.z = 30;
+
+        function animate() {
+            requestAnimationFrame(animate);
+            particlesMesh.rotation.y += 0.0005;
+            particlesMesh.rotation.x += 0.0003;
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // ============================================
+        // AUTHENTICATION CHECK
+        // ============================================
+        const userData = sessionStorage.getItem('user');
+        if (!userData) {
+            window.location.href = 'login.html';
+        } else {
+            const user = JSON.parse(userData);
+            document.getElementById('userName').textContent = user.username;
+            document.getElementById('userRole').textContent = user.role;
+        }
+
+        // ============================================
+        // CONFIGURACIÓN DEL APPS SCRIPT
+        // ============================================
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzi0Rc7JWLW5rjjAKLAHbA494BBU3keV4lP1JIPv0rghvmsxC-i6fvPuGe3l3Me5QRj/exec';
+
+        // ============================================
+        // VARIABLES GLOBALES
+        // ============================================
+        const userDataString = sessionStorage.getItem('user');
+        let inspectionUser = JSON.parse(userDataString);
+
+        let currentStep = 0;
+        let selectedFlightType = ''; // 'TURN', 'ROW-ARRIVAL', 'ROW-DEPARTURE'
+        let flightNumberValue = '';
+        let flightTimestamp = '';
+        let inspectionResponses = [];
+        let questionSequence = [];
+        let totalSteps = 0;
+        
+        // Variables para incidentes y capturas
+        let incidentPhotos = [];
+        let capturas360 = [];
+        let hasIncident = false;
+
+        // ============================================
+        // DEFINICIÓN DE PREGUNTAS POR TIPO
+        // ============================================
+        const QUESTIONS = {
+            TURN: [
+                { key: 'briefing', label: 'Briefing', emoji: '⚡', type: 'textarea', placeholder: 'Indicar qué temas se conversaron' },
+                { key: 'inicio_fod', label: 'Inicio FOD', emoji: '🔍', type: 'checkbox' },
+                { key: 'beacon_off', label: 'Beacon OFF', emoji: '🚨', type: 'checkbox' },
+                { key: 'planta_electrica', label: 'Planta Eléctrica', emoji: '⚡', type: 'checkbox', optional: true },
+                { key: 'aire_acondicionado', label: 'Aire Acondicionado', emoji: '❄️', type: 'checkbox', optional: true },
+                { key: 'banda', label: 'Banda', emoji: '📦', type: 'checkbox' },
+                { key: 'escalera', label: 'Escalera', emoji: '🪜', type: 'checkbox', optional: true },
+                { key: 'inicia_descarga_carga', label: 'Inicia Descarga Equipaje & Carga', emoji: '🛄', type: 'checkbox' },
+                { key: 'waste_water', label: 'Waste & Water', emoji: '💧', type: 'checkbox' },
+                { key: 'sube_limpieza', label: 'Sube Limpieza', emoji: '🧹', type: 'checkbox' },
+                { key: 'baja_limpieza', label: 'Baja Limpieza', emoji: '🧹', type: 'checkbox' },
+                { key: 'segundo_fod', label: '2do FOD', emoji: '🔍', type: 'checkbox' },
+                { key: 'descarga_equipaje', label: 'Descarga Equipaje', emoji: '🛄', type: 'checkbox' },
+                { key: 'ultimo_viaje_carreta', label: 'Último viaje carreta', emoji: '🚚', type: 'checkbox' },
+                { key: 'ultima_maleta', label: 'Última Maleta Cargada', emoji: '🧳', type: 'checkbox' },
+                { key: 'towbar', label: 'Towbar (Remolque en Posición)', emoji: '🔧', type: 'checkbox' },
+                { key: 'cierre_bines', label: 'Cierre de Bines', emoji: '🚪', type: 'checkbox' },
+                { key: 'tercer_fod', label: '3er FOD', emoji: '🔍', type: 'checkbox' },
+                { key: 'incidentes_capturas', label: 'Incidentes y Capturas 360', emoji: '📸', type: 'incident' }
+            ],
+            'ROW-ARRIVAL': [
+                { key: 'briefing', label: 'Briefing', emoji: '⚡', type: 'textarea', placeholder: 'Indicar qué temas se conversaron' },
+                { key: 'fod', label: 'FOD', emoji: '🔍', type: 'checkbox' },
+                { key: 'beacon_off', label: 'Beacon OFF', emoji: '🚨', type: 'checkbox' },
+                { key: 'planta_electrica', label: 'Planta Eléctrica', emoji: '⚡', type: 'checkbox', optional: true },
+                { key: 'aire_acondicionado', label: 'Aire Acondicionado', emoji: '❄️', type: 'checkbox', optional: true },
+                { key: 'banda', label: 'Banda', emoji: '📦', type: 'checkbox' },
+                { key: 'escalera', label: 'Escalera', emoji: '🪜', type: 'checkbox', optional: true },
+                { key: 'inicia_descarga', label: 'Inicia Descarga Equipaje', emoji: '🛄', type: 'checkbox' },
+                { key: 'waste_water', label: 'Waste & Water', emoji: '💧', type: 'checkbox' },
+                { key: 'sube_limpieza', label: 'Sube Limpieza', emoji: '🧹', type: 'checkbox' },
+                { key: 'baja_limpieza', label: 'Baja Limpieza', emoji: '🧹', type: 'checkbox' },
+                { key: 'segundo_fod', label: '2do FOD', emoji: '🔍', type: 'checkbox' },
+                { key: 'finaliza_descarga', label: 'Finaliza Descarga Equipaje', emoji: '🛄', type: 'checkbox' },
+                { key: 'ultimo_viaje_carreta', label: 'Último viaje carreta', emoji: '🚚', type: 'checkbox' },
+                { key: 'cierre_bines', label: 'Cierre de Bines', emoji: '🚪', type: 'checkbox' },
+                { key: 'incidentes_capturas', label: 'Incidentes y Capturas 360', emoji: '📸', type: 'incident' }
+            ],
+            'ROW-DEPARTURE': [
+                { key: 'briefing', label: 'Briefing', emoji: '⚡', type: 'textarea', placeholder: 'Indicar qué temas se conversaron' },
+                { key: 'fod', label: 'FOD', emoji: '⚡', type: 'checkbox' },
+                { key: 'avion_posicion', label: 'Avión en Posición', emoji: '⚡', type: 'checkbox' },
+                { key: 'planta_electrica', label: 'Planta Eléctrica', emoji: '⚡', type: 'checkbox', optional: true },
+                { key: 'aire_acondicionado', label: 'Aire Acondicionado', emoji: '❄️', type: 'checkbox', optional: true },
+                { key: 'banda', label: 'Banda', emoji: '📦', type: 'checkbox' },
+                { key: 'escalera', label: 'Escalera', emoji: '🪜', type: 'checkbox', optional: true },
+                { key: 'inicia_carga', label: 'Inicia Carga de Equipaje', emoji: '🛄', type: 'checkbox' },
+                { key: 'waste_water', label: 'Waste & Water', emoji: '💧', type: 'checkbox', optional: true },
+                { key: 'segundo_fod', label: '2do FOD', emoji: '🛄', type: 'checkbox' },
+                { key: 'finaliza_carga', label: 'Finaliza Carga Equipaje', emoji: '🛄', type: 'checkbox' },
+                { key: 'towbar', label: 'Towbar (Remolque en Posición)', emoji: '🛄', type: 'checkbox' },
+                { key: 'cierre_bines', label: 'Cierre de Bines', emoji: '🛄', type: 'checkbox' },
+                { key: 'tercer_fod', label: '3er FOD', emoji: '🛄', type: 'checkbox' },
+                { key: 'incidentes_capturas', label: 'Incidentes y Capturas 360', emoji: '📸', type: 'incident' }
+            ]
+        };
+
+        // ============================================
+        // FUNCIÓN: SELECCIONAR TIPO DE VUELO
+        // ============================================
+        function selectFlightType(type) {
+            selectedFlightType = type;
+            console.log('✈️ Tipo seleccionado:', type);
+            
+            if (type === 'TURN') {
+                // TURN va directo a info de vuelo
+                hideStep(0);
+                showStep(1);
+            } else if (type === 'ROW') {
+                // ROW muestra subselección
+                hideStep(0);
+                showStep(0.5);
+            }
+        }
+
+        // ============================================
+        // FUNCIÓN: SELECCIONAR TIPO ROW
+        // ============================================
+        function selectRowType(type) {
+            selectedFlightType = 'ROW-' + type;
+            console.log('✈️ Tipo ROW seleccionado:', selectedFlightType);
+            
+            hideStep(0.5);
+            showStep(1);
+        }
+
+        // ============================================
+        // FUNCIÓN: ENVIAR INFORMACIÓN DE VUELO
+        // ============================================
+        function submitFlightInfo() {
+            const airlineCode = document.getElementById('airlineSelect').value;
+            const flightNumber = document.getElementById('flightNumber').value.trim();
+            
+            if (!airlineCode) {
+                alert('⚠️ Por favor seleccione una aerolínea');
+                return;
+            }
+            
+            if (!flightNumber) {
+                alert('⚠️ Por favor ingrese el número de vuelo');
+                return;
+            }
+            
+            flightNumberValue = airlineCode + ' ' + flightNumber;
+            flightTimestamp = new Date().toISOString();
+            
+            console.log('✈️ Vuelo:', flightNumberValue);
+            console.log('📅 Timestamp:', flightTimestamp);
+            console.log('🔄 Tipo:', selectedFlightType);
+            
+            // Enviar a Google Sheets
+            sendToSheet(0, 'Vuelo: ' + flightNumberValue + ' | Tipo: ' + selectedFlightType, flightTimestamp);
+            
+            // Generar preguntas dinámicas
+            generateDynamicQuestions();
+            
+            // Avanzar al primer paso dinámico
+            hideStep(1);
+            currentStep = 2;
+            showStep(2);
+            updateProgress();
+        }
+
+        // ============================================
+        // FUNCIÓN: GENERAR PREGUNTAS DINÁMICAS
+        // ============================================
+        function generateDynamicQuestions() {
+            questionSequence = QUESTIONS[selectedFlightType];
+            totalSteps = questionSequence.length + 2; // +2 por los pasos iniciales
+            
+            const container = document.getElementById('dynamicQuestions');
+            container.innerHTML = '';
+            
+            questionSequence.forEach((q, index) => {
+                const stepNum = index + 2; // Empieza en paso 2
+                const card = document.createElement('div');
+                card.className = 'question-card';
+                card.setAttribute('data-step', stepNum);
+                
+                if (q.type === 'textarea') {
+                    card.innerHTML = `
+                        <h2 class="question-title">${q.label} ${q.emoji}</h2>
+                        <p class="question-subtitle">Ingrese los detalles</p>
+                        <textarea 
+                            id="input_${q.key}" 
+                            class="input-field"
+                            placeholder="${q.placeholder || ''}"
+                            rows="4"
+                        ></textarea>
+                        <button onclick="nextStepTextarea(${stepNum}, '${q.key}', '${q.label}')" class="btn-continue">
+                            Continuar →
+                        </button>
+                    `;
+                } else if (q.type === 'incident') {
+                    // Paso especial de incidentes y capturas 360
+                    card.innerHTML = `
+                        <h2 class="question-title">${q.label} ${q.emoji}</h2>
+                        <p class="question-subtitle">Reporte de incidentes y documentación fotográfica</p>
+                        
+                        <div style="margin: 25px 0;">
+                            <label class="form-label">¿Reportar incidente?</label>
+                            <div style="display: flex; gap: 15px; margin-top: 10px;">
+                                <label style="flex: 1; cursor: pointer;">
+                                    <input type="radio" name="hasIncident" value="no" checked onchange="toggleIncidentForm(false)"
+                                           style="display: none;">
+                                    <div id="noIncidentBtn" class="incident-option active">
+                                        <div class="icon">✅</div>
+                                        <div class="label">Sin Incidentes</div>
+                                    </div>
+                                </label>
+                                <label style="flex: 1; cursor: pointer;">
+                                    <input type="radio" name="hasIncident" value="yes" onchange="toggleIncidentForm(true)"
+                                           style="display: none;">
+                                    <div id="yesIncidentBtn" class="incident-option">
+                                        <div class="icon">⚠️</div>
+                                        <div class="label">Reportar Incidente</div>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Formulario de incidente -->
+                        <div id="incidentForm" style="display: none; margin-top: 25px;">
+                            <div style="margin-bottom: 20px;">
+                                <label class="form-label">Descripción del Incidente *</label>
+                                <textarea 
+                                    id="incidentDescription" 
+                                    class="input-field"
+                                    placeholder="Describe detalladamente lo que ocurrió..."
+                                    rows="4"
+                                ></textarea>
+                            </div>
+
+                            <div style="margin-bottom: 20px;">
+                                <label class="form-label">Tipo de Incidente</label>
+                                <select id="incidentType" class="select-field">
+                                    <option value="">Seleccione un tipo</option>
+                                    <option value="Daño a Equipo">Daño a Equipo</option>
+                                    <option value="Daño a Aeronave">Daño a Aeronave</option>
+                                    <option value="Lesión Personal">Lesión Personal</option>
+                                    <option value="Retraso Operacional">Retraso Operacional</option>
+                                    <option value="Falla de Equipo">Falla de Equipo</option>
+                                    <option value="Derrame">Derrame</option>
+                                    <option value="FOD">FOD (Foreign Object Damage)</option>
+                                    <option value="Otro">Otro</option>
+                                </select>
+                            </div>
+
+                            <div style="margin-bottom: 20px;">
+                                <label class="form-label">Severidad</label>
+                                <select id="incidentSeverity" class="select-field">
+                                    <option value="Baja">🟢 Baja - Sin impacto operacional</option>
+                                    <option value="Media" selected>🟡 Media - Requiere atención</option>
+                                    <option value="Alta">🔴 Alta - Requiere acción inmediata</option>
+                                </select>
+                            </div>
+
+                            <div style="margin-bottom: 20px;">
+                                <label class="form-label">Fotos del Incidente</label>
+                                <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                                    <button type="button" class="photo-source-btn" onclick="openCamera('incidentPhotoInput')" style="flex: 1; padding: 12px; background: rgba(59, 130, 246, 0.2); border: 2px solid #3b82f6; border-radius: 10px; color: #fff; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
+                                        📷 Tomar Foto
+                                    </button>
+                                    <button type="button" class="photo-source-btn" onclick="openGallery('incidentPhotoInput')" style="flex: 1; padding: 12px; background: rgba(139, 92, 246, 0.2); border: 2px solid #8b5cf6; border-radius: 10px; color: #fff; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
+                                        🖼️ Desde Galería
+                                    </button>
+                                </div>
+                                <input 
+                                    type="file" 
+                                    id="incidentPhotoInput" 
+                                    accept="image/*" 
+                                    multiple 
+                                    style="display: none;"
+                                    onchange="handlePhotoUpload(event, 'incident')"
+                                >
+                                <div id="incidentPhotoPreview" class="photo-preview-container"></div>
+                            </div>
+                        </div>
+
+                        <!-- Capturas 360 de la aeronave -->
+                        <div style="margin-top: 30px; padding-top: 25px; border-top: 2px solid rgba(59, 130, 246, 0.2);">
+                            <label class="form-label">📸 Capturas 360° de la Aeronave (Opcional)</label>
+                            <p class="question-subtitle" style="margin-bottom: 15px;">
+                                Documenta el estado de la aeronave desde diferentes ángulos
+                            </p>
+                            
+                            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                                <button type="button" class="photo-source-btn" onclick="openCamera('capturas360Input')" style="flex: 1; padding: 12px; background: rgba(59, 130, 246, 0.2); border: 2px solid #3b82f6; border-radius: 10px; color: #fff; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
+                                    📷 Tomar Foto 360°
+                                </button>
+                                <button type="button" class="photo-source-btn" onclick="openGallery('capturas360Input')" style="flex: 1; padding: 12px; background: rgba(139, 92, 246, 0.2); border: 2px solid #8b5cf6; border-radius: 10px; color: #fff; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">
+                                    🖼️ Desde Galería
+                                </button>
+                            </div>
+                            
+                            <input 
+                                type="file" 
+                                id="capturas360Input" 
+                                accept="image/*" 
+                                multiple 
+                                style="display: none;"
+                                onchange="handlePhotoUpload(event, '360')"
+                            >
+                            <div id="capturas360Preview" class="photo-preview-container"></div>
+                        </div>
+
+                        <button onclick="submitIncidentAndCapturas(${stepNum})" class="btn-continue" style="margin-top: 25px;">
+                            Finalizar Turnaround Check →
+                        </button>
+                    `;
+                } else if (q.type === 'checkbox') {
+                    const optionalHTML = q.optional ? `
+                        <div class="optional-buttons">
+                            <button class="optional-btn" onclick="markOptional(${stepNum}, '${q.key}', '${q.label}', 'marked')">
+                                ✓ Marcar
+                            </button>
+                            <button class="optional-btn na" onclick="markOptional(${stepNum}, '${q.key}', '${q.label}', 'na')">
+                                N/A
+                            </button>
+                        </div>
+                    ` : '';
+                    
+                    card.innerHTML = `
+                        <h2 class="question-title">${q.label} ${q.emoji}</h2>
+                        <p class="question-subtitle">${q.optional ? '(Opcional) ' : ''}Marcar cuando completado</p>
+                        ${!q.optional ? `
+                            <div class="checkbox-container">
+                                <label class="custom-checkbox">
+                                    <input type="checkbox" onchange="nextStep(${stepNum}, '${q.key}', '${q.label}')">
+                                    <span class="checkmark">
+                                        <svg viewBox="0 0 24 24" fill="none">
+                                            <path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/>
+                                        </svg>
+                                    </span>
+                                </label>
+                            </div>
+                            <span class="checkbox-label">Marcar como completado</span>
+                        ` : optionalHTML}
+                    `;
+                }
+                
+                container.appendChild(card);
+            });
+            
+            console.log(`📋 ${questionSequence.length} preguntas generadas para ${selectedFlightType}`);
+        }
+
+        // ============================================
+        // FUNCIÓN: MARCAR CAMPO OPCIONAL
+        // ============================================
+        function markOptional(step, key, label, action) {
+            const timestamp = new Date().toISOString();
+            const value = action === 'marked' ? 'Completado' : 'N/A';
+            
+            console.log(`✅ Opcional ${label}: ${value}`);
+            
+            inspectionResponses.push({
+                step: step,
+                key: key,
+                item: label,
+                value: value,
+                timestamp: timestamp
+            });
+            
+            sendToSheet(step, `${label}: ${value}`, timestamp);
+            
+            if (step < totalSteps - 1) {
+                hideStep(step);
+                currentStep = step + 1;
+                showStep(currentStep);
+                updateProgress();
+            } else {
+                completeInspection();
+            }
+        }
+
+        // ============================================
+        // FUNCIÓN: SIGUIENTE PASO (CHECKBOX)
+        // ============================================
+        function nextStep(step, key, label) {
+            const timestamp = new Date().toISOString();
+            
+            console.log(`✅ Completado: ${label}`);
+            
+            inspectionResponses.push({
+                step: step,
+                key: key,
+                item: label,
+                value: 'Completado',
+                timestamp: timestamp
+            });
+            
+            sendToSheet(step, label, timestamp);
+
+            if (step < totalSteps - 1) {
+                hideStep(step);
+                currentStep = step + 1;
+                showStep(currentStep);
+                updateProgress();
+            } else {
+                completeInspection();
+            }
+        }
+
+        // ============================================
+        // FUNCIÓN: SIGUIENTE PASO (TEXTAREA)
+        // ============================================
+        function nextStepTextarea(step, key, label) {
+            const input = document.getElementById('input_' + key);
+            const value = input.value.trim();
+            
+            if (!value) {
+                alert('⚠️ Por favor ingrese la información requerida');
+                return;
+            }
+            
+            const timestamp = new Date().toISOString();
+            
+            console.log(`✅ ${label}: ${value}`);
+            
+            inspectionResponses.push({
+                step: step,
+                key: key,
+                item: label,
+                value: value,
+                timestamp: timestamp
+            });
+            
+            sendToSheet(step, `${label}: ${value}`, timestamp);
+
+            if (step < totalSteps - 1) {
+                hideStep(step);
+                currentStep = step + 1;
+                showStep(currentStep);
+                updateProgress();
+            } else {
+                completeInspection();
+            }
+        }
+
+        // ============================================
+        // FUNCIONES DE NAVEGACIÓN
+        // ============================================
+        function showStep(step) {
+            const card = document.querySelector(`[data-step="${step}"]`);
+            if (card) {
+                card.classList.add('active');
+            }
+        }
+
+        function hideStep(step) {
+            const card = document.querySelector(`[data-step="${step}"]`);
+            if (card) {
+                card.classList.remove('active');
+            }
+        }
+
+        // ============================================
+        // FUNCIÓN: ACTUALIZAR BARRA DE PROGRESO
+        // ============================================
+        function updateProgress() {
+            const progress = ((currentStep - 1) / (totalSteps - 2)) * 100;
+            document.getElementById('progressBar').style.width = Math.min(progress, 100) + '%';
+            document.getElementById('stepCounter').textContent = `Paso ${currentStep - 1} de ${totalSteps - 2}`;
+        }
+
+        // ============================================
+        // FUNCIÓN: ENVIAR DATOS A GOOGLE SHEETS
+        // ============================================
+        function sendToSheet(step, item, timestamp) {
+            console.log('📤 Enviando a Google Sheets:', {
+                step: step,
+                item: item,
+                timestamp: timestamp,
+                user: inspectionUser.username,
+                role: inspectionUser.role,
+                type: selectedFlightType
+            });
+
+            const url = SCRIPT_URL + 
+                '?user=' + encodeURIComponent(inspectionUser.username) +
+                '&role=' + encodeURIComponent(inspectionUser.role) +
+                '&type=' + encodeURIComponent(selectedFlightType) +
+                '&flight=' + encodeURIComponent(flightNumberValue) +
+                '&step=' + step +
+                '&item=' + encodeURIComponent(item) +
+                '&timestamp=' + encodeURIComponent(timestamp);
+
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    console.log('✅ Respuesta del servidor:', data);
+                })
+                .catch(error => {
+                    console.error('❌ Error enviando datos:', error);
+                });
+        }
+
+        // ============================================
+        // FUNCIÓN: COMPLETAR INSPECCIÓN
+        // ============================================
+        function completeInspection() {
+            const reportId = 'TRN-' + Date.now();
+            
+            console.log('🎉 Turnaround Check completado');
+            
+            // Buscar el timestamp de Beacon OFF (momento cero)
+            let beaconOffTimestamp = null;
+            for (let i = 0; i < inspectionResponses.length; i++) {
+                const response = inspectionResponses[i];
+                if (response.key === 'beacon_off' || response.item.includes('Beacon OFF')) {
+                    beaconOffTimestamp = response.timestamp;
+                    console.log('⭐ Beacon OFF encontrado:', beaconOffTimestamp);
+                    break;
+                }
+            }
+            
+            // Ocultar todos los pasos
+            document.querySelectorAll('.question-card').forEach(card => {
+                card.classList.remove('active');
+            });
+
+            setTimeout(() => {
+                document.getElementById('reportId').textContent = reportId;
+                document.getElementById('reportType').textContent = selectedFlightType;
+                document.getElementById('reportFlight').textContent = flightNumberValue;
+                document.getElementById('reportFlightTime').textContent = formatTimestamp(flightTimestamp);
+                
+                // Mostrar Beacon OFF como tiempo de referencia
+                if (beaconOffTimestamp) {
+                    document.getElementById('reportBeaconOffTime').textContent = formatTimestamp(beaconOffTimestamp);
+                } else {
+                    document.getElementById('reportBeaconOffTime').textContent = 'No registrado';
+                }
+                
+                let detailsHTML = '';
+                inspectionResponses.forEach((response, index) => {
+                    // Calcular tiempo desde Beacon OFF (no desde inicio)
+                    const timeDiff = calculateTimeDifference(beaconOffTimestamp, response.timestamp);
+                    
+                    let itemHtml = `
+                        <div style="margin-bottom: 12px; padding: 12px; background: rgba(59, 130, 246, 0.1); border-left: 3px solid #3b82f6; border-radius: 8px;">
+                            <div style="color: #fff; font-weight: 600; margin-bottom: 5px; font-size: 14px;">
+                                ${index + 1}. ${response.item}
+                            </div>
+                    `;
+                    
+                    // Si tiene valor diferente a "Completado", mostrarlo
+                    if (response.value !== 'Completado') {
+                        itemHtml += `
+                            <div style="color: #cbd5e1; font-size: 12px; margin-bottom: 5px;">
+                                📝 ${response.value}
+                            </div>
+                        `;
+                    }
+                    
+                    itemHtml += `
+                            <div style="color: #94a3b8; font-size: 12px;">
+                                ⏱️ ${formatTimestamp(response.timestamp)}
+                            </div>
+                    `;
+                    
+                    // Mostrar delta solo si hay Beacon OFF y el paso no es preparación
+                    if (timeDiff === 'N/A') {
+                        itemHtml += `
+                            <div style="color: #6b7280; font-size: 12px; margin-top: 3px;">
+                                ⏳ Preparación (antes de Beacon OFF)
+                            </div>
+                        `;
+                    } else if (timeDiff === '0m 0s') {
+                        itemHtml += `
+                            <div style="color: #f59e0b; font-size: 12px; margin-top: 3px; font-weight: 600;">
+                                ⭐ INICIO DEL CONTEO (Beacon OFF)
+                            </div>
+                        `;
+                    } else {
+                        itemHtml += `
+                            <div style="color: #10b981; font-size: 12px; margin-top: 3px;">
+                                ⏳ ${timeDiff} desde Beacon OFF
+                            </div>
+                        `;
+                    }
+                    
+                    
+                    // Si es el paso de incidentes, agregar detalles adicionales
+                    if (response.key === 'incidentes_capturas' && response.incidentData) {
+                        const incident = response.incidentData;
+                        
+                        if (incident.hasIncident) {
+                            itemHtml += `
+                                <div style="margin-top: 10px; padding: 10px; background: rgba(239, 68, 68, 0.1); border-radius: 6px;">
+                                    <div style="color: #fca5a5; font-weight: 600; font-size: 13px; margin-bottom: 5px;">
+                                        ⚠️ Incidente Reportado
+                                    </div>
+                                    <div style="color: #cbd5e1; font-size: 12px; margin-bottom: 3px;">
+                                        <strong>Tipo:</strong> ${incident.type}
+                                    </div>
+                                    <div style="color: #cbd5e1; font-size: 12px; margin-bottom: 3px;">
+                                        <strong>Severidad:</strong> ${incident.severity}
+                                    </div>
+                                    <div style="color: #cbd5e1; font-size: 12px; margin-bottom: 3px;">
+                                        <strong>Descripción:</strong> ${incident.description}
+                                    </div>
+                                    ${incident.photoCount > 0 ? `
+                                        <div style="color: #cbd5e1; font-size: 12px;">
+                                            <strong>Fotos:</strong> ${incident.photoCount} adjunta(s) 📷
+                                        </div>
+                                    ` : ''}
+                                </div>
+                            `;
+                            
+                            // Mostrar previews de fotos de incidente
+                            if (response.incidentPhotos && response.incidentPhotos.length > 0) {
+                                itemHtml += `
+                                    <div style="margin-top: 10px;">
+                                        <div style="color: #cbd5e1; font-size: 12px; margin-bottom: 5px; font-weight: 600;">
+                                            📷 Fotos del Incidente:
+                                        </div>
+                                        <div style="display: flex; gap: 5px; flex-wrap: wrap;">
+                                `;
+                                response.incidentPhotos.forEach((photo, photoIndex) => {
+                                    itemHtml += `
+                                        <img src="${photo.data}" 
+                                             style="width: 60px; height: 60px; object-fit: cover; border-radius: 6px; border: 2px solid rgba(239, 68, 68, 0.5); cursor: pointer;"
+                                             alt="Foto ${photoIndex + 1}"
+                                             onclick="showPhotoModal('${photo.data}', '${photo.name}', 'incident')">
+                                    `;
+                                });
+                                itemHtml += `</div></div>`;
+                            }
+                        } else {
+                            itemHtml += `
+                                <div style="margin-top: 10px; padding: 8px; background: rgba(16, 185, 129, 0.1); border-radius: 6px;">
+                                    <div style="color: #6ee7b7; font-size: 12px;">
+                                        ✅ Sin incidentes reportados
+                                    </div>
+                                </div>
+                            `;
+                        }
+                        
+                        // Mostrar capturas 360
+                        if (response.capturas360 && response.capturas360.length > 0) {
+                            itemHtml += `
+                                <div style="margin-top: 10px; padding: 10px; background: rgba(59, 130, 246, 0.1); border-radius: 6px;">
+                                    <div style="color: #93c5fd; font-weight: 600; font-size: 13px; margin-bottom: 5px;">
+                                        📸 Capturas 360° (${response.capturas360.length})
+                                    </div>
+                                    <div style="display: flex; gap: 5px; flex-wrap: wrap; margin-top: 8px;">
+                            `;
+                            response.capturas360.forEach((photo, photoIndex) => {
+                                itemHtml += `
+                                    <img src="${photo.data}" 
+                                         style="width: 60px; height: 60px; object-fit: cover; border-radius: 6px; border: 2px solid rgba(59, 130, 246, 0.5); cursor: pointer;"
+                                         alt="Captura ${photoIndex + 1}"
+                                         onclick="showPhotoModal('${photo.data}', '${photo.name}', '360')">
+                                `;
+                            });
+                            itemHtml += `</div></div>`;
+                        }
+                    }
+                    
+                    itemHtml += `</div>`;
+                    detailsHTML += itemHtml;
+                });
+                
+                // Calcular y mostrar tiempo total del turnaround
+                if (beaconOffTimestamp && inspectionResponses.length > 0) {
+                    const lastResponse = inspectionResponses[inspectionResponses.length - 1];
+                    const totalTime = calculateTimeDifference(beaconOffTimestamp, lastResponse.timestamp);
+                    
+                    if (totalTime !== 'N/A') {
+                        detailsHTML += `
+                            <div style="margin-top: 20px; padding: 15px; background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(139, 92, 246, 0.2)); border: 2px solid #3b82f6; border-radius: 12px; text-align: center;">
+                                <div style="color: #93c5fd; font-size: 13px; margin-bottom: 5px;">
+                                    ⏱️ TIEMPO TOTAL DEL TURNAROUND
+                                </div>
+                                <div style="color: #fff; font-size: 24px; font-weight: 700;">
+                                    ${totalTime}
+                                </div>
+                                <div style="color: #cbd5e1; font-size: 11px; margin-top: 5px;">
+                                    Desde Beacon OFF hasta finalización
+                                </div>
+                            </div>
+                        `;
+                    }
+                }
+                
+                document.getElementById('reportDetails').innerHTML = detailsHTML;
+                document.querySelector('.completion-screen').classList.add('active');
+                document.getElementById('progressBar').style.width = '100%';
+                document.getElementById('stepCounter').textContent = '✅ Completado';
+            }, 300);
+        }
+
+        // ============================================
+        // FUNCIONES AUXILIARES
+        // ============================================
+        function calculateTimeDifference(beaconOffTime, currentTime) {
+            // Si no hay timestamp de Beacon OFF, retornar N/A
+            if (!beaconOffTime) {
+                return 'N/A';
+            }
+            
+            const beaconOff = new Date(beaconOffTime);
+            const current = new Date(currentTime);
+            const diffMs = current - beaconOff;
+            
+            // Si es antes de Beacon OFF (negativo), retornar N/A
+            if (diffMs < 0) {
+                return 'N/A';
+            }
+            
+            // Si es Beacon OFF mismo (0), retornar "0m 0s"
+            if (diffMs === 0) {
+                return '0m 0s';
+            }
+            
+            const hours = Math.floor(diffMs / (1000 * 60 * 60));
+            const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diffMs % (1000 * 60)) / 1000);
+            
+            const parts = [];
+            if (hours > 0) parts.push(`${hours}h`);
+            if (minutes > 0) parts.push(`${minutes}m`);
+            if (seconds > 0 || parts.length === 0) parts.push(`${seconds}s`);
+            
+            return parts.join(' ');
+        }
+
+        function formatTimestamp(timestamp) {
+            const date = new Date(timestamp);
+            return date.toLocaleString('es-ES', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+        }
+
+        // ============================================
+        // FUNCIÓN: ABRIR CÁMARA
+        // ============================================
+        function openCamera(inputId) {
+            const input = document.getElementById(inputId);
+            // Configurar para abrir cámara
+            input.setAttribute('capture', 'environment');
+            input.click();
+            // Limpiar el atributo después para permitir galería en el siguiente uso
+            setTimeout(() => {
+                input.removeAttribute('capture');
+            }, 100);
+        }
+
+        // ============================================
+        // FUNCIÓN: ABRIR GALERÍA
+        // ============================================
+        function openGallery(inputId) {
+            const input = document.getElementById(inputId);
+            // Asegurarse de que NO tenga el atributo capture
+            input.removeAttribute('capture');
+            input.click();
+        }
+
+        // ============================================
+        // FUNCIÓN: TOGGLE FORMULARIO DE INCIDENTE
+        // ============================================
+        function toggleIncidentForm(show) {
+            const incidentForm = document.getElementById('incidentForm');
+            const noBtn = document.getElementById('noIncidentBtn');
+            const yesBtn = document.getElementById('yesIncidentBtn');
+            
+            hasIncident = show;
+            
+            if (show) {
+                incidentForm.style.display = 'block';
+                noBtn.classList.remove('active');
+                yesBtn.classList.add('active');
+            } else {
+                incidentForm.style.display = 'none';
+                yesBtn.classList.remove('active');
+                noBtn.classList.add('active');
+                
+                // Limpiar formulario
+                document.getElementById('incidentDescription').value = '';
+                document.getElementById('incidentType').value = '';
+                document.getElementById('incidentSeverity').value = 'Media';
+                incidentPhotos = [];
+                document.getElementById('incidentPhotoPreview').innerHTML = '';
+            }
+        }
+
+        // ============================================
+        // FUNCIÓN: MANEJAR SUBIDA DE FOTOS
+        // ============================================
+        function handlePhotoUpload(event, type) {
+            const files = event.target.files;
+            const previewContainer = type === 'incident' 
+                ? document.getElementById('incidentPhotoPreview')
+                : document.getElementById('capturas360Preview');
+            
+            const targetArray = type === 'incident' ? incidentPhotos : capturas360;
+            
+            console.log(`📷 ${files.length} foto(s) seleccionada(s) - Tipo: ${type}`);
+            
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                
+                // Validar tamaño (max 5MB)
+                if (file.size > 5 * 1024 * 1024) {
+                    alert(`⚠️ La foto "${file.name}" es muy grande. Máximo 5MB por foto.`);
+                    continue;
+                }
+                
+                // Validar tipo
+                if (!file.type.startsWith('image/')) {
+                    alert(`⚠️ "${file.name}" no es una imagen válida.`);
+                    continue;
+                }
+                
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    const photoData = {
+                        name: file.name,
+                        size: file.size,
+                        type: file.type,
+                        data: e.target.result, // Base64
+                        photoType: type,
+                        timestamp: new Date().toISOString()
+                    };
+                    
+                    targetArray.push(photoData);
+                    
+                    console.log(`✅ Foto "${file.name}" cargada (${(file.size / 1024).toFixed(2)} KB)`);
+                    
+                    // Crear preview
+                    const previewItem = document.createElement('div');
+                    previewItem.className = 'photo-preview-item';
+                    previewItem.innerHTML = `
+                        <img src="${e.target.result}" class="photo-preview-img" alt="${file.name}">
+                        <span class="photo-type-badge">${type === 'incident' ? '⚠️' : '360°'}</span>
+                        <button class="photo-remove-btn" onclick="removePhoto('${type}', ${targetArray.length - 1})" title="Eliminar">
+                            ✕
+                        </button>
+                    `;
+                    
+                    previewContainer.appendChild(previewItem);
+                };
+                
+                reader.readAsDataURL(file);
+            }
+            
+            // Limpiar input
+            event.target.value = '';
+        }
+
+        // ============================================
+        // FUNCIÓN: ELIMINAR FOTO
+        // ============================================
+        function removePhoto(type, index) {
+            console.log(`🗑️ Eliminando foto ${type} - índice ${index}`);
+            
+            const targetArray = type === 'incident' ? incidentPhotos : capturas360;
+            const previewContainer = type === 'incident' 
+                ? document.getElementById('incidentPhotoPreview')
+                : document.getElementById('capturas360Preview');
+            
+            targetArray.splice(index, 1);
+            
+            // Reconstruir preview
+            previewContainer.innerHTML = '';
+            
+            targetArray.forEach((photo, i) => {
+                const previewItem = document.createElement('div');
+                previewItem.className = 'photo-preview-item';
+                previewItem.innerHTML = `
+                    <img src="${photo.data}" class="photo-preview-img" alt="${photo.name}">
+                    <span class="photo-type-badge">${type === 'incident' ? '⚠️' : '360°'}</span>
+                    <button class="photo-remove-btn" onclick="removePhoto('${type}', ${i})" title="Eliminar">
+                        ✕
+                    </button>
+                `;
+                previewContainer.appendChild(previewItem);
+            });
+        }
+
+        // ============================================
+        // FUNCIÓN: ENVIAR INCIDENTES Y CAPTURAS
+        // ============================================
+        function submitIncidentAndCapturas(step) {
+            const timestamp = new Date().toISOString();
+            
+            let incidentData = {
+                hasIncident: hasIncident,
+                description: '',
+                type: '',
+                severity: '',
+                photoCount: 0,
+                timestamp: timestamp
+            };
+            
+            if (hasIncident) {
+                const description = document.getElementById('incidentDescription').value.trim();
+                const type = document.getElementById('incidentType').value;
+                const severity = document.getElementById('incidentSeverity').value;
+                
+                // Validar descripción obligatoria
+                if (!description) {
+                    alert('⚠️ Por favor describe el incidente');
+                    document.getElementById('incidentDescription').focus();
+                    return;
+                }
+                
+                incidentData = {
+                    hasIncident: true,
+                    description: description,
+                    type: type || 'No especificado',
+                    severity: severity,
+                    photoCount: incidentPhotos.length,
+                    timestamp: timestamp
+                };
+                
+                console.log('📋 Incidente reportado:', incidentData);
+                console.log('📷 Fotos incidente:', incidentPhotos.length);
+            } else {
+                console.log('✅ Sin incidentes reportados');
+            }
+            
+            console.log('📸 Capturas 360:', capturas360.length);
+            
+            // Guardar en array de respuestas
+            inspectionResponses.push({
+                step: step,
+                key: 'incidentes_capturas',
+                item: 'Incidentes y Capturas 360',
+                value: 'Completado',
+                timestamp: timestamp,
+                incidentData: incidentData,
+                incidentPhotos: incidentPhotos,
+                capturas360: capturas360
+            });
+            
+            // Enviar a Google Sheets
+            const itemText = hasIncident 
+                ? `Incidente: ${incidentData.type} - ${incidentData.severity} | Fotos Incidente: ${incidentPhotos.length} | Capturas 360: ${capturas360.length}`
+                : `Sin Incidentes | Capturas 360: ${capturas360.length}`;
+            
+            sendToSheet(step, itemText, timestamp);
+            
+            // Completar inspección
+            completeInspection();
+        }
+
+        // ============================================
+        // FUNCIÓN: MOSTRAR FOTO EN MODAL
+        // ============================================
+        function showPhotoModal(photoData, photoName, photoType) {
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.9);
+                z-index: 10000;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 20px;
+            `;
+            
+            const badge = photoType === 'incident' ? '⚠️ Incidente' : '360° Aeronave';
+            
+            modal.innerHTML = `
+                <div style="position: relative; max-width: 90%; max-height: 90%;">
+                    <img src="${photoData}" 
+                         style="max-width: 100%; max-height: 90vh; border-radius: 12px;"
+                         alt="${photoName}">
+                    <div style="text-align: center; color: #fff; margin-top: 15px;">
+                        <div style="font-size: 14px; margin-bottom: 5px;">
+                            <span style="background: rgba(59, 130, 246, 0.9); padding: 4px 12px; border-radius: 8px;">
+                                ${badge}
+                            </span>
+                        </div>
+                        <div style="font-size: 14px;">${photoName}</div>
+                    </div>
+                    <button onclick="this.closest('div').parentElement.remove()"
+                            style="position: absolute; top: -40px; right: 0; background: rgba(239, 68, 68, 0.9); color: white; border: none; border-radius: 50%; width: 36px; height: 36px; font-size: 18px; cursor: pointer;">
+                        ✕
+                    </button>
+                </div>
+            `;
+            
+            modal.onclick = function(e) {
+                if (e.target === modal) {
+                    modal.remove();
+                }
+            };
+            
+            document.body.appendChild(modal);
+        }
+
+        // ============================================
+        // FUNCIÓN: NUEVO REPORTE
+        // ============================================
+        function newReport() {
+            currentStep = 0;
+            selectedFlightType = '';
+            flightNumberValue = '';
+            flightTimestamp = '';
+            inspectionResponses = [];
+            questionSequence = [];
+            totalSteps = 0;
+            
+            // Limpiar incidentes y capturas
+            incidentPhotos = [];
+            capturas360 = [];
+            hasIncident = false;
+            
+            document.getElementById('airlineSelect').value = '';
+            document.getElementById('flightNumber').value = '';
+            document.getElementById('dynamicQuestions').innerHTML = '';
+            
+            document.querySelector('.completion-screen').classList.remove('active');
+            
+            hideStep(1);
+            hideStep(0.5);
+            showStep(0);
+            
+            document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+            
+            document.getElementById('progressBar').style.width = '0%';
+            document.getElementById('stepCounter').textContent = 'Seleccione el tipo de vuelo';
+        }
+
+        // ============================================
+        // FUNCIÓN: CERRAR SESIÓN
+        // ============================================
+        function logout() {
+            if (confirm('¿Estás seguro de que quieres cerrar sesión?')) {
+                sessionStorage.removeItem('user');
+                window.location.href = 'login.html';
+            }
+        }
+
+        // ============================================
+        // LOG INICIAL
+        // ============================================
+        console.log('📋 Turnaround Check cargado');
+        console.log('👤 Usuario:', inspectionUser.username);
+        console.log('👔 Rol:', inspectionUser.role);
+        console.log('🔗 Apps Script URL:', SCRIPT_URL);
+    </script>
+</body>
+</html>
