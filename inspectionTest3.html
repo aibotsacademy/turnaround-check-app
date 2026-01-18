@@ -600,6 +600,21 @@
                 <div class="progress-fill" id="progressBar"></div>
             </div>
 
+             <div class="step-counter" id="stepCounter">Seleccione el inspector</div>
+
+            <!-- STEP -1: User Selection -->
+            <div id="step-1" class="question-card active">
+                <h2 class="question-title">👤 Seleccione Inspector</h2>
+                <p class="question-subtitle">¿Quién realizará la inspección?</p>
+                
+                <select id="userSelect" onchange="handleUserSelection(this.value)">
+                    <option value="">-- Seleccione Inspector --</option>
+                    <option value="leo">Alfredo</option>
+                    <option value="alfredo">Mauricio</option>
+                    <option value="mauricio">Anthony</option>
+                </select>
+            </div>
+
             <div class="step-counter" id="stepCounter">Seleccione la aerolínea</div>
 
             <!-- STEP 0: Airline Selection -->
