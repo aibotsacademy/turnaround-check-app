@@ -754,6 +754,7 @@
         function submitFlightInfo() {
             const airlineCode = document.getElementById('airlineSelect').value;
             const flightNumber = document.getElementById('flightNumber').value.trim();
+            const airlineCode = document.getElementById('airlineType').value;
             
             if (!airlineCode) {
                 alert('Por favor seleccione una aerolínea');
@@ -1008,6 +1009,7 @@
             
             document.getElementById('airlineSelect').value = '';
             document.getElementById('flightNumber').value = '';
+            document.getElementById('airlineType').value = '';
             document.getElementById('incidentDescription').value = '';
             document.getElementById('incidentPhoto').value = '';
             document.getElementById('photoPreview').style.display = 'none';
