@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reporte de Silla de Ruedas - Aero Servicio</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    
+    <!-- MISMO CSS QUE EL ORIGINAL -->
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0a0e27; }
+        #canvas-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
+        .container { position: relative; z-index: 2; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+        .form-box { background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(20px); border: 1px solid rgba(236, 72, 153, 0.3); border-radius: 24px; padding: 50px 40px; width: 100%; max-width: 500px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 100px rgba(236, 72, 153, 0.1); animation: slideIn 0.6s ease-out; }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        .header { text-align: center; margin-bottom: 40px; }
+        .header h1 { font-size: 28px; font-weight: 700; background: linear-gradient(135deg, #ec4899 0%, #a855f7 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 8px; }
+        .user-info { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding: 12px 16px; background: rgba(236, 72, 153, 0.1); border-radius: 12px; border: 1px solid rgba(236, 72, 153, 0.2); }
+        .user-info span { color: #cbd5e1; font-size: 14px; }
+        .user-info .role { background: linear-gradient(135deg, #ec4899 0%, #a855f7 100%); padding: 4px 12px; border-radius: 8px; font-weight: 600; color: #fff; font-size: 12px; }
+        .progress-bar { width: 100%; height: 8px; background: rgba(30, 41, 59, 0.6); border-radius: 10px; margin-bottom: 30px; overflow: hidden; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, #ec4899 0%, #a855f7 100%); border-radius: 10px; transition: width 0.4s ease; width: 0%; }
+        .step-counter { text-align: center; color: #94a3b8; font-size: 14px; margin-bottom: 20px; }
+        .question-card { display: none; animation: fadeInScale 0.4s ease; }
+        .question-card.active { display: block; }
+        @keyframes fadeInScale { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        .question-title { font-size: 24px; color: #fff; margin-bottom: 10px; font-weight: 600; }
+        .question-subtitle { color: #94a3b8; font-size: 14px; margin-bottom: 30px; }
+        .input-field { width: 100%; padding: 16px 20px; background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(236, 72, 153, 0.3); border-radius: 12px; color: #fff; font-size: 16px; outline: none; transition: all 0.3s ease; margin-bottom: 10px; }
+        .input-field:focus { border-color: #ec4899; background: rgba(30, 41, 59, 0.8); box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.1); }
+        select.input-field { cursor: pointer; }
+        select.input-field option { background: #1e293b; color: #fff; }
+        label { display: block; color: #cbd5e1; font-size: 14px; margin-bottom: 8px; font-weight: 500; }
+        .checkbox-container { display: flex; align-items: center; justify-content: center; margin: 40px 0; }
+        .custom-checkbox { position: relative; cursor: pointer; }
+        .custom-checkbox input { position: absolute; opacity: 0; cursor: pointer; }
+        .checkmark { display: flex; align-items: center; justify-content: center; width: 80px; height: 80px; background: rgba(30, 41, 59, 0.6); border: 2px solid rgba(236, 72, 153, 0.3); border-radius: 16px; transition: all 0.3s ease; }
+        .custom-checkbox:hover .checkmark { border-color: #ec4899; background: rgba(236, 72, 153, 0.1); transform: scale(1.05); }
+        .custom-checkbox input:checked ~ .checkmark { background: linear-gradient(135deg, #ec4899 0%, #a855f7 100%); border-color: transparent; }
+        .checkmark svg { width: 40px; height: 40px; stroke: #fff; stroke-width: 3; stroke-dasharray: 50; stroke-dashoffset: 50; transition: stroke-dashoffset 0.3s ease; }
+        .custom-checkbox input:checked ~ .checkmark svg { stroke-dashoffset: 0; }
+        .checkbox-label { display: block; text-align: center; margin-top: 15px; color: #cbd5e1; font-size: 16px; font-weight: 500; }
+        .continue-btn { width: 100%; padding: 16px; background: linear-gradient(135deg, #ec4899 0%, #a855f7 100%); border: none; border-radius: 12px; color: #fff; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; margin-top: 10px; }
+        .continue-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(236, 72, 153, 0.4); }
+        .photo-upload-container { margin: 20px 0; }
+        .photo-upload-btn { width: 100%; padding: 50px 20px; background: rgba(30, 41, 59, 0.6); border: 2px dashed rgba(236, 72, 153, 0.3); border-radius: 12px; color: #94a3b8; cursor: pointer; transition: all 0.3s ease; text-align: center; }
+        .photo-upload-btn:hover { border-color: #ec4899; background: rgba(236, 72, 153, 0.1); }
+        .photo-upload-btn input[type="file"] { display: none; }
+        .photo-preview { margin-top: 15px; border-radius: 12px; overflow: hidden; display: none; }
+        .photo-preview img { width: 100%; height: auto; display: block; }
+        .completion-screen { display: none; text-align: center; }
+        .completion-screen.active { display: block; }
+        .completion-icon { width: 100px; height: 100px; margin: 0 auto 30px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; animation: scaleIn 0.5s ease; }
+        @keyframes scaleIn { from { transform: scale(0); } to { transform: scale(1); } }
+        .completion-icon svg { width: 50px; height: 50px; stroke: #fff; stroke-width: 3; }
+        .completion-title { font-size: 32px; color: #fff; margin-bottom: 15px; font-weight: 700; }
+        .completion-message { color: #94a3b8; font-size: 16px; margin-bottom: 30px; }
+        .report-id { background: rgba(236, 72, 153, 0.1); border: 1px solid rgba(236, 72, 153, 0.3); border-radius: 12px; padding: 15px; margin-bottom: 15px; }
+        .report-id p { color: #cbd5e1; font-size: 14px; margin-bottom: 5px; }
+        .report-id strong { color: #fff; font-size: 18px; }
+        .btn-new-report { width: 100%; padding: 16px; background: linear-gradient(135deg, #ec4899 0%, #a855f7 100%); border: none; border-radius: 12px; color: #fff; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; }
+        .btn-new-report:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(236, 72, 153, 0.4); }
+        .logout-btn { position: fixed; top: 20px; right: 20px; padding: 10px 20px; background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 10px; color: #fca5a5; font-size: 14px; cursor: pointer; transition: all 0.3s ease; z-index: 10; }
+        .logout-btn:hover { background: rgba(239, 68, 68, 0.3); transform: translateY(-2px); }
+        .report-details { margin: 20px 0; padding: 15px; background: rgba(30, 41, 59, 0.3); border-radius: 12px; text-align: left; }
+        .detail-item { margin-bottom: 15px; padding: 10px; background: rgba(236, 72, 153, 0.1); border-left: 3px solid #ec4899; border-radius: 8px; }
+        .detail-item-title { color: #fff; font-weight: 600; margin-bottom: 5px; }
+        .detail-item-time { color: #94a3b8; font-size: 12px; }
+        .detail-item-duration { color: #10b981; font-size: 12px; margin-top: 3px; }
+    </style>
+</head>
+<body>
+    <div id="canvas-container"></div>
+    <button class="logout-btn" onclick="logout()">Cerrar Sesión</button>
+
+    <div class="container">
+        <div class="form-box">
+            <div class="header">
+                <h1>Reporte de Silla ♿</h1>
+            </div>
+
+            <div class="user-info">
+                <span id="userName">Cargando...</span>
+                <span class="role" id="userRole">-</span>
+            </div>
+
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressBar"></div>
+            </div>
+
+            <div class="step-counter" id="stepCounter">Información de Vuelo</div>
+
+            <!-- Step 0: Flight Information -->
+            <div class="question-card active" data-step="0">
+                <h2 class="question-title">Información de Vuelo</h2>
+                <p class="question-subtitle">Seleccione tipo, aerolínea e ingrese número de vuelo</p>
+                
+                <div style="margin: 20px 0;">
+                    <label>Tipo de Servicio</label>
+                    <select id="airlineType" class="input-field">
+                        <option value="">Seleccione tipo</option>
+                        <option value="Abordaje">Abordaje</option>
+                        <option value="Desabordaje">Desabordaje</option>
+                    </select>
+                </div>
+
+                <div style="margin: 20px 0;">
+                    <label>Aerolínea</label>
+                    <select id="airlineSelect" class="input-field">
+                        <option value="">Seleccione aerolínea</option>
+                        <option value="B6">Jetblue</option>
+                        <option value="AS">Alaska</option>
+                        <option value="E9">Iberojet</option>
+                        <option value="VB">Aerobus</option>
+                        <option value="AA">American</option>
+                    </select>
+                </div>
+
+                <div style="margin: 20px 0;">
+                    <label># de Vuelo</label>
+                    <input type="text" id="flightNumber" class="input-field" placeholder="Ej: 1234">
+                </div>
+                
+                <button class="continue-btn" onclick="submitFlightInfo()">Continuar</button>
+            </div>
+
+            <!-- Steps 1-5: MISMOS QUE EL ORIGINAL -->
+            <div class="question-card" data-step="1">
+                <h2 class="question-title">Silla Asignada 🦽</h2>
+                <p class="question-subtitle">Servicio de silla de ruedas asignado</p>
+                <div class="checkbox-container">
+                    <label class="custom-checkbox">
+                        <input type="checkbox" onchange="nextStep(1, 'Silla Asignada')">
+                        <span class="checkmark"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                    </label>
+                </div>
+                <span class="checkbox-label">Marcar como completado</span>
+            </div>
+
+            <div class="question-card" data-step="2">
+                <h2 class="question-title">Inicio de Servicio 👤</h2>
+                <p class="question-subtitle">He recogido al pasajero</p>
+                <div class="checkbox-container">
+                    <label class="custom-checkbox">
+                        <input type="checkbox" onchange="nextStep(2, 'Inicio de Servicio')">
+                        <span class="checkmark"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                    </label>
+                </div>
+                <span class="checkbox-label">Marcar como completado</span>
+            </div>
+
+            <div class="question-card" data-step="3">
+                <h2 class="question-title">Finalización de Servicio ✅</h2>
+                <p class="question-subtitle">He dejado al pasajero</p>
+                <div class="checkbox-container">
+                    <label class="custom-checkbox">
+                        <input type="checkbox" onchange="nextStep(3, 'Finalización de Servicio')">
+                        <span class="checkmark"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                    </label>
+                </div>
+                <span class="checkbox-label">Marcar como completado</span>
+            </div>
+
+            <div class="question-card" data-step="4">
+                <h2 class="question-title">Reporte de Incidente 📸</h2>
+                <p class="question-subtitle">¿Hubo algún incidente? (Opcional)</p>
+                <div style="margin: 20px 0;">
+                    <label>Descripción del Incidente</label>
+                    <textarea id="incidentDescription" class="input-field" placeholder="Describa el incidente (opcional)" rows="4" style="resize: vertical; font-family: inherit;"></textarea>
+                </div>
+                <div class="photo-upload-container">
+                    <label class="photo-upload-btn">
+                        <div style="font-size: 40px; margin-bottom: 10px;">📷</div>
+                        <div style="font-size: 14px; font-weight: 600;">Agregar Foto (Opcional)</div>
+                        <div style="font-size: 12px; margin-top: 5px;">Click para seleccionar imagen</div>
+                        <input type="file" id="incidentPhoto" accept="image/*" onchange="previewPhoto(this)">
+                    </label>
+                    <div class="photo-preview" id="photoPreview">
+                        <img id="previewImage" src="" alt="Vista previa">
+                    </div>
+                </div>
+                <button class="continue-btn" onclick="submitIncident()">Continuar</button>
+            </div>
+
+            <div class="question-card" data-step="5">
+                <h2 class="question-title">Retorno de Silla 🔄</h2>
+                <p class="question-subtitle">Silla de ruedas devuelta</p>
+                <div class="checkbox-container">
+                    <label class="custom-checkbox">
+                        <input type="checkbox" onchange="nextStep(5, 'Retorno de Silla')">
+                        <span class="checkmark"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                    </label>
+                </div>
+                <span class="checkbox-label">Marcar como completado</span>
+            </div>
+
+            <!-- Completion Screen: MISMA QUE EL ORIGINAL -->
+            <div class="completion-screen">
+                <div class="completion-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+                <h2 class="completion-title">¡Reporte Creado!</h2>
+                <p class="completion-message">El servicio de silla de ruedas se ha completado exitosamente</p>
+                <div class="report-id"><p>Número de Reporte:</p><strong id="reportId">-</strong></div>
+                <div class="report-id"><p>Número de Vuelo:</p><strong id="reportFlight">-</strong></div>
+                <div class="report-id"><p>Hora de Asignación:</p><strong id="reportAssignTime">-</strong></div>
+                <div class="report-id"><p>Hora de Inicio de Servicio:</p><strong id="reportStartTime">-</strong></div>
+                <div class="report-id"><p>Hora de Finalización:</p><strong id="reportEndTime">-</strong></div>
+                <div class="report-details" id="reportDetails"></div>
+                <button class="btn-new-report" onclick="newReport()">Nuevo Reporte</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Three.js background (MISMO QUE EL ORIGINAL)
+        const container = document.getElementById('canvas-container');
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        container.appendChild(renderer.domElement);
+        const particlesGeometry = new THREE.BufferGeometry();
+        const particlesCount = 2000;
+        const posArray = new Float32Array(particlesCount * 3);
+        for(let i = 0; i < particlesCount * 3; i++) { posArray[i] = (Math.random() - 0.5) * 100; }
+        particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+        const particlesMaterial = new THREE.PointsMaterial({ size: 0.08, color: 0xec4899, transparent: true, opacity: 0.6, blending: THREE.AdditiveBlending });
+        const particlesMesh = new THREE.Points(particlesGeometry, particlesMaterial);
+        scene.add(particlesMesh);
+        camera.position.z = 30;
+        function animate() { requestAnimationFrame(animate); particlesMesh.rotation.y += 0.0005; particlesMesh.rotation.x += 0.0003; renderer.render(scene, camera); }
+        animate();
+        window.addEventListener('resize', () => { camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); });
+
+        // Check authentication
+        const userData = sessionStorage.getItem('user');
+        if (!userData) {
+            window.location.href = 'sillas2.html';
+        } else {
+            const user = JSON.parse(userData);
+            document.getElementById('userName').textContent = user.username;
+            document.getElementById('userRole').textContent = user.role;
+        }
+
+        // Apps Script URL
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbynVr5ztz5pW1UG4rjGj0P9D6MuNfclmlCvMVxDIm93v-tj9OYqk2dz4D83I2I9jts5/exec';
+
+        const userDataString = sessionStorage.getItem('user');
+        let wheelchairUser = JSON.parse(userDataString);
+
+        let currentStep = 0;
+        const totalSteps = 5;
+        let flightNumberValue = '';
+        let serviceType = ''; // ✅ NUEVO
+        let assignmentTimestamp = '';
+        let startServiceTimestamp = '';
+        let endServiceTimestamp = '';
+        let wheelchairResponses = [];
+        let incidentPhotoBase64 = '';
+
+        function submitFlightInfo() {
+            const airlineType = document.getElementById('airlineType').value;
+            const airlineCode = document.getElementById('airlineSelect').value;
+            const flightNumber = document.getElementById('flightNumber').value.trim();
+            
+            if (!airlineType) { alert('Por favor seleccione el tipo de servicio'); return; }
+            if (!airlineCode) { alert('Por favor seleccione una aerolínea'); return; }
+            if (!flightNumber) { alert('Por favor ingrese el número de vuelo'); return; }
+            
+            flightNumberValue = airlineCode + ' ' + flightNumber;
+            serviceType = airlineType; // ✅ GUARDAR
+            
+            console.log('✈️ Vuelo:', flightNumberValue);
+            console.log('📋 Tipo:', serviceType);
+            
+            sendToSheet(0, 'Vuelo: ' + flightNumberValue, new Date().toISOString());
+            
+            document.querySelector('[data-step="0"]').classList.remove('active');
+            setTimeout(() => { currentStep = 1; document.querySelector('[data-step="1"]').classList.add('active'); updateProgress(); }, 300);
+        }
+
+        function nextStep(step, item) {
+            const timestamp = new Date().toISOString();
+            console.log(`✅ ${item} - ${timestamp}`);
+            if (step === 1) assignmentTimestamp = timestamp;
+            else if (step === 2) startServiceTimestamp = timestamp;
+            else if (step === 3) endServiceTimestamp = timestamp;
+            wheelchairResponses.push({ step, item, timestamp });
+            sendToSheet(step, item, timestamp);
+            if (step < totalSteps) {
+                document.querySelector(`[data-step="${step}"]`).classList.remove('active');
+                setTimeout(() => { currentStep = step + 1; document.querySelector(`[data-step="${currentStep}"]`).classList.add('active'); updateProgress(); }, 300);
+            } else { completeReport(); }
+        }
+
+        function submitIncident() {
+            const description = document.getElementById('incidentDescription').value.trim();
+            const timestamp = new Date().toISOString();
+            const incidentData = description || 'Sin incidentes reportados';
+            console.log('📝 Incidente:', incidentData);
+            wheelchairResponses.push({ step: 4, item: 'Reporte de Incidente', timestamp, description: incidentData, hasPhoto: incidentPhotoBase64 !== '' });
+            sendToSheet(4, 'Incidente: ' + incidentData, timestamp);
+            document.querySelector('[data-step="4"]').classList.remove('active');
+            setTimeout(() => { currentStep = 5; document.querySelector('[data-step="5"]').classList.add('active'); updateProgress(); }, 300);
+        }
+
+        function previewPhoto(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('previewImage').src = e.target.result;
+                    document.getElementById('photoPreview').style.display = 'block';
+                    incidentPhotoBase64 = e.target.result;
+                    console.log('📸 Foto cargada');
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function updateProgress() {
+            const progress = (currentStep / totalSteps) * 100;
+            document.getElementById('progressBar').style.width = progress + '%';
+            const stepNames = ['Información de Vuelo', 'Silla Asignada', 'Inicio de Servicio', 'Finalización de Servicio', 'Reporte de Incidente', 'Retorno de Silla'];
+            document.getElementById('stepCounter').textContent = stepNames[currentStep] || 'Completado';
+        }
+
+        function sendToSheet(step, item, timestamp) {
+            const callbackName = 'callback' + Date.now();
+            window[callbackName] = function(response) {
+                console.log('Respuesta:', response);
+                if (!response.success) { console.error('Error:', response.message); alert('Error: ' + response.message); }
+                delete window[callbackName];
+                const script = document.getElementById('data-script');
+                if (script) document.body.removeChild(script);
+            };
+
+            let url = SCRIPT_URL + 
+                '?user=' + encodeURIComponent(wheelchairUser.username) +
+                '&role=' + encodeURIComponent(wheelchairUser.role) +
+                '&step=' + step +
+                '&item=' + encodeURIComponent(item) +
+                '&timestamp=' + encodeURIComponent(timestamp) +
+                '&callback=' + callbackName;
+
+            if (step === 0) { url += '&serviceType=' + encodeURIComponent(serviceType); } // ✅ ENVIAR
+
+            console.log('📤 Datos:', { user: wheelchairUser.username, step, item, timestamp, serviceType: step === 0 ? serviceType : 'N/A' });
+
+            const script = document.createElement('script');
+            script.id = 'data-script';
+            script.src = url;
+            script.onerror = function() { console.error('Error de conexión'); alert('Error de conexión. Verifica tu URL.'); delete window[callbackName]; };
+            document.body.appendChild(script);
+        }
+
+        function completeReport() {
+            const reportId = 'WCH-' + Date.now();
+            console.log('🎉 Completado');
+            document.querySelectorAll('.question-card').forEach(card => card.classList.remove('active'));
+            setTimeout(() => {
+                document.getElementById('reportId').textContent = reportId;
+                document.getElementById('reportFlight').textContent = flightNumberValue;
+                document.getElementById('reportAssignTime').textContent = formatTimestamp(assignmentTimestamp);
+                document.getElementById('reportStartTime').textContent = formatTimestamp(startServiceTimestamp);
+                document.getElementById('reportEndTime').textContent = formatTimestamp(endServiceTimestamp);
+                let detailsHTML = '';
+                wheelchairResponses.forEach((response, index) => {
+                    let baseTimestamp = assignmentTimestamp;
+                    const timeDiff = calculateTimeDifference(baseTimestamp, response.timestamp);
+                    let itemText = `${index + 1}. ${response.item}`;
+                    if (response.description) itemText += `<br><span style="font-size: 12px; color: #94a3b8;">${response.description}</span>`;
+                    if (response.hasPhoto) itemText += `<br><span style="font-size: 12px; color: #10b981;">📸 Foto adjunta</span>`;
+                    detailsHTML += `<div class="detail-item"><div class="detail-item-title">${itemText}</div><div class="detail-item-time">⏱️ ${formatTimestamp(response.timestamp)}</div><div class="detail-item-duration">⏳ ${timeDiff}</div></div>`;
+                });
+                document.getElementById('reportDetails').innerHTML = detailsHTML;
+                document.querySelector('.completion-screen').classList.add('active');
+                document.getElementById('progressBar').style.width = '100%';
+                document.getElementById('stepCounter').textContent = 'Completado';
+            }, 300);
+        }
+
+        function calculateTimeDifference(startTime, endTime) {
+            const start = new Date(startTime);
+            const end = new Date(endTime);
+            const diffMs = end - start;
+            const hours = Math.floor(diffMs / (1000 * 60 * 60));
+            const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diffMs % (1000 * 60)) / 1000);
+            const parts = [];
+            if (hours > 0) parts.push(`${hours}h`);
+            if (minutes > 0) parts.push(`${minutes}m`);
+            if (seconds > 0 || parts.length === 0) parts.push(`${seconds}s`);
+            return '+' + parts.join(' ');
+        }
+
+        function formatTimestamp(timestamp) {
+            const date = new Date(timestamp);
+            return date.toLocaleString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        }
+
+        function newReport() {
+            currentStep = 0;
+            flightNumberValue = '';
+            serviceType = ''; // ✅ RESET
+            assignmentTimestamp = '';
+            startServiceTimestamp = '';
+            endServiceTimestamp = '';
+            wheelchairResponses = [];
+            incidentPhotoBase64 = '';
+            document.getElementById('airlineType').value = '';
+            document.getElementById('airlineSelect').value = '';
+            document.getElementById('flightNumber').value = '';
+            document.getElementById('incidentDescription').value = '';
+            document.getElementById('incidentPhoto').value = '';
+            document.getElementById('photoPreview').style.display = 'none';
+            document.querySelector('.completion-screen').classList.remove('active');
+            document.querySelector('[data-step="0"]').classList.add('active');
+            document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+            document.getElementById('progressBar').style.width = '0%';
+            document.getElementById('stepCounter').textContent = 'Información de Vuelo';
+        }
+
+        function logout() {
+            sessionStorage.removeItem('user');
+            window.location.href = 'sillas.html';
+        }
+    </script>
+</body>
+</html>
