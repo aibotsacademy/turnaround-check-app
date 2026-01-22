@@ -1,1 +1,406 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Admin - Sillas de Ruedas</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: #0a0e27; color: #fff; overflow-x: hidden; }
+        #canvas-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
+        .container { position: relative; z-index: 2; max-width: 1600px; margin: 0 auto; padding: 20px; }
+        
+        .header { background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(20px); border: 1px solid rgba(236, 72, 153, 0.3); border-radius: 16px; padding: 25px 30px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+        .header h1 { font-size: 28px; background: linear-gradient(135deg, #ec4899 0%, #a855f7 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .header-info { display: flex; gap: 20px; align-items: center; }
+        .admin-badge { background: linear-gradient(135deg, #ec4899 0%, #a855f7 100%); padding: 8px 16px; border-radius: 8px; font-weight: 600; font-size: 14px; }
+        .refresh-btn, .logout-btn { padding: 10px 20px; background: rgba(236, 72, 153, 0.2); border: 1px solid rgba(236, 72, 153, 0.3); border-radius: 8px; color: #ec4899; cursor: pointer; transition: all 0.3s ease; font-size: 14px; font-weight: 600; }
+        .refresh-btn:hover, .logout-btn:hover { background: rgba(236, 72, 153, 0.3); transform: translateY(-2px); }
 
+        .filters-section { background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(20px); border: 1px solid rgba(236, 72, 153, 0.3); border-radius: 16px; padding: 25px; margin-bottom: 30px; }
+        .filters-title { font-size: 20px; margin-bottom: 20px; color: #ec4899; font-weight: 600; }
+        .filters-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .filter-group { display: flex; flex-direction: column; gap: 8px; }
+        .filter-label { color: #cbd5e1; font-size: 14px; font-weight: 500; }
+        .filter-input, .filter-select { padding: 12px 16px; background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(236, 72, 153, 0.3); border-radius: 8px; color: #fff; font-size: 14px; outline: none; transition: all 0.3s ease; }
+        .filter-input:focus, .filter-select:focus { border-color: #ec4899; background: rgba(30, 41, 59, 0.8); }
+        .filter-select { cursor: pointer; }
+        .filter-select option { background: #1e293b; color: #fff; }
+        .quick-filters { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 15px; }
+        .quick-filter-btn { padding: 8px 16px; background: rgba(236, 72, 153, 0.1); border: 1px solid rgba(236, 72, 153, 0.3); border-radius: 8px; color: #ec4899; cursor: pointer; transition: all 0.3s ease; font-size: 13px; font-weight: 500; }
+        .quick-filter-btn:hover, .quick-filter-btn.active { background: linear-gradient(135deg, #ec4899 0%, #a855f7 100%); color: #fff; border-color: transparent; }
+        .apply-filters-btn { padding: 12px 24px; background: linear-gradient(135deg, #ec4899 0%, #a855f7 100%); border: none; border-radius: 8px; color: #fff; cursor: pointer; font-size: 14px; font-weight: 600; transition: all 0.3s ease; margin-top: 15px; }
+        .apply-filters-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(236, 72, 153, 0.4); }
+
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .stat-card { background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(20px); border: 1px solid rgba(236, 72, 153, 0.3); border-radius: 16px; padding: 25px; transition: all 0.3s ease; }
+        .stat-card:hover { transform: translateY(-5px); box-shadow: 0 10px 30px rgba(236, 72, 153, 0.3); }
+        .stat-icon { font-size: 32px; margin-bottom: 10px; }
+        .stat-value { font-size: 36px; font-weight: 700; background: linear-gradient(135deg, #ec4899 0%, #a855f7 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 5px; }
+        .stat-label { color: #94a3b8; font-size: 14px; }
+
+        .charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(500px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .chart-card { background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(20px); border: 1px solid rgba(236, 72, 153, 0.3); border-radius: 16px; padding: 25px; }
+        .chart-card.full-width { grid-column: 1 / -1; }
+        .chart-title { font-size: 18px; font-weight: 600; margin-bottom: 20px; color: #ec4899; }
+        .chart-container { position: relative; height: 300px; }
+        .loading { display: flex; justify-content: center; align-items: center; height: 200px; color: #94a3b8; font-size: 16px; }
+
+        @media (max-width: 768px) {
+            .charts-grid { grid-template-columns: 1fr; }
+            .filters-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div id="canvas-container"></div>
+
+    <div class="container">
+        <div class="header">
+            <div>
+                <h1>📊 Dashboard Admin</h1>
+                <p style="color: #94a3b8; font-size: 14px; margin-top: 5px;">Sistema de Sillas de Ruedas</p>
+            </div>
+            <div class="header-info">
+                <span class="admin-badge" id="adminName">Admin</span>
+                <button class="refresh-btn" onclick="loadDashboard()">🔄 Actualizar</button>
+                <button class="logout-btn" onclick="logout()">Cerrar Sesión</button>
+            </div>
+        </div>
+
+        <div class="filters-section">
+            <h2 class="filters-title">🔍 Filtros Avanzados</h2>
+            
+            <div class="quick-filters">
+                <button class="quick-filter-btn active" onclick="setQuickFilter('today')">Hoy</button>
+                <button class="quick-filter-btn" onclick="setQuickFilter('week')">Esta Semana</button>
+                <button class="quick-filter-btn" onclick="setQuickFilter('month')">Este Mes</button>
+                <button class="quick-filter-btn" onclick="setQuickFilter('all')">Todos</button>
+            </div>
+
+            <div class="filters-grid">
+                <div class="filter-group">
+                    <label class="filter-label">Fecha Desde</label>
+                    <input type="date" id="filterFechaDesde" class="filter-input">
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Fecha Hasta</label>
+                    <input type="date" id="filterFechaHasta" class="filter-input">
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Aerolínea</label>
+                    <select id="filterAerolinea" class="filter-select">
+                        <option value="">Todas</option>
+                        <option value="B6">Jetblue</option>
+                        <option value="AS">Alaska</option>
+                        <option value="E9">Iberojet</option>
+                        <option value="VB">Aerobus</option>
+                        <option value="AA">American</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Tipo de Servicio</label>
+                    <select id="filterTipoServicio" class="filter-select">
+                        <option value="">Todos</option>
+                        <option value="Abordaje">Abordaje</option>
+                        <option value="Desabordaje">Desabordaje</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Staff</label>
+                    <input type="text" id="filterStaff" class="filter-input" placeholder="Nombre del staff">
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">Franja Horaria</label>
+                    <select id="filterFranjaHoraria" class="filter-select">
+                        <option value="">Todas</option>
+                        <option value="madrugada">Madrugada (00:00-05:59)</option>
+                        <option value="mañana">Mañana (06:00-11:59)</option>
+                        <option value="tarde">Tarde (12:00-17:59)</option>
+                        <option value="noche">Noche (18:00-23:59)</option>
+                    </select>
+                </div>
+            </div>
+
+            <button class="apply-filters-btn" onclick="applyFilters()">Aplicar Filtros</button>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card"><div class="stat-icon">♿</div><div class="stat-value" id="statTotal">0</div><div class="stat-label">Total Servicios</div></div>
+            <div class="stat-card"><div class="stat-icon">✅</div><div class="stat-value" id="statCompletados">0</div><div class="stat-label">Completados</div></div>
+            <div class="stat-card"><div class="stat-icon">⏱️</div><div class="stat-value" id="statEnProceso">0</div><div class="stat-label">En Proceso</div></div>
+            <div class="stat-card"><div class="stat-icon">⚡</div><div class="stat-value" id="statPromedio">0</div><div class="stat-label">Promedio (min)</div></div>
+        </div>
+
+        <div class="charts-grid">
+            <div class="chart-card"><h3 class="chart-title">Servicios Totales por Hora</h3><div class="chart-container"><canvas id="chartServiciosPorHora"></canvas></div></div>
+            <div class="chart-card"><h3 class="chart-title">Tipo de Servicio x Franja Horaria</h3><div class="chart-container"><canvas id="chartTipoXFranja"></canvas></div></div>
+            <div class="chart-card full-width"><h3 class="chart-title">Duración Total del Staff (Top 10)</h3><div class="chart-container"><canvas id="chartDuracionStaff"></canvas></div></div>
+            <div class="chart-card"><h3 class="chart-title">Cantidad de Sillas por Staff</h3><div class="chart-container"><canvas id="chartSillasStaff"></canvas></div></div>
+            <div class="chart-card"><h3 class="chart-title">Servicios x Franja Horaria</h3><div class="chart-container"><canvas id="chartServiciosFranja"></canvas></div></div>
+            <div class="chart-card"><h3 class="chart-title">Cantidad Sillas x Vuelo (Top 10)</h3><div class="chart-container"><canvas id="chartSillasVuelo"></canvas></div></div>
+            <div class="chart-card"><h3 class="chart-title">Cantidad Sillas x Aerolínea</h3><div class="chart-container"><canvas id="chartSillasAerolinea"></canvas></div></div>
+        </div>
+    </div>
+
+    <script>
+        // Three.js
+        const container = document.getElementById('canvas-container');
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        container.appendChild(renderer.domElement);
+        const particlesGeometry = new THREE.BufferGeometry();
+        const particlesCount = 2000;
+        const posArray = new Float32Array(particlesCount * 3);
+        for(let i = 0; i < particlesCount * 3; i++) posArray[i] = (Math.random() - 0.5) * 100;
+        particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+        const particlesMaterial = new THREE.PointsMaterial({ size: 0.08, color: 0xec4899, transparent: true, opacity: 0.6, blending: THREE.AdditiveBlending });
+        const particlesMesh = new THREE.Points(particlesGeometry, particlesMaterial);
+        scene.add(particlesMesh);
+        camera.position.z = 30;
+        function animate() { requestAnimationFrame(animate); particlesMesh.rotation.y += 0.0005; particlesMesh.rotation.x += 0.0003; renderer.render(scene, camera); }
+        animate();
+        window.addEventListener('resize', () => { camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); });
+
+        // Auth
+        const userData = sessionStorage.getItem('user');
+        if (!userData) {
+            window.location.href = 'admin.html';
+        } else {
+            const user = JSON.parse(userData);
+            document.getElementById('adminName').textContent = user.username || 'Admin';
+        }
+
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxUBk_-yW99Fw-yExqrTtXZulen78EbWfHhs6iSG7GYZom-d7Aa16wLQy8QrgHp9c7Z/exec';
+
+        let allData = [];
+        let filteredData = [];
+        let charts = {};
+
+        const COLORS = {
+            primary: '#ec4899',
+            secondary: '#a855f7',
+            gradient: ['#ec4899', '#a855f7', '#8b5cf6', '#7c3aed', '#6d28d9', '#10b981', '#f59e0b']
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            setTodayFilter();
+            loadDashboard();
+        });
+
+        function setTodayFilter() {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('filterFechaDesde').value = today;
+            document.getElementById('filterFechaHasta').value = today;
+        }
+
+        function setQuickFilter(type) {
+            document.querySelectorAll('.quick-filter-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            const today = new Date();
+            const desde = new Date();
+            switch(type) {
+                case 'today': break;
+                case 'week': desde.setDate(today.getDate() - 7); break;
+                case 'month': desde.setMonth(today.getMonth() - 1); break;
+                case 'all': desde.setFullYear(2020); break;
+            }
+            document.getElementById('filterFechaDesde').value = desde.toISOString().split('T')[0];
+            document.getElementById('filterFechaHasta').value = today.toISOString().split('T')[0];
+            applyFilters();
+        }
+
+        async function loadDashboard() {
+            try {
+                console.log('📊 Cargando...');
+                const response = await fetch(SCRIPT_URL);
+                const data = await response.json();
+                console.log('✅ Datos:', data);
+                allData = data;
+                applyFilters();
+            } catch (error) {
+                console.error('❌ Error:', error);
+                alert('Error al cargar datos');
+            }
+        }
+
+        function applyFilters() {
+            const fechaDesde = document.getElementById('filterFechaDesde').value;
+            const fechaHasta = document.getElementById('filterFechaHasta').value;
+            const aerolinea = document.getElementById('filterAerolinea').value;
+            const tipoServicio = document.getElementById('filterTipoServicio').value;
+            const staff = document.getElementById('filterStaff').value.toLowerCase();
+            const franjaHoraria = document.getElementById('filterFranjaHoraria').value;
+
+            filteredData = allData.filter(item => {
+                if (fechaDesde && item.timestamp) {
+                    const itemDate = new Date(item.timestamp).toISOString().split('T')[0];
+                    if (itemDate < fechaDesde) return false;
+                }
+                if (fechaHasta && item.timestamp) {
+                    const itemDate = new Date(item.timestamp).toISOString().split('T')[0];
+                    if (itemDate > fechaHasta) return false;
+                }
+                if (aerolinea && item.aerolinea !== aerolinea) return false;
+                if (tipoServicio && item.tipoServicio !== tipoServicio) return false;
+                if (staff && !item.usuario.toLowerCase().includes(staff)) return false;
+                if (franjaHoraria && item.franjaHoraria !== franjaHoraria) return false;
+                return true;
+            });
+
+            console.log(`✅ Filtrados: ${filteredData.length} de ${allData.length}`);
+            updateStats();
+            updateCharts();
+        }
+
+        function updateStats() {
+            const total = filteredData.length;
+            const completados = filteredData.filter(d => d.estado === 'Completado').length;
+            const enProceso = filteredData.filter(d => d.estado === 'En Proceso').length;
+            const duraciones = filteredData.filter(d => d.duracionTotal).map(d => parseFloat(d.duracionTotal));
+            const promedio = duraciones.length > 0 ? Math.round(duraciones.reduce((a, b) => a + b, 0) / duraciones.length) : 0;
+
+            document.getElementById('statTotal').textContent = total;
+            document.getElementById('statCompletados').textContent = completados;
+            document.getElementById('statEnProceso').textContent = enProceso;
+            document.getElementById('statPromedio').textContent = promedio;
+        }
+
+        function updateCharts() {
+            createServiciosPorHoraChart();
+            createTipoXFranjaChart();
+            createDuracionStaffChart();
+            createSillasStaffChart();
+            createServiciosFranjaChart();
+            createSillasVueloChart();
+            createSillasAerolineaChart();
+        }
+
+        function createServiciosPorHoraChart() {
+            const ctx = document.getElementById('chartServiciosPorHora');
+            const horas = {};
+            for (let i = 0; i < 24; i++) horas[i] = 0;
+            filteredData.forEach(item => {
+                if (item.horaDia !== undefined) horas[item.horaDia]++;
+            });
+            if (charts.serviciosPorHora) charts.serviciosPorHora.destroy();
+            charts.serviciosPorHora = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: Object.keys(horas).map(h => h + ':00'),
+                    datasets: [{ label: 'Servicios', data: Object.values(horas), borderColor: COLORS.primary, backgroundColor: COLORS.primary + '20', tension: 0.4, fill: true }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { color: '#94a3b8' }, grid: { color: 'rgba(148,163,184,0.1)' } }, x: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(148,163,184,0.1)' } } } }
+            });
+        }
+
+        function createTipoXFranjaChart() {
+            const ctx = document.getElementById('chartTipoXFranja');
+            const franjas = { madrugada: {}, mañana: {}, tarde: {}, noche: {} };
+            filteredData.forEach(item => {
+                const franja = item.franjaHoraria || 'mañana';
+                const tipo = item.tipoServicio || 'No especificado';
+                if (!franjas[franja][tipo]) franjas[franja][tipo] = 0;
+                franjas[franja][tipo]++;
+            });
+            const tipos = [...new Set(filteredData.map(d => d.tipoServicio || 'No especificado'))];
+            const datasets = tipos.map((tipo, index) => ({ label: tipo, data: Object.keys(franjas).map(f => franjas[f][tipo] || 0), backgroundColor: COLORS.gradient[index % COLORS.gradient.length] }));
+            if (charts.tipoXFranja) charts.tipoXFranja.destroy();
+            charts.tipoXFranja = new Chart(ctx, {
+                type: 'bar',
+                data: { labels: ['Madrugada', 'Mañana', 'Tarde', 'Noche'], datasets: datasets },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#cbd5e1' } } }, scales: { y: { beginAtZero: true, ticks: { color: '#94a3b8' }, grid: { color: 'rgba(148,163,184,0.1)' } }, x: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(148,163,184,0.1)' } } } }
+            });
+        }
+
+        function createDuracionStaffChart() {
+            const ctx = document.getElementById('chartDuracionStaff');
+            const staffDuracion = {};
+            filteredData.forEach(item => {
+                const usuario = item.usuario || 'Desconocido';
+                const duracion = parseFloat(item.duracionTotal) || 0;
+                if (!staffDuracion[usuario]) staffDuracion[usuario] = 0;
+                staffDuracion[usuario] += duracion;
+            });
+            const sorted = Object.entries(staffDuracion).sort((a, b) => b[1] - a[1]).slice(0, 10);
+            if (charts.duracionStaff) charts.duracionStaff.destroy();
+            charts.duracionStaff = new Chart(ctx, {
+                type: 'bar',
+                data: { labels: sorted.map(s => s[0]), datasets: [{ label: 'Duración Total (min)', data: sorted.map(s => Math.round(s[1])), backgroundColor: COLORS.gradient }] },
+                options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true, ticks: { color: '#94a3b8' }, grid: { color: 'rgba(148,163,184,0.1)' } }, y: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(148,163,184,0.1)' } } } }
+            });
+        }
+
+        function createSillasStaffChart() {
+            const ctx = document.getElementById('chartSillasStaff');
+            const staffSillas = {};
+            filteredData.forEach(item => {
+                const usuario = item.usuario || 'Desconocido';
+                staffSillas[usuario] = (staffSillas[usuario] || 0) + 1;
+            });
+            const sorted = Object.entries(staffSillas).sort((a, b) => b[1] - a[1]).slice(0, 10);
+            if (charts.sillasStaff) charts.sillasStaff.destroy();
+            charts.sillasStaff = new Chart(ctx, {
+                type: 'doughnut',
+                data: { labels: sorted.map(s => s[0]), datasets: [{ data: sorted.map(s => s[1]), backgroundColor: COLORS.gradient }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#cbd5e1' } } } }
+            });
+        }
+
+        function createServiciosFranjaChart() {
+            const ctx = document.getElementById('chartServiciosFranja');
+            const franjas = { madrugada: 0, mañana: 0, tarde: 0, noche: 0 };
+            filteredData.forEach(item => {
+                const franja = item.franjaHoraria || 'mañana';
+                franjas[franja]++;
+            });
+            if (charts.serviciosFranja) charts.serviciosFranja.destroy();
+            charts.serviciosFranja = new Chart(ctx, {
+                type: 'pie',
+                data: { labels: ['Madrugada', 'Mañana', 'Tarde', 'Noche'], datasets: [{ data: Object.values(franjas), backgroundColor: COLORS.gradient }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { color: '#cbd5e1' } } } }
+            });
+        }
+
+        function createSillasVueloChart() {
+            const ctx = document.getElementById('chartSillasVuelo');
+            const vuelos = {};
+            filteredData.forEach(item => {
+                const vuelo = item.vuelo || 'Desconocido';
+                vuelos[vuelo] = (vuelos[vuelo] || 0) + 1;
+            });
+            const sorted = Object.entries(vuelos).sort((a, b) => b[1] - a[1]).slice(0, 10);
+            if (charts.sillasVuelo) charts.sillasVuelo.destroy();
+            charts.sillasVuelo = new Chart(ctx, {
+                type: 'bar',
+                data: { labels: sorted.map(v => v[0]), datasets: [{ label: 'Cantidad', data: sorted.map(v => v[1]), backgroundColor: COLORS.primary }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { color: '#94a3b8' }, grid: { color: 'rgba(148,163,184,0.1)' } }, x: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(148,163,184,0.1)' } } } }
+            });
+        }
+
+        function createSillasAerolineaChart() {
+            const ctx = document.getElementById('chartSillasAerolinea');
+            const aerolineas = {};
+            filteredData.forEach(item => {
+                const aerolinea = item.aerolinea || 'Desconocido';
+                aerolineas[aerolinea] = (aerolineas[aerolinea] || 0) + 1;
+            });
+            if (charts.sillasAerolinea) charts.sillasAerolinea.destroy();
+            charts.sillasAerolinea = new Chart(ctx, {
+                type: 'bar',
+                data: { labels: Object.keys(aerolineas), datasets: [{ label: 'Cantidad', data: Object.values(aerolineas), backgroundColor: COLORS.gradient }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { color: '#94a3b8' }, grid: { color: 'rgba(148,163,184,0.1)' } }, x: { ticks: { color: '#94a3b8' }, grid: { color: 'rgba(148,163,184,0.1)' } } } }
+            });
+        }
+
+        function logout() {
+            sessionStorage.removeItem('user');
+            window.location.href = 'adminTest.html';
+        }
+    </script>
+</body>
+</html>
