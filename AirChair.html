@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solicitud de Sillas de Ruedas - Aerolíneas</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0a0e27;
+            overflow-x: hidden;
+        }
+
+        #canvas-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        .container {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .form-box {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 24px;
+            padding: 40px;
+            width: 100%;
+            max-width: 600px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5),
+                        0 0 100px rgba(59, 130, 246, 0.1);
+            animation: slideIn 0.6s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            color: #94a3b8;
+            font-size: 14px;
+        }
+
+        .user-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding: 12px 16px;
+            background: rgba(59, 130, 246, 0.1);
+            border-radius: 12px;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+
+        .user-info span {
+            color: #cbd5e1;
+            font-size: 14px;
+        }
+
+        .user-info .airline-badge {
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            padding: 6px 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            color: #fff;
+            font-size: 14px;
+        }
+
+        .logout-btn {
+            background: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: rgba(239, 68, 68, 0.3);
+        }
+
+        .form-section {
+            margin-bottom: 25px;
+        }
+
+        .form-section label {
+            display: block;
+            color: #cbd5e1;
+            font-size: 14px;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .form-section input,
+        .form-section select {
+            width: 100%;
+            padding: 14px 18px;
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 12px;
+            color: #fff;
+            font-size: 15px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .form-section input:focus,
+        .form-section select:focus {
+            border-color: #3b82f6;
+            background: rgba(30, 41, 59, 0.8);
+        }
+
+        .form-section input::placeholder {
+            color: #64748b;
+        }
+
+        select option {
+            background: #1e293b;
+            color: #fff;
+        }
+
+        .passengers-container {
+            display: none;
+            margin-top: 20px;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .passengers-container.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .passenger-card {
+            background: rgba(30, 41, 59, 0.4);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+        }
+
+        .passenger-card h3 {
+            color: #fff;
+            font-size: 16px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .passenger-number {
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            border: none;
+            border-radius: 12px;
+            color: #fff;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(59, 130, 246, 0.4);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .completion-screen {
+            display: none;
+            text-align: center;
+        }
+
+        .completion-screen.active {
+            display: block;
+        }
+
+        .completion-icon {
+            font-size: 72px;
+            margin-bottom: 20px;
+            animation: bounce 1s ease;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+            40% { transform: translateY(-20px); }
+            60% { transform: translateY(-10px); }
+        }
+
+        .completion-title {
+            color: #fff;
+            font-size: 32px;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .completion-subtitle {
+            color: #94a3b8;
+            font-size: 16px;
+            margin-bottom: 30px;
+        }
+
+        .summary-card {
+            background: rgba(30, 41, 59, 0.4);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 16px;
+            padding: 25px;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .summary-title {
+            color: #fff;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(59, 130, 246, 0.1);
+        }
+
+        .summary-item:last-child {
+            border-bottom: none;
+        }
+
+        .summary-label {
+            color: #94a3b8;
+            font-size: 14px;
+        }
+
+        .summary-value {
+            color: #fff;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .request-id {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(139, 92, 246, 0.2) 100%);
+            border: 1px solid rgba(59, 130, 246, 0.5);
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .request-id-label {
+            color: #94a3b8;
+            font-size: 12px;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .request-id-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #3b82f6;
+            letter-spacing: 2px;
+        }
+
+        .passengers-list {
+            margin-top: 15px;
+        }
+
+        .passenger-item {
+            background: rgba(30, 41, 59, 0.3);
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .passenger-item .number {
+            background: rgba(59, 130, 246, 0.3);
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+            color: #3b82f6;
+        }
+
+        .passenger-item .name {
+            color: #cbd5e1;
+            font-size: 14px;
+        }
+
+        .action-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .btn-secondary {
+            padding: 14px 24px;
+            background: rgba(71, 85, 105, 0.3);
+            color: #cbd5e1;
+            border: 1px solid rgba(71, 85, 105, 0.5);
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(71, 85, 105, 0.5);
+        }
+
+        .alert {
+            padding: 12px 16px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .alert.show {
+            display: block;
+        }
+
+        .alert.error {
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+        }
+
+        .alert.success {
+            background: rgba(34, 197, 94, 0.15);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            color: #86efac;
+        }
+    </style>
+</head>
+<body>
+    <div id="canvas-container"></div>
+
+    <div class="container">
+        <div class="form-box">
+            <!-- Header -->
+            <div class="header">
+                <h1>♿ Solicitud de Sillas de Ruedas</h1>
+                <p>Sistema de Asistencia a Pasajeros</p>
+            </div>
+
+            <!-- User Info -->
+            <div class="user-info">
+                <div>
+                    <span id="userDisplay">👤 Cargando...</span>
+                </div>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <span class="airline-badge" id="airlineDisplay">...</span>
+                    <button class="logout-btn" onclick="logout()">🚪 Salir</button>
+                </div>
+            </div>
+
+            <!-- Alert -->
+            <div class="alert" id="alert"></div>
+
+            <!-- Request Form -->
+            <div id="requestForm">
+                <div class="form-section">
+                    <label for="flightNumber">✈️ Número de Vuelo</label>
+                    <input type="text" 
+                           id="flightNumber" 
+                           placeholder="Ej: 1234"
+                           oninput="this.value = this.value.toUpperCase()">
+                </div>
+
+                <div class="form-section">
+                    <label for="wheelchairCount">♿ Cantidad de Sillas de Ruedas</label>
+                    <select id="wheelchairCount" onchange="handleWheelchairCountChange(this.value)">
+                        <option value="">-- Seleccione --</option>
+                        <option value="1">1 Silla</option>
+                        <option value="2">2 Sillas</option>
+                        <option value="3">3 Sillas</option>
+                        <option value="4">4 Sillas</option>
+                        <option value="5">5 Sillas</option>
+                        <option value="6">6 Sillas</option>
+                        <option value="7">7 Sillas</option>
+                        <option value="8">8 Sillas</option>
+                        <option value="9">9 Sillas</option>
+                        <option value="10">10 Sillas</option>
+                    </select>
+                </div>
+
+                <!-- Passengers Container -->
+                <div class="passengers-container" id="passengersContainer">
+                    <h3 style="color: #fff; margin-bottom: 15px;">👥 Información de Pasajeros (Opcional)</h3>
+                    <p style="color: #94a3b8; font-size: 13px; margin-bottom: 15px;">
+                        Puede ingresar los nombres de los pasajeros que requieren asistencia
+                    </p>
+                    <div id="passengersList"></div>
+                </div>
+
+                <button class="btn-primary" onclick="submitRequest()" id="submitBtn">
+                    Enviar Solicitud
+                </button>
+            </div>
+
+            <!-- Completion Screen -->
+            <div class="completion-screen" id="completionScreen">
+                <div class="completion-icon">✅</div>
+                <h2 class="completion-title">¡Solicitud Registrada!</h2>
+                <p class="completion-subtitle">Su solicitud ha sido procesada exitosamente</p>
+
+                <div class="request-id">
+                    <div class="request-id-label">ID de Solicitud</div>
+                    <div class="request-id-value" id="requestIdDisplay">#LOADING...</div>
+                </div>
+
+                <div class="summary-card">
+                    <div class="summary-title">📋 Resumen de la Solicitud</div>
+                    <div class="summary-item">
+                        <span class="summary-label">Aerolínea:</span>
+                        <span class="summary-value" id="summaryAirline"></span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Usuario:</span>
+                        <span class="summary-value" id="summaryUser"></span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Vuelo:</span>
+                        <span class="summary-value" id="summaryFlight"></span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Sillas Solicitadas:</span>
+                        <span class="summary-value" id="summaryWheelchairs"></span>
+                    </div>
+                    <div class="summary-item">
+                        <span class="summary-label">Fecha y Hora:</span>
+                        <span class="summary-value" id="summaryDateTime"></span>
+                    </div>
+                </div>
+
+                <div class="summary-card" id="passengersCard" style="display: none;">
+                    <div class="summary-title">👥 Pasajeros Registrados</div>
+                    <div class="passengers-list" id="summaryPassengersList"></div>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn-primary" onclick="newRequest()">
+                        ➕ Nueva Solicitud
+                    </button>
+                    <button class="btn-secondary" onclick="logout()">
+                        🚪 Cerrar Sesión
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // CONFIGURACIÓN
+        // ============================================
+        const SCRIPT_URL = 'https://script.google.com/macros/s/TU_URL_AQUI/exec';
+
+        // Nombres de aerolíneas
+        const AIRLINE_NAMES = {
+            'B6': 'JetBlue',
+            'AA': 'American Airlines',
+            'AS': 'Alaska Airlines',
+            'E9': 'Iberojet',
+            'AV': 'Avianca'
+        };
+
+        let userData = null;
+        let currentRequestId = '';
+
+        // ============================================
+        // VERIFICAR AUTENTICACIÓN
+        // ============================================
+        window.addEventListener('load', () => {
+            const userDataString = sessionStorage.getItem('user');
+            
+            if (!userDataString) {
+                alert('Por favor inicie sesión primero.');
+                window.location.href = 'login.html';
+                return;
+            }
+
+            try {
+                userData = JSON.parse(userDataString);
+                
+                // Verificar que el rol sea de aerolínea
+                const validRoles = ['B6', 'AA', 'AS', 'E9', 'AV'];
+                if (!validRoles.includes(userData.role)) {
+                    alert('Acceso denegado. Esta sección es solo para aerolíneas.');
+                    window.location.href = 'login.html';
+                    return;
+                }
+
+                // Actualizar UI
+                document.getElementById('userDisplay').textContent = `👤 ${userData.username}`;
+                document.getElementById('airlineDisplay').textContent = AIRLINE_NAMES[userData.role] || userData.role;
+                
+                console.log('✅ Usuario autenticado:', userData);
+            } catch (error) {
+                console.error('❌ Error al parsear datos:', error);
+                alert('Sesión inválida. Por favor inicie sesión nuevamente.');
+                window.location.href = 'login.html';
+            }
+        });
+
+        // ============================================
+        // THREE.JS BACKGROUND
+        // ============================================
+        const container = document.getElementById('canvas-container');
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+        
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        container.appendChild(renderer.domElement);
+
+        const particlesGeometry = new THREE.BufferGeometry();
+        const particlesCount = 3000;
+        const posArray = new Float32Array(particlesCount * 3);
+
+        for(let i = 0; i < particlesCount * 3; i++) {
+            posArray[i] = (Math.random() - 0.5) * 100;
+        }
+
+        particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+
+        const particlesMaterial = new THREE.PointsMaterial({
+            size: 0.08,
+            color: 0x3b82f6,
+            transparent: true,
+            opacity: 0.8,
+            blending: THREE.AdditiveBlending
+        });
+
+        const particlesMesh = new THREE.Points(particlesGeometry, particlesMaterial);
+        scene.add(particlesMesh);
+
+        camera.position.z = 30;
+
+        function animate() {
+            requestAnimationFrame(animate);
+            particlesMesh.rotation.y += 0.001;
+            particlesMesh.rotation.x += 0.0005;
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // ============================================
+        // MANEJO DE FORMULARIO
+        // ============================================
+        function handleWheelchairCountChange(count) {
+            const container = document.getElementById('passengersContainer');
+            const passengersList = document.getElementById('passengersList');
+            
+            if (!count || count === '') {
+                container.classList.remove('active');
+                passengersList.innerHTML = '';
+                return;
+            }
+
+            container.classList.add('active');
+            passengersList.innerHTML = '';
+
+            for (let i = 1; i <= parseInt(count); i++) {
+                const card = document.createElement('div');
+                card.className = 'passenger-card';
+                card.innerHTML = `
+                    <h3>
+                        <span class="passenger-number">${i}</span>
+                        Pasajero ${i}
+                    </h3>
+                    <input type="text" 
+                           id="passenger${i}" 
+                           placeholder="Nombre del pasajero (opcional)"
+                           style="width: 100%; padding: 12px; background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(59, 130, 246, 0.2); border-radius: 10px; color: #fff; font-size: 14px;">
+                `;
+                passengersList.appendChild(card);
+            }
+        }
+
+        // ============================================
+        // ENVIAR SOLICITUD
+        // ============================================
+        function submitRequest() {
+            const flightNumber = document.getElementById('flightNumber').value.trim();
+            const wheelchairCount = document.getElementById('wheelchairCount').value;
+
+            // Validaciones
+            if (!flightNumber) {
+                showAlert('Por favor ingrese el número de vuelo', 'error');
+                return;
+            }
+
+            if (!wheelchairCount) {
+                showAlert('Por favor seleccione la cantidad de sillas', 'error');
+                return;
+            }
+
+            // Recopilar nombres de pasajeros
+            const passengers = [];
+            for (let i = 1; i <= parseInt(wheelchairCount); i++) {
+                const passengerInput = document.getElementById(`passenger${i}`);
+                if (passengerInput) {
+                    const name = passengerInput.value.trim();
+                    if (name) {
+                        passengers.push(name);
+                    }
+                }
+            }
+
+            // Generar ID único
+            currentRequestId = generateRequestId();
+
+            // Preparar datos
+            const requestData = {
+                action: 'saveWheelchairRequest',
+                requestId: currentRequestId,
+                airline: userData.role,
+                airlineName: AIRLINE_NAMES[userData.role] || userData.role,
+                username: userData.username,
+                flightNumber: flightNumber,
+                wheelchairCount: parseInt(wheelchairCount),
+                passengers: passengers,
+                timestamp: new Date().toISOString()
+            };
+
+            console.log('📤 Enviando solicitud:', requestData);
+
+            // Deshabilitar botón
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="loading-spinner"></span>Enviando...';
+
+            // Enviar a Google Sheets
+            sendToGoogleSheets(requestData);
+        }
+
+        // ============================================
+        // ENVIAR A GOOGLE SHEETS
+        // ============================================
+        function sendToGoogleSheets(data) {
+            fetch(SCRIPT_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            })
+            .then(() => {
+                console.log('✅ Solicitud enviada');
+                showCompletionScreen(data);
+            })
+            .catch(error => {
+                console.error('❌ Error:', error);
+                showAlert('Error al enviar la solicitud. Por favor intente nuevamente.', 'error');
+                const submitBtn = document.getElementById('submitBtn');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Enviar Solicitud';
+            });
+        }
+
+        // ============================================
+        // MOSTRAR PANTALLA DE COMPLETADO
+        // ============================================
+        function showCompletionScreen(data) {
+            // Ocultar formulario
+            document.getElementById('requestForm').style.display = 'none';
+            
+            // Mostrar pantalla de completado
+            const completionScreen = document.getElementById('completionScreen');
+            completionScreen.classList.add('active');
+
+            // Actualizar datos
+            document.getElementById('requestIdDisplay').textContent = data.requestId;
+            document.getElementById('summaryAirline').textContent = data.airlineName;
+            document.getElementById('summaryUser').textContent = data.username;
+            document.getElementById('summaryFlight').textContent = data.flightNumber;
+            document.getElementById('summaryWheelchairs').textContent = data.wheelchairCount;
+
+            const now = new Date();
+            const dateTimeStr = now.toLocaleString('es-ES', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            document.getElementById('summaryDateTime').textContent = dateTimeStr;
+
+            // Mostrar pasajeros si hay
+            if (data.passengers && data.passengers.length > 0) {
+                document.getElementById('passengersCard').style.display = 'block';
+                const passengersList = document.getElementById('summaryPassengersList');
+                passengersList.innerHTML = '';
+                
+                data.passengers.forEach((name, index) => {
+                    const item = document.createElement('div');
+                    item.className = 'passenger-item';
+                    item.innerHTML = `
+                        <span class="number">${index + 1}</span>
+                        <span class="name">${name}</span>
+                    `;
+                    passengersList.appendChild(item);
+                });
+            }
+
+            console.log('✅ Solicitud completada:', data.requestId);
+        }
+
+        // ============================================
+        // GENERAR ID ÚNICO
+        // ============================================
+        function generateRequestId() {
+            const date = new Date();
+            const year = date.getFullYear().toString().slice(-2);
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            const seconds = String(date.getSeconds()).padStart(2, '0');
+            const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+            
+            return `WC-${year}${month}${day}-${hours}${minutes}${seconds}-${random}`;
+        }
+
+        // ============================================
+        // NUEVA SOLICITUD
+        // ============================================
+        function newRequest() {
+            // Resetear formulario
+            document.getElementById('flightNumber').value = '';
+            document.getElementById('wheelchairCount').value = '';
+            document.getElementById('passengersContainer').classList.remove('active');
+            document.getElementById('passengersList').innerHTML = '';
+            
+            // Ocultar pantalla de completado
+            document.getElementById('completionScreen').classList.remove('active');
+            
+            // Mostrar formulario
+            document.getElementById('requestForm').style.display = 'block';
+            
+            // Habilitar botón
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Enviar Solicitud';
+        }
+
+        // ============================================
+        // CERRAR SESIÓN
+        // ============================================
+        function logout() {
+            if (confirm('¿Está seguro de que desea cerrar sesión?')) {
+                sessionStorage.removeItem('user');
+                window.location.href = 'login.html';
+            }
+        }
+
+        // ============================================
+        // MOSTRAR ALERTA
+        // ============================================
+        function showAlert(message, type) {
+            const alert = document.getElementById('alert');
+            alert.textContent = message;
+            alert.className = `alert ${type} show`;
+            
+            setTimeout(() => {
+                alert.classList.remove('show');
+            }, 5000);
+        }
+
+        console.log('♿ Sistema de solicitud de sillas de ruedas cargado');
+    </script>
+</body>
+</html>
