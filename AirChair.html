@@ -565,7 +565,7 @@
             
             if (!userDataString) {
                 alert('Por favor inicie sesión primero.');
-                window.location.href = 'login.html';
+                window.location.href = 'loginAir.html';
                 return;
             }
 
@@ -576,7 +576,7 @@
                 const validRoles = ['B6', 'AA', 'AS', 'E9', 'AV'];
                 if (!validRoles.includes(userData.role)) {
                     alert('Acceso denegado. Esta sección es solo para aerolíneas.');
-                    window.location.href = 'login.html';
+                    window.location.href = 'loginAir.html';
                     return;
                 }
 
