@@ -573,7 +573,7 @@
                 userData = JSON.parse(userDataString);
                 
                 // Verificar que el rol sea de aerolínea
-                const validRoles = ['B6', 'AA', 'AS', 'E9', 'AV'];
+                const validRoles = ['B6', 'AA', 'AS', 'E9', 'AV', 'Admin'];
                 if (!validRoles.includes(userData.role)) {
                     alert('Acceso denegado. Esta sección es solo para aerolíneas.');
                     window.location.href = 'loginAir.html';
