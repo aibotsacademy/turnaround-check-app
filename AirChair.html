@@ -588,7 +588,7 @@
             } catch (error) {
                 console.error('❌ Error al parsear datos:', error);
                 alert('Sesión inválida. Por favor inicie sesión nuevamente.');
-                window.location.href = 'login.html';
+                window.location.href = 'loginAir.html';
             }
         });
 
@@ -847,7 +847,7 @@
         function logout() {
             if (confirm('¿Está seguro de que desea cerrar sesión?')) {
                 sessionStorage.removeItem('user');
-                window.location.href = 'login.html';
+                window.location.href = 'loginAir.html';
             }
         }
 
