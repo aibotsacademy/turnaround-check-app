@@ -883,7 +883,7 @@
     </div>
 
     <script>
-        // ⚙️ CONFIGURACIÓN - Cambia esta URL por la de tu Apps Script
+        // ⚙️ CONFIGURACIÓN
         const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxhcGItnz6_LtizfAcRN3V9tYcE1gfARwtoh5HOgyZgBZCc6cn1yGroGW8fm2U6vHYC/exec';
 
         // Variables globales para gráficos
@@ -951,38 +951,459 @@
             mostrarLoading(true);
             
             try {
-                // Simular llamada al Apps Script
-                // En producción, descomenta la siguiente línea y comenta la simulación
-                // const response = await fetch(APPS_SCRIPT_URL);
-                // const data = await response.json();
+                console.log('🔄 Cargando datos del API...');
+                console.log('📡 URL:', APPS_SCRIPT_URL);
                 
-                // SIMULACIÓN DE DATOS - Reemplazar con datos reales del Apps Script
-                const data = simularDatosReporte();
+                const response = await fetch(APPS_SCRIPT_URL);
                 
-                mostrarDatosEnDashboard(data);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const result = await response.json();
+                console.log('✅ Respuesta recibida:', result);
+                
+                if (!result.success) {
+                    throw new Error(result.message || 'Error desconocido del servidor');
+                }
+                
+                // Procesar datos reales del Google Sheet
+                const datosReales = procesarDatosReales(result.data);
+                console.log('📊 Datos procesados:', datosReales);
+                
+                mostrarDatosEnDashboard(datosReales);
                 actualizarFecha();
+                
+                console.log('✅ Dashboard actualizado exitosamente');
+                
             } catch (error) {
-                console.error('Error cargando datos:', error);
-                alert('Error al cargar los datos. Por favor, verifica la configuración del Apps Script.');
+                console.error('❌ Error cargando datos:', error);
+                alert(`Error al cargar los datos:\n\n${error.message}\n\nVerifica:\n1. Que el Apps Script esté funcionando\n2. Que la URL sea correcta\n3. Que el Apps Script esté implementado como Web App\n4. Que el acceso sea público`);
             } finally {
                 mostrarLoading(false);
             }
         }
 
+        function procesarDatosReales(datos) {
+            console.log('🔍 Procesando datos reales del sheet...');
+            console.log('📋 Total de filas recibidas:', datos.length);
+            
+            // Mapeo de columnas según tus especificaciones
+            const COL = {
+                STAFF: 1,           // B (índice 1)
+                NUM_VUELO: 3,       // D (índice 3)
+                ESTATUS: 5,         // F (índice 5)
+                TIPO_SERVICIO: 26,  // AA (índice 26)
+                SERVICIOS: 30,      // AE (índice 30)
+                AEROLINEA: 31,      // AF (índice 31)
+                DIA_SEMANA: 32,     // AG (índice 32)
+                FRANJA_HORARIA: 34, // AI (índice 34)
+                FECHA: 35,          // AJ (índice 35)
+                HORA: 40,           // AO (índice 40)
+                DURACION: 45        // AT (índice 45)
+            };
+            
+            // Filtrar datos del día de hoy
+            const hoy = new Date();
+            hoy.setHours(0, 0, 0, 0);
+            const mañana = new Date(hoy);
+            mañana.setDate(mañana.getDate() + 1);
+            
+            const datosHoy = datos.filter(fila => {
+                const fechaFila = parsearFecha(fila[COL.FECHA]);
+                return fechaFila >= hoy && fechaFila < mañana;
+            });
+            
+            console.log('📅 Servicios de hoy:', datosHoy.length);
+            console.log('📊 Total histórico:', datos.length);
+            
+            // Generar análisis
+            const analisis = {
+                resumenGeneral: analizarResumenGeneral(datosHoy, datos, COL),
+                porAerolinea: analizarPorCategoria(datosHoy, COL.AEROLINEA, COL),
+                porStaff: analizarPorStaff(datosHoy, COL),
+                porFranjaHoraria: analizarPorFranja(datosHoy, COL),
+                porTipoServicio: analizarPorCategoria(datosHoy, COL.TIPO_SERVICIO, COL),
+                porDiaSemana: analizarPorCategoria(datos, COL.DIA_SEMANA, COL),
+                analisisEstatus: analizarEstatus(datosHoy, COL),
+                tendenciasDuracion: analizarTendencias(datosHoy, COL),
+                patronesHorarios: analizarPatronesHorarios(datosHoy, COL),
+                sugerencias: []
+            };
+            
+            // Generar sugerencias
+            analisis.sugerencias = generarSugerencias(analisis);
+            
+            return analisis;
+        }
+
+        function parsearFecha(fecha) {
+            if (!fecha) return new Date(0);
+            
+            if (fecha instanceof Date) {
+                return fecha;
+            }
+            
+            // Intentar parsear diferentes formatos
+            if (typeof fecha === 'string') {
+                // Formato MM/DD/YYYY
+                const partes = fecha.split('/');
+                if (partes.length === 3) {
+                    return new Date(partes[2], partes[0] - 1, partes[1]);
+                }
+                return new Date(fecha);
+            }
+            
+            return new Date(fecha);
+        }
+
+        function analizarResumenGeneral(datosHoy, datosTotal, COL) {
+            const duracionesHoy = datosHoy
+                .map(f => parseFloat(f[COL.DURACION]))
+                .filter(d => !isNaN(d) && d > 0);
+            
+            const completadosHoy = datosHoy.filter(f => 
+                f[COL.ESTATUS] && f[COL.ESTATUS].toString().toLowerCase().includes('completado')
+            ).length;
+            
+            const duracionesTotal = datosTotal
+                .map(f => parseFloat(f[COL.DURACION]))
+                .filter(d => !isNaN(d) && d > 0);
+            
+            const completadosTotal = datosTotal.filter(f => 
+                f[COL.ESTATUS] && f[COL.ESTATUS].toString().toLowerCase().includes('completado')
+            ).length;
+            
+            return {
+                // Métricas de hoy
+                totalServicios: datosHoy.length,
+                completadosHoy: completadosHoy,
+                tasaCompletadosHoy: datosHoy.length > 0 ? ((completadosHoy / datosHoy.length) * 100).toFixed(1) : '0',
+                duracionPromedio: duracionesHoy.length > 0 
+                    ? (duracionesHoy.reduce((a, b) => a + b, 0) / duracionesHoy.length).toFixed(1)
+                    : '0',
+                duracionMin: duracionesHoy.length > 0 ? Math.min(...duracionesHoy).toFixed(1) : '0',
+                duracionMax: duracionesHoy.length > 0 ? Math.max(...duracionesHoy).toFixed(1) : '0',
+                
+                // Métricas totales
+                totalServiciosTotal: datosTotal.length,
+                completadosTotal: completadosTotal,
+                tasaCompletadosTotal: datosTotal.length > 0 ? ((completadosTotal / datosTotal.length) * 100).toFixed(1) : '0',
+                duracionPromedioTotal: duracionesTotal.length > 0 
+                    ? (duracionesTotal.reduce((a, b) => a + b, 0) / duracionesTotal.length).toFixed(1)
+                    : '0'
+            };
+        }
+
+        function analizarPorCategoria(datos, columnIndex, COL) {
+            const categorias = {};
+            
+            datos.forEach(fila => {
+                const categoria = fila[columnIndex] || 'Sin Especificar';
+                
+                if (!categorias[categoria]) {
+                    categorias[categoria] = {
+                        count: 0,
+                        duraciones: [],
+                        completados: 0
+                    };
+                }
+                
+                categorias[categoria].count++;
+                
+                const duracion = parseFloat(fila[COL.DURACION]);
+                if (!isNaN(duracion) && duracion > 0) {
+                    categorias[categoria].duraciones.push(duracion);
+                }
+                
+                if (fila[COL.ESTATUS] && fila[COL.ESTATUS].toString().toLowerCase().includes('completado')) {
+                    categorias[categoria].completados++;
+                }
+            });
+            
+            // Calcular promedios
+            Object.keys(categorias).forEach(cat => {
+                const d = categorias[cat];
+                d.duracionPromedio = d.duraciones.length > 0
+                    ? (d.duraciones.reduce((a, b) => a + b, 0) / d.duraciones.length).toFixed(1)
+                    : '0';
+                d.tasaCompletados = d.count > 0
+                    ? ((d.completados / d.count) * 100).toFixed(1)
+                    : '0';
+            });
+            
+            return categorias;
+        }
+
+        function analizarPorStaff(datos, COL) {
+            const staff = {};
+            
+            datos.forEach(fila => {
+                const nombre = fila[COL.STAFF] || 'Sin Asignar';
+                
+                if (!staff[nombre]) {
+                    staff[nombre] = {
+                        count: 0,
+                        duraciones: [],
+                        completados: 0,
+                        vuelosUnicos: new Set()
+                    };
+                }
+                
+                staff[nombre].count++;
+                
+                const duracion = parseFloat(fila[COL.DURACION]);
+                if (!isNaN(duracion) && duracion > 0) {
+                    staff[nombre].duraciones.push(duracion);
+                }
+                
+                if (fila[COL.ESTATUS] && fila[COL.ESTATUS].toString().toLowerCase().includes('completado')) {
+                    staff[nombre].completados++;
+                }
+                
+                if (fila[COL.NUM_VUELO]) {
+                    staff[nombre].vuelosUnicos.add(fila[COL.NUM_VUELO].toString());
+                }
+            });
+            
+            // Calcular métricas
+            Object.keys(staff).forEach(nombre => {
+                const d = staff[nombre];
+                d.duracionPromedio = d.duraciones.length > 0
+                    ? (d.duraciones.reduce((a, b) => a + b, 0) / d.duraciones.length).toFixed(1)
+                    : '0';
+                d.eficiencia = d.count > 0
+                    ? ((d.completados / d.count) * 100).toFixed(1)
+                    : '0';
+                d.vuelosUnicos = d.vuelosUnicos.size;
+            });
+            
+            return staff;
+        }
+
+        function analizarPorFranja(datos, COL) {
+            const franjas = {};
+            
+            datos.forEach(fila => {
+                const franja = fila[COL.FRANJA_HORARIA] || 'Sin Especificar';
+                
+                if (!franjas[franja]) {
+                    franjas[franja] = {
+                        count: 0,
+                        duraciones: []
+                    };
+                }
+                
+                franjas[franja].count++;
+                
+                const duracion = parseFloat(fila[COL.DURACION]);
+                if (!isNaN(duracion) && duracion > 0) {
+                    franjas[franja].duraciones.push(duracion);
+                }
+            });
+            
+            const total = datos.length;
+            
+            Object.keys(franjas).forEach(franja => {
+                const d = franjas[franja];
+                d.duracionPromedio = d.duraciones.length > 0
+                    ? (d.duraciones.reduce((a, b) => a + b, 0) / d.duraciones.length).toFixed(1)
+                    : '0';
+                d.porcentaje = total > 0
+                    ? ((d.count / total) * 100).toFixed(1)
+                    : '0';
+            });
+            
+            return franjas;
+        }
+
+        function analizarEstatus(datos, COL) {
+            const estatus = {};
+            
+            datos.forEach(fila => {
+                const est = fila[COL.ESTATUS] || 'Sin Especificar';
+                estatus[est] = (estatus[est] || 0) + 1;
+            });
+            
+            const total = datos.length;
+            const resultado = {};
+            
+            Object.keys(estatus).forEach(est => {
+                resultado[est] = {
+                    count: estatus[est],
+                    porcentaje: total > 0
+                        ? ((estatus[est] / total) * 100).toFixed(1)
+                        : '0'
+                };
+            });
+            
+            return resultado;
+        }
+
+        function analizarTendencias(datos, COL) {
+            const duraciones = datos
+                .map(f => parseFloat(f[COL.DURACION]))
+                .filter(d => !isNaN(d) && d > 0)
+                .sort((a, b) => a - b);
+            
+            if (duraciones.length === 0) {
+                return {
+                    mediana: '0',
+                    cuartil1: '0',
+                    cuartil3: '0',
+                    desviacionEstandar: '0',
+                    variabilidad: 'N/A'
+                };
+            }
+            
+            const mediana = calcularMediana(duraciones);
+            const promedio = duraciones.reduce((a, b) => a + b, 0) / duraciones.length;
+            const varianza = duraciones.reduce((sum, val) => sum + Math.pow(val - promedio, 2), 0) / duraciones.length;
+            const desviacion = Math.sqrt(varianza);
+            
+            return {
+                mediana: mediana.toFixed(1),
+                cuartil1: calcularCuartil(duraciones, 0.25).toFixed(1),
+                cuartil3: calcularCuartil(duraciones, 0.75).toFixed(1),
+                desviacionEstandar: desviacion.toFixed(1),
+                variabilidad: desviacion > 10 ? 'Alta' : desviacion > 5 ? 'Media' : 'Baja'
+            };
+        }
+
+        function analizarPatronesHorarios(datos, COL) {
+            const horas = {};
+            
+            datos.forEach(fila => {
+                const hora = fila[COL.HORA];
+                if (hora) {
+                    const horaStr = hora.toString();
+                    const horaSolo = horaStr.includes(':') ? horaStr.split(':')[0] : horaStr;
+                    horas[horaSolo] = (horas[horaSolo] || 0) + 1;
+                }
+            });
+            
+            const horasArray = Object.entries(horas)
+                .map(([h, count]) => ({ hora: h + ':00', servicios: count }))
+                .sort((a, b) => b.servicios - a.servicios);
+            
+            return {
+                horasPico: horasArray.slice(0, 3),
+                horasBajas: horasArray.slice(-3).reverse()
+            };
+        }
+
+        function calcularMediana(arr) {
+            const mitad = Math.floor(arr.length / 2);
+            return arr.length % 2 ? arr[mitad] : (arr[mitad - 1] + arr[mitad]) / 2;
+        }
+
+        function calcularCuartil(arr, percentil) {
+            const index = percentil * (arr.length - 1);
+            const lower = Math.floor(index);
+            const upper = Math.ceil(index);
+            const weight = index - lower;
+            return arr[lower] * (1 - weight) + arr[upper] * weight;
+        }
+
+        function generarSugerencias(analisis) {
+            const sugerencias = [];
+            
+            // Análisis de eficiencia general
+            const duracionPromedio = parseFloat(analisis.resumenGeneral.duracionPromedio);
+            if (duracionPromedio > 30) {
+                sugerencias.push({
+                    tipo: 'Eficiencia Operativa',
+                    nivel: 'Alta',
+                    mensaje: `La duración promedio de ${duracionPromedio} min es elevada. Considere optimizar procesos o aumentar personal en horas pico.`
+                });
+            } else if (duracionPromedio > 0 && duracionPromedio <= 25) {
+                sugerencias.push({
+                    tipo: 'Eficiencia Operativa',
+                    nivel: 'Baja',
+                    mensaje: `La duración promedio de ${duracionPromedio} min está dentro del rango óptimo. Mantener los procedimientos actuales.`
+                });
+            }
+            
+            // Análisis de staff
+            const staffArray = Object.entries(analisis.porStaff);
+            if (staffArray.length > 0) {
+                const mejorStaff = staffArray.sort((a, b) => parseFloat(b[1].eficiencia) - parseFloat(a[1].eficiencia))[0];
+                const peorStaff = staffArray.sort((a, b) => parseFloat(a[1].eficiencia) - parseFloat(b[1].eficiencia))[0];
+                
+                sugerencias.push({
+                    tipo: 'Recursos Humanos',
+                    nivel: 'Media',
+                    mensaje: `${mejorStaff[0]} muestra la mejor eficiencia (${mejorStaff[1].eficiencia}%). Considere capacitaciones basadas en sus mejores prácticas.`
+                });
+                
+                if (parseFloat(peorStaff[1].eficiencia) < 70) {
+                    sugerencias.push({
+                        tipo: 'Capacitación',
+                        nivel: 'Alta',
+                        mensaje: `${peorStaff[0]} requiere atención (eficiencia: ${peorStaff[1].eficiencia}%). Recomendable proporcionar capacitación adicional.`
+                    });
+                }
+            }
+            
+            // Análisis de franjas horarias
+            const franjasArray = Object.entries(analisis.porFranjaHoraria);
+            if (franjasArray.length > 0) {
+                const franjaMasDemandada = franjasArray.sort((a, b) => b[1].count - a[1].count)[0];
+                sugerencias.push({
+                    tipo: 'Planificación',
+                    nivel: 'Alta',
+                    mensaje: `${franjaMasDemandada[0]} es la franja más demandada (${franjaMasDemandada[1].porcentaje}% de servicios). Asegure personal suficiente en este horario.`
+                });
+            }
+            
+            // Análisis de variabilidad
+            if (analisis.tendenciasDuracion.variabilidad === 'Alta') {
+                sugerencias.push({
+                    tipo: 'Estandarización',
+                    nivel: 'Alta',
+                    mensaje: `Alta variabilidad en tiempos de servicio (DE: ${analisis.tendenciasDuracion.desviacionEstandar}). Estandarice procedimientos para mayor consistencia.`
+                });
+            }
+            
+            // Análisis de tasa de completados
+            const tasaCompletados = parseFloat(analisis.resumenGeneral.tasaCompletadosHoy);
+            if (tasaCompletados < 85) {
+                sugerencias.push({
+                    tipo: 'Calidad de Servicio',
+                    nivel: 'Alta',
+                    mensaje: `Tasa de completados del ${tasaCompletados}% es baja. Investigue causas de servicios incompletos o cancelados.`
+                });
+            }
+            
+            // Análisis de horas pico
+            if (analisis.patronesHorarios.horasPico.length > 0) {
+                const horaPico = analisis.patronesHorarios.horasPico[0];
+                sugerencias.push({
+                    tipo: 'Asignación de Recursos',
+                    nivel: 'Media',
+                    mensaje: `Hora pico identificada: ${horaPico.hora} con ${horaPico.servicios} servicios. Priorice disponibilidad de staff en este horario.`
+                });
+            }
+            
+            return sugerencias;
+        }
+
         function mostrarDatosEnDashboard(reporte) {
+            console.log('📊 Mostrando datos en dashboard...');
+            
             // Resumen del día
             const hoy = reporte.resumenGeneral;
             document.getElementById('totalServiciosHoy').textContent = hoy.totalServicios;
-            document.getElementById('completadosHoy').textContent = hoy.totalServicios; // Ajustar según datos reales
-            document.getElementById('tasaCompletadosHoy').textContent = `${hoy.tasaCompletados}% de eficiencia`;
+            document.getElementById('completadosHoy').textContent = hoy.completadosHoy;
+            document.getElementById('tasaCompletadosHoy').textContent = `${hoy.tasaCompletadosHoy}% de eficiencia`;
             document.getElementById('duracionPromedioHoy').textContent = hoy.duracionPromedio;
             document.getElementById('rangoDuracionHoy').textContent = `${hoy.duracionMin}-${hoy.duracionMax}`;
 
-            // Métricas totales (usar los mismos datos por ahora, ajustar según necesidad)
-            document.getElementById('totalServiciosTotal').textContent = hoy.totalServicios;
-            document.getElementById('completadosTotal').textContent = hoy.totalServicios;
-            document.getElementById('tasaCompletadosTotal').textContent = `${hoy.tasaCompletados}% tasa global`;
-            document.getElementById('duracionPromedioTotal').textContent = hoy.duracionPromedio;
+            // Métricas totales
+            document.getElementById('totalServiciosTotal').textContent = hoy.totalServiciosTotal;
+            document.getElementById('completadosTotal').textContent = hoy.completadosTotal;
+            document.getElementById('tasaCompletadosTotal').textContent = `${hoy.tasaCompletadosTotal}% tasa global`;
+            document.getElementById('duracionPromedioTotal').textContent = hoy.duracionPromedioTotal;
             document.getElementById('variabilidad').textContent = reporte.tendenciasDuracion.variabilidad;
             document.getElementById('desviacion').textContent = reporte.tendenciasDuracion.desviacionEstandar;
 
@@ -1000,6 +1421,8 @@
 
             // Gráficos
             crearGraficos(reporte);
+            
+            console.log('✅ Dashboard actualizado');
         }
 
         function llenarTablaAerolinea(datos) {
@@ -1278,121 +1701,32 @@
             }
         }
 
-        // Simulación de datos (REEMPLAZAR CON DATOS REALES DEL APPS SCRIPT)
-        function simularDatosReporte() {
-            return {
-                resumenGeneral: {
-                    totalServicios: 45,
-                    duracionPromedio: '23.5',
-                    duracionMin: '12.0',
-                    duracionMax: '45.0',
-                    tasaCompletados: '87.5'
-                },
-                porAerolinea: {
-                    'Delta': { count: 15, duracionPromedio: '22.3', tasaCompletados: '90.0' },
-                    'Southwest': { count: 12, duracionPromedio: '25.1', tasaCompletados: '85.0' },
-                    'United': { count: 10, duracionPromedio: '21.8', tasaCompletados: '88.0' },
-                    'American': { count: 8, duracionPromedio: '26.5', tasaCompletados: '84.0' }
-                },
-                porStaff: {
-                    'Juan Pérez': { count: 12, duracionPromedio: '20.5', eficiencia: '92.0', vuelosUnicos: 12 },
-                    'María García': { count: 11, duracionPromedio: '22.0', eficiencia: '88.0', vuelosUnicos: 11 },
-                    'Carlos López': { count: 10, duracionPromedio: '24.5', eficiencia: '85.0', vuelosUnicos: 10 },
-                    'Ana Martínez': { count: 8, duracionPromedio: '23.0', eficiencia: '87.0', vuelosUnicos: 8 },
-                    'Pedro Rodríguez': { count: 4, duracionPromedio: '28.0', eficiencia: '78.0', vuelosUnicos: 4 }
-                },
-                porFranjaHoraria: {
-                    'Madrugada (0-6)': { count: 3, porcentaje: '6.7', duracionPromedio: '25.0' },
-                    'Mañana (6-12)': { count: 18, porcentaje: '40.0', duracionPromedio: '22.0' },
-                    'Tarde (12-18)': { count: 15, porcentaje: '33.3', duracionPromedio: '23.5' },
-                    'Noche (18-24)': { count: 9, porcentaje: '20.0', duracionPromedio: '24.8' }
-                },
-                porTipoServicio: {
-                    'Embarque': { count: 22, duracionPromedio: '21.5' },
-                    'Desembarque': { count: 18, duracionPromedio: '24.0' },
-                    'Conexión': { count: 5, duracionPromedio: '28.5' }
-                },
-                porDiaSemana: {
-                    'Lunes': { count: 8, duracionPromedio: '23.0' },
-                    'Martes': { count: 7, duracionPromedio: '22.5' },
-                    'Miércoles': { count: 9, duracionPromedio: '24.0' },
-                    'Jueves': { count: 7, duracionPromedio: '23.5' },
-                    'Viernes': { count: 8, duracionPromedio: '23.8' },
-                    'Sábado': { count: 3, duracionPromedio: '22.0' },
-                    'Domingo': { count: 3, duracionPromedio: '21.5' }
-                },
-                analisisEstatus: {
-                    'Completado': { count: 39, porcentaje: '87.5' },
-                    'En Proceso': { count: 4, porcentaje: '8.9' },
-                    'Cancelado': { count: 2, porcentaje: '4.4' }
-                },
-                tendenciasDuracion: {
-                    mediana: '23.0',
-                    cuartil1: '20.0',
-                    cuartil3: '26.0',
-                    desviacionEstandar: '6.5',
-                    variabilidad: 'Media'
-                },
-                patronesHorarios: {
-                    horasPico: [
-                        { hora: '10:00', servicios: 8 },
-                        { hora: '14:00', servicios: 7 },
-                        { hora: '16:00', servicios: 6 }
-                    ],
-                    horasBajas: [
-                        { hora: '02:00', servicios: 1 },
-                        { hora: '04:00', servicios: 1 },
-                        { hora: '22:00', servicios: 2 }
-                    ]
-                },
-                sugerencias: [
-                    {
-                        tipo: 'Eficiencia Operativa',
-                        nivel: 'Alta',
-                        mensaje: 'La duración promedio de 23.5 min está dentro del rango óptimo. Mantener los procedimientos actuales.'
-                    },
-                    {
-                        tipo: 'Recursos Humanos',
-                        nivel: 'Media',
-                        mensaje: 'Juan Pérez muestra la mejor eficiencia (92%). Considere capacitaciones basadas en sus mejores prácticas para el resto del equipo.'
-                    },
-                    {
-                        tipo: 'Planificación',
-                        nivel: 'Alta',
-                        mensaje: 'La franja de Mañana (6-12) concentra el 40% de servicios. Asegure personal suficiente en este horario.'
-                    },
-                    {
-                        tipo: 'Capacitación',
-                        nivel: 'Media',
-                        mensaje: 'Pedro Rodríguez requiere atención (eficiencia: 78%). Recomendable proporcionar capacitación adicional.'
-                    },
-                    {
-                        tipo: 'Calidad de Servicio',
-                        nivel: 'Baja',
-                        mensaje: 'Tasa de completados del 87.5% es buena. Investigar causas de los 4.4% de cancelaciones para mejorar aún más.'
-                    }
-                ]
-            };
-        }
-
         // Inicialización
         document.addEventListener('DOMContentLoaded', () => {
+            console.log('🚀 Iniciando dashboard...');
+            
             // Verificar autenticación
             const adminData = sessionStorage.getItem('adminUser');
             if (!adminData) {
+                console.log('❌ No hay sesión activa, redirigiendo...');
                 window.location.href = 'adminT.html';
                 return;
             }
 
             const admin = JSON.parse(adminData);
             document.getElementById('adminName').textContent = admin.name || admin.username.split('@')[0];
+            
+            console.log('✅ Usuario autenticado:', admin.username);
 
             // Cargar datos iniciales
             cargarDatos();
 
             // Auto-refresh cada 5 minutos
             setInterval(cargarDatos, 5 * 60 * 1000);
+            
+            console.log('✅ Dashboard iniciado correctamente');
         });
     </script>
 </body>
 </html>
+
