@@ -149,6 +149,201 @@
             font-size: 12px;
         }
 
+        /* Filters */
+        .filters-section {
+            background: rgba(15, 23, 42, 0.9);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 18px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .filters-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+        }
+
+        .filters-title {
+            font-size: 18px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .filter-badge {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .quick-filters {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .quick-filter-btn {
+            padding: 10px 18px;
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 10px;
+            color: #94a3b8;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .quick-filter-btn:hover {
+            background: rgba(59, 130, 246, 0.2);
+            color: #fff;
+            transform: translateY(-2px);
+        }
+
+        .quick-filter-btn.active {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: #fff;
+            border-color: transparent;
+            box-shadow: 0 5px 15px rgba(59, 130, 246, 0.3);
+        }
+
+        .filters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .filter-label {
+            color: #cbd5e1;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .filter-select, .filter-input {
+            padding: 10px 14px;
+            background: rgba(30, 41, 59, 0.6);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 10px;
+            color: #fff;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .filter-select:focus, .filter-input:focus {
+            outline: none;
+            background: rgba(30, 41, 59, 0.8);
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .filter-select option {
+            background: #1e293b;
+            color: #fff;
+        }
+
+        .filter-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn-filter {
+            padding: 12px 24px;
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            border: none;
+            border-radius: 10px;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-filter:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-clear {
+            padding: 12px 24px;
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            border-radius: 10px;
+            color: #fca5a5;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-clear:hover {
+            background: rgba(239, 68, 68, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .btn-export {
+            padding: 12px 24px;
+            background: rgba(16, 185, 129, 0.2);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 10px;
+            color: #6ee7b7;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-export:hover {
+            background: rgba(16, 185, 129, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .filter-summary {
+            margin-top: 15px;
+            padding: 12px 16px;
+            background: rgba(59, 130, 246, 0.1);
+            border-left: 3px solid #3b82f6;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            color: #cbd5e1;
+        }
+
+        .summary-icon {
+            font-size: 16px;
+        }
+
+        .summary-text {
+            flex: 1;
+        }
+
         /* Stats Sections */
         .stats-section {
             margin-bottom: 25px;
@@ -606,6 +801,99 @@
             </div>
         </div>
 
+        <!-- Filtros de Fecha -->
+        <div class="filters-section">
+            <div class="filters-header">
+                <div class="filters-title">
+                    <span>📅</span>
+                    <span>Filtros de Fecha y Análisis</span>
+                </div>
+                <div class="filter-badge" id="currentFilter">Todo el histórico</div>
+            </div>
+
+            <div class="quick-filters">
+                <button class="quick-filter-btn" onclick="aplicarFiltroRapido('hoy')">
+                    📅 Hoy
+                </button>
+                <button class="quick-filter-btn" onclick="aplicarFiltroRapido('ayer')">
+                    📆 Ayer
+                </button>
+                <button class="quick-filter-btn" onclick="aplicarFiltroRapido('semana')">
+                    📊 Esta Semana
+                </button>
+                <button class="quick-filter-btn" onclick="aplicarFiltroRapido('mes')">
+                    📈 Este Mes
+                </button>
+                <button class="quick-filter-btn" onclick="aplicarFiltroRapido('ultimos7')">
+                    📉 Últimos 7 días
+                </button>
+                <button class="quick-filter-btn" onclick="aplicarFiltroRapido('ultimos30')">
+                    📊 Últimos 30 días
+                </button>
+                <button class="quick-filter-btn active" onclick="aplicarFiltroRapido('todo')">
+                    🗂️ Todo
+                </button>
+            </div>
+
+            <div class="filters-grid">
+                <div class="filter-group">
+                    <label class="filter-label">📅 Fecha Desde</label>
+                    <input type="date" id="filterFechaDesde" class="filter-input">
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">📅 Fecha Hasta</label>
+                    <input type="date" id="filterFechaHasta" class="filter-input">
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">✈️ Aerolínea</label>
+                    <select id="filterAerolinea" class="filter-select">
+                        <option value="">Todas las aerolíneas</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">👤 Staff</label>
+                    <select id="filterStaff" class="filter-select">
+                        <option value="">Todo el personal</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">📋 Estatus</label>
+                    <select id="filterEstatus" class="filter-select">
+                        <option value="">Todos los estatus</option>
+                        <option value="completado">Completado</option>
+                        <option value="proceso">En Proceso</option>
+                        <option value="cancelado">Cancelado</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label class="filter-label">🕐 Franja Horaria</label>
+                    <select id="filterFranja" class="filter-select">
+                        <option value="">Todas las franjas</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="filter-actions">
+                <button class="btn-filter" onclick="aplicarFiltrosPersonalizados()">
+                    <span>🔍</span>
+                    <span>Aplicar Filtros</span>
+                </button>
+                <button class="btn-clear" onclick="limpiarFiltros()">
+                    <span>🗑️</span>
+                    <span>Limpiar Filtros</span>
+                </button>
+                <button class="btn-export" onclick="exportarDatosFiltrados()">
+                    <span>📥</span>
+                    <span>Exportar Datos</span>
+                </button>
+            </div>
+
+            <div class="filter-summary" id="filterSummary">
+                <span class="summary-icon">ℹ️</span>
+                <span class="summary-text">Mostrando todos los datos disponibles</span>
+            </div>
+        </div>
+
         <!-- Resumen General Total -->
         <div class="stats-section">
             <div class="section-header">
@@ -886,8 +1174,19 @@
         // ⚙️ CONFIGURACIÓN
         const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzx5WlYa0gBt4Djd9Oz9LHgLkVg07nEN_VOwA2gwEZiGLERhwGBEgKxrTIOa2V1m-9z/exec';
 
-        // Variables globales para gráficos
+        // Variables globales para gráficos y datos
         let charts = {};
+        let datosOriginales = []; // Almacenar datos sin filtrar
+        let datosFiltrados = []; // Datos después de aplicar filtros
+        let filtrosActivos = {
+            fechaDesde: null,
+            fechaHasta: null,
+            aerolinea: '',
+            staff: '',
+            estatus: '',
+            franja: '',
+            tipoFiltro: 'todo' // hoy, semana, mes, todo, etc.
+        };
 
         // Three.js background
         const container = document.getElementById('canvas-container');
@@ -967,12 +1266,15 @@
                     throw new Error(result.message || 'Error desconocido del servidor');
                 }
                 
-                // Procesar datos reales del Google Sheet
-                const datosReales = procesarDatosReales(result.data);
-                console.log('📊 Datos procesados:', datosReales);
+                // Almacenar datos originales
+                datosOriginales = result.data;
+                console.log('📊 Datos almacenados:', datosOriginales.length, 'filas');
                 
-                mostrarDatosEnDashboard(datosReales);
-                actualizarFecha();
+                // Poblar filtros dinámicos
+                poblarFiltrosDinamicos(datosOriginales);
+                
+                // Aplicar filtros actuales (o mostrar todo si no hay filtros)
+                aplicarFiltros();
                 
                 console.log('✅ Dashboard actualizado exitosamente');
                 
@@ -986,7 +1288,7 @@
 
         function procesarDatosReales(datos) {
             console.log('🔍 Procesando datos reales del sheet...');
-            console.log('📋 Total de filas recibidas:', datos.length);
+            console.log('📋 Total de filas a procesar:', datos.length);
             
             // Mapeo de columnas según tus especificaciones
             const COL = {
@@ -1003,7 +1305,7 @@
                 DURACION: 45        // AT (índice 45)
             };
             
-            // Filtrar datos del día de hoy
+            // Filtrar datos del día de hoy para la sección "HOY"
             const hoy = new Date();
             hoy.setHours(0, 0, 0, 0);
             const mañana = new Date(hoy);
@@ -1015,24 +1317,24 @@
             });
             
             console.log('📅 Servicios de hoy:', datosHoy.length);
-            console.log('📊 Total histórico:', datos.length);
+            console.log('📊 Total en análisis:', datos.length);
             
             // Generar análisis
             const analisis = {
                 resumenGeneral: analizarResumenGeneral(datosHoy, datos, COL),
-                porAerolinea: analizarPorCategoria(datosHoy, COL.AEROLINEA, COL),
-                porStaff: analizarPorStaff(datosHoy, COL),
-                porFranjaHoraria: analizarPorFranja(datosHoy, COL),
-                porTipoServicio: analizarPorCategoria(datosHoy, COL.TIPO_SERVICIO, COL),
+                porAerolinea: analizarPorCategoria(datos, COL.AEROLINEA, COL),
+                porStaff: analizarPorStaff(datos, COL),
+                porFranjaHoraria: analizarPorFranja(datos, COL),
+                porTipoServicio: analizarPorCategoria(datos, COL.TIPO_SERVICIO, COL),
                 porDiaSemana: analizarPorCategoria(datos, COL.DIA_SEMANA, COL),
-                analisisEstatus: analizarEstatus(datosHoy, COL),
-                tendenciasDuracion: analizarTendencias(datosHoy, COL),
-                patronesHorarios: analizarPatronesHorarios(datosHoy, COL),
+                analisisEstatus: analizarEstatus(datos, COL),
+                tendenciasDuracion: analizarTendencias(datos, COL),
+                patronesHorarios: analizarPatronesHorarios(datos, COL),
                 sugerencias: []
             };
             
             // Generar sugerencias
-            analisis.sugerencias = generarSugerencias(analisis);
+            analisis.sugerencias = generarSugerenciasInteligentes(analisis, datosHoy, datos);
             
             return analisis;
         }
@@ -1306,6 +1608,460 @@
         }
 
         function generarSugerencias(analisis) {
+            const sugerencias = [];
+            
+            // Análisis de eficiencia general
+            const duracionPromedio = parseFloat(analisis.resumenGeneral.duracionPromedio);
+            if (duracionPromedio > 30) {
+                sugerencias.push({
+                    tipo: 'Eficiencia Operativa',
+                    nivel: 'Alta',
+                    mensaje: `La duración promedio de ${duracionPromedio} min es elevada. Considere optimizar procesos o aumentar personal en horas pico.`
+                });
+            } else if (duracionPromedio > 0 && duracionPromedio <= 25) {
+                sugerencias.push({
+                    tipo: 'Eficiencia Operativa',
+                    nivel: 'Baja',
+                    mensaje: `La duración promedio de ${duracionPromedio} min está dentro del rango óptimo. Mantener los procedimientos actuales.`
+                });
+            }
+            
+            // Análisis de staff
+            const staffArray = Object.entries(analisis.porStaff);
+            if (staffArray.length > 0) {
+                const mejorStaff = staffArray.sort((a, b) => parseFloat(b[1].eficiencia) - parseFloat(a[1].eficiencia))[0];
+                const peorStaff = staffArray.sort((a, b) => parseFloat(a[1].eficiencia) - parseFloat(b[1].eficiencia))[0];
+                
+                sugerencias.push({
+                    tipo: 'Recursos Humanos',
+                    nivel: 'Media',
+                    mensaje: `${mejorStaff[0]} muestra la mejor eficiencia (${mejorStaff[1].eficiencia}%). Considere capacitaciones basadas en sus mejores prácticas.`
+                });
+                
+                if (parseFloat(peorStaff[1].eficiencia) < 70) {
+                    sugerencias.push({
+                        tipo: 'Capacitación',
+                        nivel: 'Alta',
+                        mensaje: `${peorStaff[0]} requiere atención (eficiencia: ${peorStaff[1].eficiencia}%). Recomendable proporcionar capacitación adicional.`
+                    });
+                }
+            }
+            
+            // Análisis de franjas horarias
+            const franjasArray = Object.entries(analisis.porFranjaHoraria);
+            if (franjasArray.length > 0) {
+                const franjaMasDemandada = franjasArray.sort((a, b) => b[1].count - a[1].count)[0];
+                sugerencias.push({
+                    tipo: 'Planificación',
+                    nivel: 'Alta',
+                    mensaje: `${franjaMasDemandada[0]} es la franja más demandada (${franjaMasDemandada[1].porcentaje}% de servicios). Asegure personal suficiente en este horario.`
+                });
+            }
+            
+            // Análisis de variabilidad
+            if (analisis.tendenciasDuracion.variabilidad === 'Alta') {
+                sugerencias.push({
+                    tipo: 'Estandarización',
+                    nivel: 'Alta',
+                    mensaje: `Alta variabilidad en tiempos de servicio (DE: ${analisis.tendenciasDuracion.desviacionEstandar}). Estandarice procedimientos para mayor consistencia.`
+                });
+            }
+            
+            // Análisis de tasa de completados
+            const tasaCompletados = parseFloat(analisis.resumenGeneral.tasaCompletadosHoy);
+            if (tasaCompletados < 85) {
+                sugerencias.push({
+                    tipo: 'Calidad de Servicio',
+                    nivel: 'Alta',
+                    mensaje: `Tasa de completados del ${tasaCompletados}% es baja. Investigue causas de servicios incompletos o cancelados.`
+                });
+            }
+            
+            // Análisis de horas pico
+            if (analisis.patronesHorarios.horasPico.length > 0) {
+                const horaPico = analisis.patronesHorarios.horasPico[0];
+                sugerencias.push({
+                    tipo: 'Asignación de Recursos',
+                    nivel: 'Media',
+                    mensaje: `Hora pico identificada: ${horaPico.hora} con ${horaPico.servicios} servicios. Priorice disponibilidad de staff en este horario.`
+                });
+            }
+            
+            return sugerencias;
+        }
+
+        // ==================== FUNCIONES DE FILTRADO ====================
+
+        function poblarFiltrosDinamicos(datos) {
+            const COL = {
+                STAFF: 1,
+                AEROLINEA: 31,
+                FRANJA_HORARIA: 34
+            };
+            
+            // Obtener valores únicos
+            const aerolíneas = [...new Set(datos.map(f => f[COL.AEROLINEA]).filter(v => v))];
+            const staff = [...new Set(datos.map(f => f[COL.STAFF]).filter(v => v))];
+            const franjas = [...new Set(datos.map(f => f[COL.FRANJA_HORARIA]).filter(v => v))];
+            
+            // Poblar select de aerolíneas
+            const selectAerolinea = document.getElementById('filterAerolinea');
+            selectAerolinea.innerHTML = '<option value="">Todas las aerolíneas</option>';
+            aerolíneas.sort().forEach(aero => {
+                const option = document.createElement('option');
+                option.value = aero;
+                option.textContent = aero;
+                selectAerolinea.appendChild(option);
+            });
+            
+            // Poblar select de staff
+            const selectStaff = document.getElementById('filterStaff');
+            selectStaff.innerHTML = '<option value="">Todo el personal</option>';
+            staff.sort().forEach(person => {
+                const option = document.createElement('option');
+                option.value = person;
+                option.textContent = person;
+                selectStaff.appendChild(option);
+            });
+            
+            // Poblar select de franjas
+            const selectFranja = document.getElementById('filterFranja');
+            selectFranja.innerHTML = '<option value="">Todas las franjas</option>';
+            franjas.sort().forEach(franja => {
+                const option = document.createElement('option');
+                option.value = franja;
+                option.textContent = franja;
+                selectFranja.appendChild(option);
+            });
+        }
+
+        function aplicarFiltroRapido(tipo) {
+            console.log('🔍 Aplicando filtro rápido:', tipo);
+            
+            // Actualizar botones activos
+            document.querySelectorAll('.quick-filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Calcular fechas según el filtro
+            const hoy = new Date();
+            hoy.setHours(0, 0, 0, 0);
+            
+            let fechaDesde, fechaHasta;
+            let descripcion = '';
+            
+            switch(tipo) {
+                case 'hoy':
+                    fechaDesde = new Date(hoy);
+                    fechaHasta = new Date(hoy);
+                    fechaHasta.setHours(23, 59, 59, 999);
+                    descripcion = 'Hoy';
+                    break;
+                    
+                case 'ayer':
+                    fechaDesde = new Date(hoy);
+                    fechaDesde.setDate(hoy.getDate() - 1);
+                    fechaHasta = new Date(fechaDesde);
+                    fechaHasta.setHours(23, 59, 59, 999);
+                    descripcion = 'Ayer';
+                    break;
+                    
+                case 'semana':
+                    // Inicio de la semana (lunes)
+                    fechaDesde = new Date(hoy);
+                    const dia = fechaDesde.getDay();
+                    const diff = dia === 0 ? -6 : 1 - dia; // Ajustar al lunes
+                    fechaDesde.setDate(hoy.getDate() + diff);
+                    fechaHasta = new Date(hoy);
+                    fechaHasta.setHours(23, 59, 59, 999);
+                    descripcion = 'Esta semana';
+                    break;
+                    
+                case 'mes':
+                    fechaDesde = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+                    fechaHasta = new Date(hoy);
+                    fechaHasta.setHours(23, 59, 59, 999);
+                    descripcion = 'Este mes';
+                    break;
+                    
+                case 'ultimos7':
+                    fechaDesde = new Date(hoy);
+                    fechaDesde.setDate(hoy.getDate() - 6);
+                    fechaHasta = new Date(hoy);
+                    fechaHasta.setHours(23, 59, 59, 999);
+                    descripcion = 'Últimos 7 días';
+                    break;
+                    
+                case 'ultimos30':
+                    fechaDesde = new Date(hoy);
+                    fechaDesde.setDate(hoy.getDate() - 29);
+                    fechaHasta = new Date(hoy);
+                    fechaHasta.setHours(23, 59, 59, 999);
+                    descripcion = 'Últimos 30 días';
+                    break;
+                    
+                case 'todo':
+                default:
+                    fechaDesde = null;
+                    fechaHasta = null;
+                    descripcion = 'Todo el histórico';
+                    break;
+            }
+            
+            // Actualizar filtros activos
+            filtrosActivos.fechaDesde = fechaDesde;
+            filtrosActivos.fechaHasta = fechaHasta;
+            filtrosActivos.tipoFiltro = tipo;
+            
+            // Actualizar campos de fecha
+            if (fechaDesde) {
+                document.getElementById('filterFechaDesde').valueAsDate = fechaDesde;
+            } else {
+                document.getElementById('filterFechaDesde').value = '';
+            }
+            
+            if (fechaHasta) {
+                document.getElementById('filterFechaHasta').valueAsDate = fechaHasta;
+            } else {
+                document.getElementById('filterFechaHasta').value = '';
+            }
+            
+            // Actualizar badge y resumen
+            document.getElementById('currentFilter').textContent = descripcion;
+            
+            // Aplicar filtros
+            aplicarFiltros();
+        }
+
+        function aplicarFiltrosPersonalizados() {
+            console.log('🔍 Aplicando filtros personalizados...');
+            
+            // Leer valores de los filtros
+            const fechaDesdeStr = document.getElementById('filterFechaDesde').value;
+            const fechaHastaStr = document.getElementById('filterFechaHasta').value;
+            
+            filtrosActivos.fechaDesde = fechaDesdeStr ? new Date(fechaDesdeStr) : null;
+            filtrosActivos.fechaHasta = fechaHastaStr ? new Date(fechaHastaStr) : null;
+            filtrosActivos.aerolinea = document.getElementById('filterAerolinea').value;
+            filtrosActivos.staff = document.getElementById('filterStaff').value;
+            filtrosActivos.estatus = document.getElementById('filterEstatus').value;
+            filtrosActivos.franja = document.getElementById('filterFranja').value;
+            filtrosActivos.tipoFiltro = 'personalizado';
+            
+            // Desactivar botones rápidos
+            document.querySelectorAll('.quick-filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Actualizar badge
+            document.getElementById('currentFilter').textContent = 'Filtros personalizados';
+            
+            // Aplicar filtros
+            aplicarFiltros();
+        }
+
+        function aplicarFiltros() {
+            console.log('🔄 Aplicando filtros a los datos...');
+            console.log('Filtros activos:', filtrosActivos);
+            
+            const COL = {
+                STAFF: 1,
+                ESTATUS: 5,
+                AEROLINEA: 31,
+                FRANJA_HORARIA: 34,
+                FECHA: 35
+            };
+            
+            // Filtrar datos
+            datosFiltrados = datosOriginales.filter(fila => {
+                // Filtro de fecha
+                if (filtrosActivos.fechaDesde || filtrosActivos.fechaHasta) {
+                    const fechaFila = parsearFecha(fila[COL.FECHA]);
+                    
+                    if (filtrosActivos.fechaDesde) {
+                        const desde = new Date(filtrosActivos.fechaDesde);
+                        desde.setHours(0, 0, 0, 0);
+                        if (fechaFila < desde) return false;
+                    }
+                    
+                    if (filtrosActivos.fechaHasta) {
+                        const hasta = new Date(filtrosActivos.fechaHasta);
+                        hasta.setHours(23, 59, 59, 999);
+                        if (fechaFila > hasta) return false;
+                    }
+                }
+                
+                // Filtro de aerolínea
+                if (filtrosActivos.aerolinea) {
+                    if (fila[COL.AEROLINEA] !== filtrosActivos.aerolinea) return false;
+                }
+                
+                // Filtro de staff
+                if (filtrosActivos.staff) {
+                    if (fila[COL.STAFF] !== filtrosActivos.staff) return false;
+                }
+                
+                // Filtro de estatus
+                if (filtrosActivos.estatus) {
+                    const estatus = (fila[COL.ESTATUS] || '').toString().toLowerCase();
+                    if (!estatus.includes(filtrosActivos.estatus)) return false;
+                }
+                
+                // Filtro de franja
+                if (filtrosActivos.franja) {
+                    if (fila[COL.FRANJA_HORARIA] !== filtrosActivos.franja) return false;
+                }
+                
+                return true;
+            });
+            
+            console.log(`✅ Filtrado completo: ${datosFiltrados.length} de ${datosOriginales.length} filas`);
+            
+            // Actualizar resumen de filtros
+            actualizarResumenFiltros();
+            
+            // Procesar y mostrar datos filtrados
+            const datosReales = procesarDatosReales(datosFiltrados);
+            mostrarDatosEnDashboard(datosReales);
+            actualizarFecha();
+        }
+
+        function actualizarResumenFiltros() {
+            const total = datosOriginales.length;
+            const filtrados = datosFiltrados.length;
+            const porcentaje = total > 0 ? ((filtrados / total) * 100).toFixed(1) : 0;
+            
+            let texto = `Mostrando ${filtrados} de ${total} servicios (${porcentaje}%)`;
+            
+            const filtrosAplicados = [];
+            if (filtrosActivos.fechaDesde || filtrosActivos.fechaHasta) {
+                if (filtrosActivos.fechaDesde && filtrosActivos.fechaHasta) {
+                    filtrosAplicados.push(`📅 ${formatearFecha(filtrosActivos.fechaDesde)} - ${formatearFecha(filtrosActivos.fechaHasta)}`);
+                } else if (filtrosActivos.fechaDesde) {
+                    filtrosAplicados.push(`📅 Desde ${formatearFecha(filtrosActivos.fechaDesde)}`);
+                } else {
+                    filtrosAplicados.push(`📅 Hasta ${formatearFecha(filtrosActivos.fechaHasta)}`);
+                }
+            }
+            if (filtrosActivos.aerolinea) filtrosAplicados.push(`✈️ ${filtrosActivos.aerolinea}`);
+            if (filtrosActivos.staff) filtrosAplicados.push(`👤 ${filtrosActivos.staff}`);
+            if (filtrosActivos.estatus) filtrosAplicados.push(`📋 ${filtrosActivos.estatus}`);
+            if (filtrosActivos.franja) filtrosAplicados.push(`🕐 ${filtrosActivos.franja}`);
+            
+            if (filtrosAplicados.length > 0) {
+                texto += ' • ' + filtrosAplicados.join(' • ');
+            }
+            
+            document.querySelector('.summary-text').textContent = texto;
+        }
+
+        function limpiarFiltros() {
+            console.log('🗑️ Limpiando filtros...');
+            
+            // Resetear filtros activos
+            filtrosActivos = {
+                fechaDesde: null,
+                fechaHasta: null,
+                aerolinea: '',
+                staff: '',
+                estatus: '',
+                franja: '',
+                tipoFiltro: 'todo'
+            };
+            
+            // Limpiar campos
+            document.getElementById('filterFechaDesde').value = '';
+            document.getElementById('filterFechaHasta').value = '';
+            document.getElementById('filterAerolinea').value = '';
+            document.getElementById('filterStaff').value = '';
+            document.getElementById('filterEstatus').value = '';
+            document.getElementById('filterFranja').value = '';
+            
+            // Activar botón "Todo"
+            document.querySelectorAll('.quick-filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelectorAll('.quick-filter-btn').forEach(btn => {
+                if (btn.textContent.includes('Todo')) {
+                    btn.classList.add('active');
+                }
+            });
+            
+            // Actualizar badge
+            document.getElementById('currentFilter').textContent = 'Todo el histórico';
+            
+            // Aplicar filtros (mostrará todo)
+            aplicarFiltros();
+        }
+
+        function exportarDatosFiltrados() {
+            console.log('📥 Exportando datos filtrados...');
+            
+            if (datosFiltrados.length === 0) {
+                alert('No hay datos para exportar con los filtros actuales.');
+                return;
+            }
+            
+            // Crear CSV
+            const COL = {
+                STAFF: 1,
+                NUM_VUELO: 3,
+                ESTATUS: 5,
+                TIPO_SERVICIO: 26,
+                SERVICIOS: 30,
+                AEROLINEA: 31,
+                DIA_SEMANA: 32,
+                FRANJA_HORARIA: 34,
+                FECHA: 35,
+                HORA: 40,
+                DURACION: 45
+            };
+            
+            let csv = 'Staff,Vuelo,Estatus,Tipo Servicio,Servicios,Aerolínea,Día,Franja,Fecha,Hora,Duración\n';
+            
+            datosFiltrados.forEach(fila => {
+                csv += [
+                    fila[COL.STAFF],
+                    fila[COL.NUM_VUELO],
+                    fila[COL.ESTATUS],
+                    fila[COL.TIPO_SERVICIO],
+                    fila[COL.SERVICIOS],
+                    fila[COL.AEROLINEA],
+                    fila[COL.DIA_SEMANA],
+                    fila[COL.FRANJA_HORARIA],
+                    fila[COL.FECHA],
+                    fila[COL.HORA],
+                    fila[COL.DURACION]
+                ].map(v => `"${v || ''}"`).join(',') + '\n';
+            });
+            
+            // Descargar
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `reporte_sillas_${new Date().toISOString().split('T')[0]}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            console.log('✅ Datos exportados exitosamente');
+        }
+
+        function formatearFecha(fecha) {
+            if (!fecha) return '';
+            const d = new Date(fecha);
+            const dia = String(d.getDate()).padStart(2, '0');
+            const mes = String(d.getMonth() + 1).padStart(2, '0');
+            const año = d.getFullYear();
+            return `${dia}/${mes}/${año}`;
+        }
+
+        // ==================== FIN FUNCIONES DE FILTRADO ====================
+
+        function generarSugerenciasInteligentes(analisis, datosHoy, datosTotales) {
             const sugerencias = [];
             
             // Análisis de eficiencia general
@@ -1729,4 +2485,3 @@
     </script>
 </body>
 </html>
-
