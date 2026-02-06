@@ -1274,7 +1274,7 @@
         function logout() {
             if (confirm('¿Cerrar sesión?')) {
                 sessionStorage.removeItem('adminUser');
-                window.location.href = 'admin.html';
+                window.location.href = 'adminT.html';
             }
         }
 
@@ -1380,7 +1380,7 @@
             // Verificar autenticación
             const adminData = sessionStorage.getItem('adminUser');
             if (!adminData) {
-                window.location.href = 'admin.html';
+                window.location.href = 'adminT.html';
                 return;
             }
 
