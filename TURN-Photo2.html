@@ -717,11 +717,11 @@
                 document.getElementById('userRole').textContent = inspectionUser.role;
             } catch (error) {
                 alert('Sesión inválida. Por favor inicie sesión nuevamente.');
-                window.location.href = 'login-Photo.html';
+                window.location.href = 'login-Photo2.html';
             }
         } else {
             alert('Por favor inicie sesión primero.');
-            window.location.href = 'login-Photo.html';
+            window.location.href = 'login-Photo2.html';
         }
 
         // ============================================
@@ -1184,7 +1184,7 @@
             if (confirm('¿Está seguro de que desea cerrar sesión?')) {
                 stopCamera();
                 sessionStorage.removeItem('user');
-                window.location.href = 'login-Photo.html';
+                window.location.href = 'login-Photo2.html';
             }
         }
 
