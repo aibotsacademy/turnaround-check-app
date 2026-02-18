@@ -276,11 +276,11 @@
                 document.getElementById('userRole').textContent = inspectionUser.role;
             } catch (error) {
                 alert('Sesión inválida. Por favor inicie sesión nuevamente.');
-                window.location.href = 'login-Photo9.html';
+                window.location.href = 'login-Photo9-TestSheet.html';
             }
         } else {
             alert('Por favor inicie sesión primero.');
-            window.location.href = 'login-Photo9.html';
+            window.location.href = 'login-Photo9-TestSheet.html';
         }
         
         const BRIEFING_TOPICS = [
@@ -843,7 +843,7 @@
             if (confirm('¿Está seguro de que desea cerrar sesión?')) {
                 stopCamera();
                 sessionStorage.removeItem('user');
-                window.location.href = 'login-Photo9.html';
+                window.location.href = 'login-Photo9-TestSheet.html';
             }
         }
         
