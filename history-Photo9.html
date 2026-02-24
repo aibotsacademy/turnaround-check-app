@@ -530,7 +530,7 @@
         const userDataStr = sessionStorage.getItem('user');
         if (!userDataStr) {
             alert('Sesión no encontrada. Por favor inicie sesión.');
-            window.location.href = 'login-Photo9.html';
+            window.location.href = 'login-P9.html';
         } else {
             try {
                 currentUser = JSON.parse(userDataStr);
@@ -538,7 +538,7 @@
                 loadReports();
                 startAutoRefresh();
             } catch(e) {
-                window.location.href = 'login-Photo9.html';
+                window.location.href = 'login-P9.html';
             }
         }
 
