@@ -452,6 +452,9 @@
                 <button class="btn-new" onclick="goToNewInspection()">
                     <span>+ </span>Nueva Inspección
                 </button>
+                <button class="btn-new" onclick="runDebug()" style="background:linear-gradient(135deg,#f59e0b,#d97706);margin-left:8px;font-size:12px;padding:10px 14px;">
+                    🔍 Debug
+                </button>
                 <button class="btn-logout" onclick="logout()">Salir</button>
             </div>
         </header>
@@ -515,7 +518,7 @@
 
     <script>
         // ── CONFIG ──
-        const HISTORY_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby82E-tzaowQb-POx8pdMkTI6t0eKfPrkFpZj-O-Zr2m9HWjSKDzm8btvAcTYzbEa8E/exec';
+        const HISTORY_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx-i8j7HnVoUvsGeW-Z_41KyGBo_htiPLqyijJs7R-SgjnBRXfLER-I929d8SdHp4aO/exec';
 
         // ── USER ──
         let currentUser = null;
@@ -565,6 +568,44 @@
         (function anim() { requestAnimationFrame(anim); pts.rotation.y += 0.0008; renderer.render(scene, cam3); })();
         window.addEventListener('resize', () => { cam3.aspect = window.innerWidth / window.innerHeight; cam3.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); });
 
+        // ── DEBUG PANEL ──
+        function runDebug() {
+            const panel = document.getElementById('debugPanel');
+            const out   = document.getElementById('debugOut');
+            panel.style.display = 'block';
+            out.textContent = '⏳ Consultando debugInspector...';
+
+            const cbName = 'dbgCb' + Date.now();
+            const url = `${HISTORY_SCRIPT_URL}?action=debugInspector&inspector=${encodeURIComponent(currentUser.username)}&callback=${cbName}`;
+            window[cbName] = function(data) {
+                delete window[cbName];
+                const s = document.getElementById('jsonp-debug');
+                if (s) s.remove();
+
+                if (!data || !data.success) {
+                    out.textContent = '❌ Error: ' + JSON.stringify(data);
+                    return;
+                }
+                let txt = '';
+                txt += `✅ lastRow: ${data.lastRow} | lastCol: ${data.lastCol}\n`;
+                txt += `🔎 colInspector: ${data.colInspector} | colFlightKey: ${data.colFlightKey} | colFecha: ${data.colFecha} | colTasa: ${data.colTasa}\n`;
+                txt += `📋 Headers (${data.headers.length}): ${data.headers.join(' | ')}\n\n`;
+                txt += `✅ MATCHED (${data.matchedCount} filas para "${data.inspector}"):\n`;
+                (data.matched || []).forEach(r => {
+                    txt += `  Fila ${r.row}: ${r.flightKey} | fecha: ${r.fecha} | tasa: ${r.tasa}\n`;
+                });
+                txt += `\n⏭ SKIPPED (primeros 10):\n`;
+                (data.skipped || []).forEach(r => {
+                    txt += `  Fila ${r.row}: [${r.inspector}] motivo: ${r.skip}\n`;
+                });
+                out.textContent = txt;
+            };
+            const script = document.createElement('script');
+            script.id  = 'jsonp-debug';
+            script.src = url;
+            document.body.appendChild(script);
+        }
+
         // ── LOAD REPORTS ──
         function loadReports(manual = false) {
             if (manual) {
@@ -575,24 +616,30 @@
 
             const cbName = 'histCb' + Date.now();
             const url = `${HISTORY_SCRIPT_URL}?action=getHistory&inspector=${encodeURIComponent(currentUser.username)}&callback=${cbName}`;
+            console.log('[History] Requesting:', url);
 
             window[cbName] = function(data) {
                 delete window[cbName];
                 const s = document.getElementById('jsonp-history');
                 if (s) s.remove();
 
+                console.log('[History] Raw response — success:', data && data.success, '| total:', data && data.total, '| reports:', data && data.reports && data.reports.length);
+                if (data && data.reports) {
+                    data.reports.forEach(r => console.log(`  [Report] ${r.flightKey} | ${r.flightTimestamp} | progress:${r.progress}% | status:${r.status}`));
+                }
+
                 if (data && data.success) {
-                    // Normalizar status: si progress < 100 = En Proceso, si = 100 = Completado
                     allReports = (data.reports || []).map(r => {
                         r.status = (r.progress >= 100) ? 'Completado' : 'En Proceso';
                         return r;
                     });
+                    console.log('[History] allReports after normalize:', allReports.length);
                     renderReports();
                     updateStats();
                     checkDuplicates();
-                    if (manual) showToast('✓ Actualizado');
+                    if (manual) showToast('✓ Actualizado — ' + allReports.length + ' reportes');
                 } else {
-                    // Fallback: show empty state (no crash)
+                    console.warn('[History] No data or error:', JSON.stringify(data));
                     allReports = [];
                     renderReports();
                     updateStats();
@@ -927,5 +974,13 @@
             setTimeout(() => t.classList.remove('show'), 2800);
         }
     </script>
+    <!-- DEBUG PANEL -->
+    <div id="debugPanel" style="display:none;position:fixed;bottom:0;left:0;right:0;max-height:50vh;overflow-y:auto;background:#0a0e27;border-top:2px solid #f59e0b;z-index:9999;padding:16px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+            <span style="color:#f59e0b;font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:700;">🔍 DEBUG — Inspector Match Analysis</span>
+            <button onclick="document.getElementById('debugPanel').style.display='none'" style="background:rgba(239,68,68,0.2);border:1px solid rgba(239,68,68,0.4);color:#fca5a5;border-radius:6px;padding:4px 10px;cursor:pointer;font-size:12px;">✕ Cerrar</button>
+        </div>
+        <pre id="debugOut" style="color:#94a3b8;font-family:'JetBrains Mono',monospace;font-size:11px;white-space:pre-wrap;margin:0;line-height:1.6;">Cargando...</pre>
+    </div>
 </body>
 </html>
