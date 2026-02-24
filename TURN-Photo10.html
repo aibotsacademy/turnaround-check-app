@@ -955,13 +955,22 @@
         }
         
         function toggleIncidentForm(show) {
-            document.querySelectorAll('.radio-option').forEach(opt => opt.classList.remove('selected'));
+            // Solo afecta el grupo hasIncident, no el de severidad
+            const group = document.getElementById(show ? 'incidentSi' : 'incidentNo').closest('.radio-group');
+            group.querySelectorAll('.radio-option').forEach(opt => opt.classList.remove('selected'));
             event.currentTarget.classList.add('selected');
+            // Marcar el radio real como checked
+            document.getElementById(show ? 'incidentSi' : 'incidentNo').checked = true;
             document.getElementById('incidentForm').style.display = show ? 'block' : 'none';
         }
         
         function selectSeverity(severity) {
-            document.querySelectorAll('.radio-option').forEach(opt => opt.classList.remove('selected'));
+            // Solo afecta el grupo de severidad
+            const sevInput = document.querySelector(`input[name="severity"][value="${severity}"]`);
+            if (!sevInput) return;
+            sevInput.checked = true;
+            const group = sevInput.closest('.radio-group');
+            group.querySelectorAll('.radio-option').forEach(opt => opt.classList.remove('selected'));
             event.currentTarget.classList.add('selected');
         }
         
@@ -1009,10 +1018,28 @@
         
         function completeInspection() {
             stopCamera();
-            const hasIncident = document.getElementById('incidentSi').checked;
+            // Leer estado real del radio — el div puede no propagar el checked correctamente
+            const incidentSiEl = document.getElementById('incidentSi');
+            const incidentNoEl = document.getElementById('incidentNo');
+            // Si ninguno está checked explícitamente, revisar cuál .radio-option tiene .selected
+            let hasIncident = incidentSiEl.checked;
+            if (!incidentSiEl.checked && !incidentNoEl.checked) {
+                // Fallback: revisar clase selected en el grupo
+                const group = incidentSiEl.closest('.radio-group');
+                const selected = group ? group.querySelector('.radio-option.selected') : null;
+                hasIncident = selected ? selected.querySelector('input').value === 'si' : false;
+            }
             if (hasIncident) {
                 const type = document.getElementById('incidentType').value;
-                const severity = document.querySelector('input[name="severity"]:checked');
+                let severity = document.querySelector('input[name="severity"]:checked');
+                // Fallback: buscar por clase selected en el grupo de severidad
+                if (!severity) {
+                    const sevGroup = document.getElementById('sevBaja')?.closest('.radio-group');
+                    if (sevGroup) {
+                        const selOpt = sevGroup.querySelector('.radio-option.selected');
+                        if (selOpt) severity = selOpt.querySelector('input[name="severity"]');
+                    }
+                }
                 const description = document.getElementById('incidentDescription').value;
                 if (!type || !severity || !description) { alert('Por favor complete todos los campos del incidente'); return; }
                 incidentData = { type: type, severity: severity.value, description: description, photoReference: selectedIncidentPhoto ? selectedIncidentPhoto.key : null, photoIndex: selectedIncidentPhoto ? selectedIncidentPhoto.index : null, photoLabel: selectedIncidentPhoto ? selectedIncidentPhoto.label : null };
@@ -1114,7 +1141,17 @@
 
         // ── Guardar incidente/observación → log acumulado → regresar al checkpoint ──
         function saveReportNow() {
-            const hasIncident = document.getElementById('incidentSi').checked;
+            // Leer estado real del radio — el div puede no propagar el checked correctamente
+            const incidentSiEl = document.getElementById('incidentSi');
+            const incidentNoEl = document.getElementById('incidentNo');
+            // Si ninguno está checked explícitamente, revisar cuál .radio-option tiene .selected
+            let hasIncident = incidentSiEl.checked;
+            if (!incidentSiEl.checked && !incidentNoEl.checked) {
+                // Fallback: revisar clase selected en el grupo
+                const group = incidentSiEl.closest('.radio-group');
+                const selected = group ? group.querySelector('.radio-option.selected') : null;
+                hasIncident = selected ? selected.querySelector('input').value === 'si' : false;
+            }
             const now = new Date();
             const timeStr = now.toLocaleTimeString('es-CR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
             const fromLabel = (savedCheckpointIndex !== null && checkpoints[savedCheckpointIndex])
@@ -1123,7 +1160,15 @@
 
             if (hasIncident) {
                 const type = document.getElementById('incidentType').value;
-                const severity = document.querySelector('input[name="severity"]:checked');
+                let severity = document.querySelector('input[name="severity"]:checked');
+                // Fallback: buscar por clase selected en el grupo de severidad
+                if (!severity) {
+                    const sevGroup = document.getElementById('sevBaja')?.closest('.radio-group');
+                    if (sevGroup) {
+                        const selOpt = sevGroup.querySelector('.radio-option.selected');
+                        if (selOpt) severity = selOpt.querySelector('input[name="severity"]');
+                    }
+                }
                 const description = document.getElementById('incidentDescription').value.trim();
                 if (!type || !severity || !description) {
                     alert('Por favor complete todos los campos del incidente antes de guardar');
