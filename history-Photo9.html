@@ -515,7 +515,7 @@
 
     <script>
         // ── CONFIG ──
-        const HISTORY_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbywX-7HzcjDWlwXudZ3P56ahHjW7fyexv7YaxS7bdF_p2jWNuLgka5bfqaPHQ_UgEqN/exec';
+        const HISTORY_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx-i8j7HnVoUvsGeW-Z_41KyGBo_htiPLqyijJs7R-SgjnBRXfLER-I929d8SdHp4aO/exec';
 
         // ── USER ──
         let currentUser = null;
@@ -582,7 +582,11 @@
                 if (s) s.remove();
 
                 if (data && data.success) {
-                    allReports = data.reports || [];
+                    // Normalizar status vacío → 'En Proceso'
+                    allReports = (data.reports || []).map(r => {
+                        if (!r.status || r.status.trim() === '') r.status = 'En Proceso';
+                        return r;
+                    });
                     renderReports();
                     updateStats();
                     checkDuplicates();
