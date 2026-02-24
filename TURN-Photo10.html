@@ -11,61 +11,46 @@
             margin: 0; padding: 0; box-sizing: border-box;
             -webkit-tap-highlight-color: transparent;
         }
-
-        html {
-            /* Prevent horizontal scroll on any device */
-            overflow-x: hidden;
-            max-width: 100%;
-        }
-
+        html { overflow-x: hidden; max-width: 100%; }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: #0a0e27;
-            color: #e2e8f0;
-            overflow-x: hidden;
-            min-height: 100vh;
+            background: #0a0e27; color: #e2e8f0;
+            overflow-x: hidden; min-height: 100vh;
         }
 
-        /* ── BACKGROUND CANVAS ── */
+        /* ── PARTICLES BACKGROUND ── */
         #canvas-container {
             position: fixed; top: 0; left: 0;
             width: 100%; height: 100%;
             z-index: 1; pointer-events: none;
         }
 
-        /* ════════════════════════════════════════
-           DESKTOP LAYOUT  (≥ 768px)
-           Classic centered card, full scroll
-        ════════════════════════════════════════ */
-        .app-shell {
-            position: relative; z-index: 2;
-            min-height: 100vh;
-        }
+        /* ═══════════════════════════════════════
+           DESKTOP (≥ 768px)
+           Sticky header, centered scrollable card
+        ═══════════════════════════════════════ */
+        .app-shell { position: relative; z-index: 2; min-height: 100vh; }
 
+        /* Header — sticky bar across full width */
         .app-header {
-            background: rgba(5, 8, 22, 0.88);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(59,130,246,0.2);
-            padding: 14px 24px 0;
+            background: rgba(5, 8, 22, 0.90);
+            backdrop-filter: blur(22px); -webkit-backdrop-filter: blur(22px);
+            border-bottom: 1px solid rgba(59,130,246,0.22);
+            padding: 14px 28px 0;
             position: sticky; top: 0; z-index: 10;
         }
-
         .header-row {
             display: flex; align-items: center;
-            justify-content: space-between; gap: 12px;
+            justify-content: space-between; gap: 14px;
             margin-bottom: 10px;
         }
-
         .header-title {
             font-size: 20px; font-weight: 700;
             background: linear-gradient(135deg, #3b82f6, #8b5cf6);
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
             white-space: nowrap;
         }
-
         .header-actions { display: flex; gap: 8px; align-items: center; flex-shrink: 0; }
-
         .btn-header-hist {
             background: rgba(139,92,246,0.18);
             border: 1px solid rgba(139,92,246,0.4);
@@ -73,47 +58,55 @@
             padding: 6px 14px; font-size: 13px; font-weight: 600;
             cursor: pointer; white-space: nowrap; transition: background 0.2s;
         }
-        .btn-header-hist:hover { background: rgba(139,92,246,0.32); }
+        .btn-header-hist:hover  { background: rgba(139,92,246,0.30); }
         .btn-header-hist:active { background: rgba(139,92,246,0.42); }
-
         .user-role-chip {
             background: linear-gradient(135deg, #3b82f6, #8b5cf6);
             padding: 5px 12px; border-radius: 8px;
             font-weight: 600; color: #fff; font-size: 12px; white-space: nowrap;
         }
+        .user-name { color: #94a3b8; font-size: 13px; white-space: nowrap; }
 
-        .user-name {
-            color: #94a3b8; font-size: 13px; white-space: nowrap;
-        }
-
+        /* Progress bar under header */
         .progress-bar {
             width: 100%; height: 4px;
             background: rgba(59,130,246,0.12); overflow: hidden;
         }
         .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+            height: 100%; background: linear-gradient(90deg, #3b82f6, #8b5cf6);
             transition: width 0.35s ease; width: 0%;
         }
-
         .step-counter {
             text-align: center; color: #64748b;
             font-size: 12px; font-weight: 500;
-            padding: 7px 0 9px; letter-spacing: 0.3px;
+            padding: 7px 0 9px; letter-spacing: 0.4px;
         }
 
-        /* Content wrapper — desktop: centered card */
+        /* Content — glass card centered on desktop */
         .app-content {
-            padding: 32px 24px 48px;
-            max-width: 680px;
-            margin: 0 auto;
-            width: 100%;
+            padding: 36px 24px 56px;
+            max-width: 680px; margin: 0 auto; width: 100%;
         }
 
-        /* ── QUESTION CARDS ── */
+        /* ── GLASS CARD WRAPPER (each step/card gets a glass bg) ── */
         .question-card { display: none; animation: fadeIn 0.35s ease; }
         .question-card.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
+
+        /* Glass surface applied to every active card */
+        .question-card.active > *:not(.question-title):not(.question-subtitle):not(.navigation-buttons):not(.checkpoint-actions),
+        .checkpoint-card-body {
+            /* used explicitly below via .card-surface wrapper in JS */
+        }
+
+        .card-surface {
+            background: rgba(15, 23, 42, 0.82);
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(59,130,246,0.28);
+            border-radius: 20px; padding: 28px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.45), 0 0 80px rgba(59,130,246,0.07);
+            margin-bottom: 16px;
+        }
 
         .question-title {
             color: #fff; font-size: 22px; margin-bottom: 8px;
@@ -136,14 +129,14 @@
         .camera-label {
             position: absolute; top: 14px; left: 50%; transform: translateX(-50%);
             background: rgba(59,130,246,0.9); color: #fff;
-            padding: 6px 16px; border-radius: 20px;
+            padding: 6px 18px; border-radius: 20px;
             font-size: 12px; font-weight: 600; white-space: nowrap;
         }
         .camera-corners { position: absolute; width: 24px; height: 24px; border: 3px solid #3b82f6; }
-        .corner-tl { top: 10%; left: 10%; border-right: none; border-bottom: none; }
-        .corner-tr { top: 10%; right: 10%; border-left: none; border-bottom: none; }
-        .corner-bl { bottom: 10%; left: 10%; border-right: none; border-top: none; }
-        .corner-br { bottom: 10%; right: 10%; border-left: none; border-top: none; }
+        .corner-tl { top:10%; left:10%; border-right:none; border-bottom:none; }
+        .corner-tr { top:10%; right:10%; border-left:none; border-bottom:none; }
+        .corner-bl { bottom:10%; left:10%; border-right:none; border-top:none; }
+        .corner-br { bottom:10%; right:10%; border-left:none; border-top:none; }
         .timestamp-display {
             position: absolute; bottom: 12px; right: 12px;
             background: rgba(0,0,0,0.72); color: #fff;
@@ -153,13 +146,13 @@
 
         /* ── BUTTONS ── */
         .capture-btn {
-            width: 100%; padding: 15px;
+            width: 100%; padding: 16px;
             background: linear-gradient(135deg, #3b82f6, #8b5cf6);
             border: none; border-radius: 12px; color: #fff;
             font-size: 16px; font-weight: 600; cursor: pointer;
-            margin-bottom: 14px; transition: all 0.2s;
+            margin-bottom: 14px; transition: all 0.25s;
         }
-        .capture-btn:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(59,130,246,0.4); }
+        .capture-btn:hover  { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(59,130,246,0.4); }
         .capture-btn:active { opacity: 0.82; transform: none; }
         .capture-btn:disabled { opacity: 0.45; pointer-events: none; }
 
@@ -170,68 +163,88 @@
         .photo-actions { display: flex; gap: 10px; margin-bottom: 14px; }
         .retake-btn {
             flex: 1; padding: 12px;
-            background: rgba(239,68,68,0.15);
-            border: 1px solid rgba(239,68,68,0.45);
+            background: rgba(239,68,68,0.18); border: 1px solid rgba(239,68,68,0.45);
             border-radius: 12px; color: #fca5a5;
             font-size: 14px; font-weight: 600; cursor: pointer; transition: background 0.2s;
         }
-        .retake-btn:hover { background: rgba(239,68,68,0.28); }
+        .retake-btn:hover { background: rgba(239,68,68,0.30); }
         .confirm-btn {
             flex: 2; padding: 12px;
             background: linear-gradient(135deg, #10b981, #059669);
             border: none; border-radius: 12px; color: #fff;
-            font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s;
+            font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.25s;
         }
-        .confirm-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(16,185,129,0.4); }
+        .confirm-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(16,185,129,0.4); }
 
         .navigation-buttons { display: flex; gap: 10px; margin-top: 18px; }
         .nav-btn {
-            flex: 1; padding: 13px; border: none;
-            border-radius: 12px; font-size: 14px;
-            font-weight: 600; cursor: pointer; transition: all 0.2s;
+            flex: 1; padding: 14px; border: none;
+            border-radius: 12px; font-size: 15px; font-weight: 600;
+            cursor: pointer; transition: all 0.25s;
         }
         .nav-btn-prev {
-            background: rgba(71,85,105,0.28);
-            color: #cbd5e1; border: 1px solid rgba(71,85,105,0.45);
+            background: rgba(71,85,105,0.28); color: #cbd5e1;
+            border: 1px solid rgba(71,85,105,0.45);
         }
         .nav-btn-prev:hover { background: rgba(71,85,105,0.45); }
         .nav-btn-next {
             background: linear-gradient(135deg, #3b82f6, #8b5cf6); color: #fff;
         }
-        .nav-btn-next:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(59,130,246,0.35); }
+        .nav-btn-next:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(59,130,246,0.38); }
         .nav-btn:disabled { opacity: 0.45; pointer-events: none; transform: none !important; }
 
-        /* ── CHECKPOINT ACTION ROW ── */
+        /* ── CHECKPOINT ACTION ROW (⚠️ skip) ── */
         .checkpoint-actions { display: flex; gap: 8px; margin-top: 10px; }
         .btn-skip-incident {
             flex: 1; padding: 11px 8px;
-            background: rgba(245,158,11,0.12);
-            border: 1px solid rgba(245,158,11,0.4);
+            background: rgba(245,158,11,0.12); border: 1px solid rgba(245,158,11,0.40);
             border-radius: 10px; color: #fbbf24;
             font-size: 12px; font-weight: 600; cursor: pointer;
             font-family: inherit; transition: background 0.2s;
         }
-        .btn-skip-incident:hover { background: rgba(245,158,11,0.24); }
-        .btn-skip-incident:active { background: rgba(245,158,11,0.34); }
-
+        .btn-skip-incident:hover  { background: rgba(245,158,11,0.24); }
+        .btn-skip-incident:active { background: rgba(245,158,11,0.36); }
         .btn-resume-here {
             flex: 1; padding: 11px 8px;
-            background: rgba(16,185,129,0.12);
-            border: 1px solid rgba(16,185,129,0.4);
+            background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.40);
             border-radius: 10px; color: #6ee7b7;
             font-size: 12px; font-weight: 600; cursor: pointer;
             font-family: inherit; transition: background 0.2s;
         }
-        .btn-resume-here:hover { background: rgba(16,185,129,0.24); }
-        .btn-resume-here:active { background: rgba(16,185,129,0.34); }
+        .btn-resume-here:hover  { background: rgba(16,185,129,0.24); }
+        .btn-resume-here:active { background: rgba(16,185,129,0.36); }
+
+        /* ── SAVED REPORTS LOG (incident screen) ── */
+        .saved-reports-log {
+            background: rgba(16,185,129,0.07);
+            border: 1px solid rgba(16,185,129,0.25);
+            border-radius: 12px; padding: 14px 16px;
+            margin-bottom: 20px;
+        }
+        .saved-reports-log-title {
+            color: #6ee7b7; font-size: 12px; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+        .saved-report-entry {
+            background: rgba(30,41,59,0.5);
+            border: 1px solid rgba(59,130,246,0.15);
+            border-radius: 8px; padding: 10px 12px;
+            margin-bottom: 7px; font-size: 12px;
+        }
+        .saved-report-entry:last-child { margin-bottom: 0; }
+        .saved-report-entry .sre-time { color: #fbbf24; font-family: 'Courier New', monospace; font-size: 11px; }
+        .saved-report-entry .sre-type { color: #f87171; font-weight: 700; margin-bottom: 3px; }
+        .saved-report-entry .sre-desc { color: #cbd5e1; line-height: 1.4; }
+        .saved-report-entry .sre-sev  { color: #94a3b8; font-size: 11px; margin-top: 3px; }
 
         /* ── FORM ELEMENTS ── */
         select, input[type="text"] {
-            width: 100%; padding: 13px 16px;
+            width: 100%; padding: 14px 18px;
             background: rgba(30,41,59,0.6);
-            border: 1px solid rgba(59,130,246,0.2);
+            border: 1px solid rgba(59,130,246,0.22);
             border-radius: 12px; color: #fff; font-size: 15px; outline: none;
-            transition: all 0.2s;
+            transition: all 0.25s;
         }
         select:focus, input[type="text"]:focus {
             border-color: #3b82f6; background: rgba(30,41,59,0.85);
@@ -241,15 +254,15 @@
         textarea {
             width: 100%; min-height: 80px; padding: 12px;
             background: rgba(30,41,59,0.6);
-            border: 1px solid rgba(59,130,246,0.2);
+            border: 1px solid rgba(59,130,246,0.22);
             border-radius: 12px; color: #fff;
             font-size: 14px; outline: none; resize: vertical;
-            font-family: inherit; margin-top: 14px; transition: all 0.2s;
+            font-family: inherit; margin-top: 14px; transition: all 0.25s;
         }
         textarea:focus { border-color: #3b82f6; background: rgba(30,41,59,0.85); }
 
-        .form-group { margin-bottom: 18px; }
-        .form-group label {
+        .form-group { margin-bottom: 20px; }
+        .form-group > label {
             display: block; color: #cbd5e1;
             font-size: 14px; margin-bottom: 8px; font-weight: 500;
         }
@@ -261,15 +274,15 @@
             border: 2px solid rgba(59,130,246,0.2);
             border-radius: 10px; cursor: pointer; text-align: center; transition: all 0.2s;
         }
-        .radio-option:hover { background: rgba(59,130,246,0.1); border-color: rgba(59,130,246,0.5); }
-        .radio-option.selected { background: rgba(59,130,246,0.2); border-color: #3b82f6; }
+        .radio-option:hover  { background: rgba(59,130,246,0.12); border-color: rgba(59,130,246,0.5); }
+        .radio-option.selected { background: rgba(59,130,246,0.22); border-color: #3b82f6; }
         .radio-option input { display: none; }
         .radio-option label { color: #cbd5e1; font-size: 13px; cursor: pointer; margin: 0; }
 
         .briefing-topics { display: grid; grid-template-columns: 1fr; gap: 9px; margin: 16px 0; }
         .topic-item {
             display: flex; align-items: center;
-            padding: 11px 14px;
+            padding: 12px 14px;
             background: rgba(30,41,59,0.4);
             border: 1px solid rgba(59,130,246,0.2);
             border-radius: 10px; cursor: pointer; transition: all 0.2s;
@@ -293,7 +306,7 @@
             border-radius: 10px; overflow: hidden; cursor: pointer;
             border: 3px solid transparent; transition: all 0.2s;
         }
-        .photo-selector-item:hover { border-color: rgba(59,130,246,0.5); }
+        .photo-selector-item:hover  { border-color: rgba(59,130,246,0.5); }
         .photo-selector-item.selected { border-color: #3b82f6; box-shadow: 0 0 16px rgba(59,130,246,0.5); }
         .photo-selector-item img { width: 100%; height: 100%; object-fit: cover; }
         .photo-selector-label {
@@ -302,17 +315,19 @@
             padding: 4px; font-size: 9px; text-align: center;
         }
 
-        /* ── COMPLETION SCREEN ── */
+        /* ── COMPLETION ── */
         .completion-screen { display: none; }
         .completion-screen.active { display: block; }
         .completion-icon { font-size: 68px; margin-bottom: 16px; text-align: center; animation: bounce 1s ease; }
-        @keyframes bounce { 0%,20%,50%,80%,100% { transform: translateY(0); } 40% { transform: translateY(-18px); } 60% { transform: translateY(-9px); } }
-        .completion-title { color: #fff; font-size: 28px; margin-bottom: 14px; font-weight: 700; text-align: center; }
+        @keyframes bounce { 0%,20%,50%,80%,100% { transform:translateY(0); } 40% { transform:translateY(-18px); } 60% { transform:translateY(-9px); } }
+        .completion-title { color: #fff; font-size: 28px; margin-bottom: 16px; font-weight: 700; text-align: center; }
 
         .summary-card {
-            background: rgba(30,41,59,0.4);
-            border: 1px solid rgba(59,130,246,0.2);
+            background: rgba(15,23,42,0.82);
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(59,130,246,0.25);
             border-radius: 16px; padding: 22px; margin-bottom: 16px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
         }
         .summary-title { color: #fff; font-size: 16px; font-weight: 600; margin-bottom: 16px; }
         .summary-item {
@@ -323,7 +338,7 @@
         .summary-label { color: #64748b; font-size: 14px; flex-shrink: 0; }
         .summary-value { color: #fff; font-weight: 600; font-size: 14px; text-align: right; }
 
-        .photo-gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; margin-top: 16px; }
+        .photo-gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; margin-top: 14px; }
         .gallery-item { position: relative; aspect-ratio: 4/3; border-radius: 12px; overflow: hidden; background: rgba(30,41,59,0.4); }
         .gallery-item img { width: 100%; height: 100%; object-fit: cover; }
         .gallery-label { position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.88); color: #fff; padding: 6px; font-size: 10px; text-align: center; }
@@ -337,60 +352,58 @@
 
         .action-buttons { display: flex; flex-direction: column; gap: 12px; margin-top: 24px; }
         .btn-primary {
-            padding: 15px;
-            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            padding: 16px; background: linear-gradient(135deg, #3b82f6, #8b5cf6);
             border: none; border-radius: 12px; color: #fff;
-            font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.2s;
+            font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.25s;
         }
-        .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 8px 20px rgba(59,130,246,0.4); }
+        .btn-primary:hover  { transform: translateY(-2px); box-shadow: 0 10px 25px rgba(59,130,246,0.4); }
         .btn-primary:active { opacity: 0.82; transform: none; }
         .btn-secondary {
-            padding: 13px;
-            background: rgba(71,85,105,0.28); color: #cbd5e1;
-            border: 1px solid rgba(71,85,105,0.45);
-            border-radius: 12px; cursor: pointer;
-            font-size: 14px; font-weight: 600; transition: background 0.2s;
+            padding: 14px; background: rgba(71,85,105,0.28); color: #cbd5e1;
+            border: 1px solid rgba(71,85,105,0.45); border-radius: 12px;
+            cursor: pointer; font-size: 15px; font-weight: 600; transition: background 0.2s;
         }
         .btn-secondary:hover { background: rgba(71,85,105,0.45); }
 
-        /* ════════════════════════════════════════
-           MOBILE LAYOUT  (< 768px)
-           Full-screen shell, fixed header, scroll body
-        ════════════════════════════════════════ */
+        /* scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: rgba(30,41,59,0.4); border-radius: 6px; }
+        ::-webkit-scrollbar-thumb { background: rgba(59,130,246,0.4); border-radius: 6px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(59,130,246,0.65); }
+
+        /* ═══════════════════════════════════════
+           MOBILE  (< 768px)
+           Full-screen shell, fixed header,
+           scrollable content area
+        ═══════════════════════════════════════ */
         @media (max-width: 767px) {
             body {
                 height: 100vh; height: 100dvh;
                 display: flex; flex-direction: column;
-                overflow: hidden; /* shell controls scroll */
+                overflow: hidden;
             }
-
             .app-shell {
                 display: flex; flex-direction: column;
                 height: 100vh; height: 100dvh;
-                overflow: hidden;
-                max-width: 100%;
+                overflow: hidden; max-width: 100%;
             }
-
             .app-header {
                 flex-shrink: 0;
                 padding: 10px 14px 0;
-                position: static; /* part of flex flow, not sticky */
+                position: static;
             }
-
             .header-title { font-size: 16px; }
-            .user-name { max-width: 90px; overflow: hidden; text-overflow: ellipsis; }
-
+            .user-name { max-width: 88px; overflow: hidden; text-overflow: ellipsis; }
             .app-content {
                 flex: 1;
-                overflow-y: auto;
-                overflow-x: hidden;
+                overflow-y: auto; overflow-x: hidden;
                 -webkit-overflow-scrolling: touch;
-                padding: 14px 14px 28px;
+                padding: 14px 14px 32px;
                 max-width: 100%;
             }
             .app-content::-webkit-scrollbar { width: 3px; }
-            .app-content::-webkit-scrollbar-thumb { background: rgba(59,130,246,0.3); border-radius: 3px; }
-
+            /* Glass cards — slightly tighter on mobile */
+            .card-surface { padding: 18px; border-radius: 16px; }
             .question-title { font-size: 19px; }
             .capture-btn { font-size: 14px; padding: 14px; }
             .nav-btn { font-size: 13px; padding: 12px; }
@@ -465,67 +478,77 @@
             </div>
             
             <div id="step-incident" class="question-card">
-                <h2 class="question-title">Incidentes y Observaciones</h2>
-                <p class="question-subtitle">Reporte cualquier incidente ocurrido durante la inspección</p>
-                <div class="form-group">
-                    <label>¿Se presentó algún incidente?</label>
-                    <div class="radio-group">
-                        <div class="radio-option" onclick="toggleIncidentForm(true)">
-                            <input type="radio" name="hasIncident" value="si" id="incidentSi">
-                            <label for="incidentSi">Sí</label>
-                        </div>
-                        <div class="radio-option" onclick="toggleIncidentForm(false)">
-                            <input type="radio" name="hasIncident" value="no" id="incidentNo" checked>
-                            <label for="incidentNo">No</label>
-                        </div>
-                    </div>
+                <h2 class="question-title">⚠️ Incidentes y Observaciones</h2>
+                <p class="question-subtitle">Registre incidentes. Puede guardar y regresar al checkpoint cuantas veces necesite.</p>
+
+                <!-- Log de reportes guardados previamente -->
+                <div class="saved-reports-log" id="savedReportsLog" style="display:none;">
+                    <div class="saved-reports-log-title">📋 Reportes guardados en esta sesión</div>
+                    <div id="savedReportsEntries"></div>
                 </div>
-                <div id="incidentForm" class="incident-form" style="display: none;">
+
+                <div class="card-surface">
                     <div class="form-group">
-                        <label>Tipo de Incidente</label>
-                        <select id="incidentType">
-                            <option value="">-- Seleccione --</option>
-                            <option value="Daño a Aeronave">Daño a Aeronave</option>
-                            <option value="Retraso Operacional">Retraso Operacional</option>
-                            <option value="Equipo Defectuoso">Equipo Defectuoso</option>
-                            <option value="FOD Encontrado">FOD Encontrado</option>
-                            <option value="Derrame">Procedimiento Seguridad</option>
-                            <option value="Otro">Otro</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Severidad</label>
+                        <label>¿Se presentó algún incidente?</label>
                         <div class="radio-group">
-                            <div class="radio-option" onclick="selectSeverity('Baja')">
-                                <input type="radio" name="severity" value="Baja" id="sevBaja">
-                                <label for="sevBaja">Baja</label>
+                            <div class="radio-option" onclick="toggleIncidentForm(true)">
+                                <input type="radio" name="hasIncident" value="si" id="incidentSi">
+                                <label for="incidentSi">Sí</label>
                             </div>
-                            <div class="radio-option" onclick="selectSeverity('Media')">
-                                <input type="radio" name="severity" value="Media" id="sevMedia">
-                                <label for="sevMedia">Media</label>
-                            </div>
-                            <div class="radio-option" onclick="selectSeverity('Alta')">
-                                <input type="radio" name="severity" value="Alta" id="sevAlta">
-                                <label for="sevAlta">Alta</label>
+                            <div class="radio-option" onclick="toggleIncidentForm(false)">
+                                <input type="radio" name="hasIncident" value="no" id="incidentNo" checked>
+                                <label for="incidentNo">No</label>
                             </div>
                         </div>
                     </div>
-                    <div class="form-group">
-                        <label>Descripción del Incidente</label>
-                        <textarea id="incidentDescription" placeholder="Describa detalladamente el incidente..."></textarea>
+                    <div id="incidentForm" class="incident-form" style="display: none;">
+                        <div class="form-group">
+                            <label>Tipo de Incidente</label>
+                            <select id="incidentType">
+                                <option value="">-- Seleccione --</option>
+                                <option value="Daño a Aeronave">Daño a Aeronave</option>
+                                <option value="Retraso Operacional">Retraso Operacional</option>
+                                <option value="Equipo Defectuoso">Equipo Defectuoso</option>
+                                <option value="FOD Encontrado">FOD Encontrado</option>
+                                <option value="Derrame">Procedimiento Seguridad</option>
+                                <option value="Otro">Otro</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Severidad</label>
+                            <div class="radio-group">
+                                <div class="radio-option" onclick="selectSeverity('Baja')">
+                                    <input type="radio" name="severity" value="Baja" id="sevBaja">
+                                    <label for="sevBaja">Baja</label>
+                                </div>
+                                <div class="radio-option" onclick="selectSeverity('Media')">
+                                    <input type="radio" name="severity" value="Media" id="sevMedia">
+                                    <label for="sevMedia">Media</label>
+                                </div>
+                                <div class="radio-option" onclick="selectSeverity('Alta')">
+                                    <input type="radio" name="severity" value="Alta" id="sevAlta">
+                                    <label for="sevAlta">Alta</label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Descripción del Incidente</label>
+                            <textarea id="incidentDescription" placeholder="Describa detalladamente el incidente..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>Seleccione foto de evidencia (opcional)</label>
+                            <p style="color:#94a3b8;font-size:12px;margin-bottom:10px;">Seleccione una de las fotos capturadas durante la inspección</p>
+                            <div class="photo-selector" id="incidentPhotoSelector"></div>
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label>Seleccione foto de evidencia (opcional)</label>
-                        <p style="color: #94a3b8; font-size: 12px; margin-bottom: 10px;">Seleccione una de las fotos capturadas durante la inspección</p>
-                        <div class="photo-selector" id="incidentPhotoSelector"></div>
+
+                    <div class="navigation-buttons">
+                        <button class="nav-btn nav-btn-prev" onclick="returnToCheckpoint()">← Regresar</button>
+                        <button class="nav-btn nav-btn-next" onclick="completeInspection()">Finalizar Inspección ✓</button>
                     </div>
-                </div>
-                <div class="navigation-buttons">
-                    <button class="nav-btn nav-btn-prev" onclick="returnToCheckpoint()">← Regresar</button>
-                    <button class="nav-btn nav-btn-next" onclick="completeInspection()">Finalizar Inspección ✓</button>
-                </div>
-                <div class="checkpoint-actions" style="margin-top:10px;">
-                    <button class="btn-resume-here" style="flex:1;padding:13px;" onclick="saveReportNow()">💾 Guardar Reporte</button>
+                    <div class="checkpoint-actions" style="margin-top:10px;">
+                        <button class="btn-resume-here" style="flex:1;padding:13px;" onclick="saveReportNow()">💾 Guardar y Regresar</button>
+                    </div>
                 </div>
             </div>
             
@@ -707,65 +730,69 @@
             
             if (checkpoint.type === 'briefing') {
                 container.innerHTML = `
-                    <h2 class="question-title">${checkpoint.emoji} ${checkpoint.label}${optionalBadge}</h2>
-                    <p class="question-subtitle">Seleccione los temas tratados en el briefing</p>
-                    <div class="briefing-topics">
-                        ${BRIEFING_TOPICS.map(topic => `
-                            <div class="topic-item">
-                                <input type="checkbox" id="topic-${topic.id}" value="${topic.label}">
-                                <label for="topic-${topic.id}">${topic.label}</label>
-                            </div>
-                        `).join('')}
-                    </div>
-                    <textarea id="briefingNotes" placeholder="Comentarios adicionales del briefing..."></textarea>
-                    <div class="navigation-buttons" style="margin-top: 20px;">
-                        ${currentCheckpointIndex > 0 ? '<button class="nav-btn nav-btn-prev" onclick="previousCheckpoint()">← Anterior</button>' : ''}
-                        <button class="nav-btn nav-btn-next" onclick="saveBriefingAndContinue()">Siguiente →</button>
-                    </div>
-                    <div class="checkpoint-actions" style="margin-top:10px;">
-                        <button class="btn-skip-incident" onclick="skipToIncidents()">⚠️ Ir a Incidentes</button>
+                    <div class="card-surface">
+                        <h2 class="question-title">${checkpoint.emoji} ${checkpoint.label}${optionalBadge}</h2>
+                        <p class="question-subtitle">Seleccione los temas tratados en el briefing</p>
+                        <div class="briefing-topics">
+                            ${BRIEFING_TOPICS.map(topic => `
+                                <div class="topic-item">
+                                    <input type="checkbox" id="topic-${topic.id}" value="${topic.label}">
+                                    <label for="topic-${topic.id}">${topic.label}</label>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <textarea id="briefingNotes" placeholder="Comentarios adicionales del briefing..."></textarea>
+                        <div class="navigation-buttons" style="margin-top: 20px;">
+                            ${currentCheckpointIndex > 0 ? '<button class="nav-btn nav-btn-prev" onclick="previousCheckpoint()">← Anterior</button>' : ''}
+                            <button class="nav-btn nav-btn-next" onclick="saveBriefingAndContinue()">Siguiente →</button>
+                        </div>
+                        <div class="checkpoint-actions" style="margin-top:10px;">
+                            <button class="btn-skip-incident" onclick="skipToIncidents()">⚠️ Ir a Incidentes</button>
+                        </div>
                     </div>
                 `;
             } else {
                 container.innerHTML = `
-                    <h2 class="question-title">${checkpoint.emoji} ${checkpoint.label}${optionalBadge}</h2>
-                    <p class="question-subtitle">Capture una foto de este checkpoint</p>
-                    
-                    <div id="photoHistory" style="display: none; margin-bottom: 20px;"></div>
-                    
-                    <div id="cameraView" style="display: none;">
-                        <div class="camera-container">
-                            <video id="video" autoplay playsinline></video>
-                            <canvas id="canvas"></canvas>
-                            <div class="camera-overlay">
-                                <div class="camera-label">${checkpoint.label}</div>
-                                <div class="camera-corners corner-tl"></div>
-                                <div class="camera-corners corner-tr"></div>
-                                <div class="camera-corners corner-bl"></div>
-                                <div class="camera-corners corner-br"></div>
-                                <div class="timestamp-display" id="liveTimestamp">00:00:00</div>
+                    <div class="card-surface">
+                        <h2 class="question-title">${checkpoint.emoji} ${checkpoint.label}${optionalBadge}</h2>
+                        <p class="question-subtitle">Capture una foto de este checkpoint</p>
+
+                        <div id="photoHistory" style="display: none; margin-bottom: 16px;"></div>
+
+                        <div id="cameraView" style="display: none;">
+                            <div class="camera-container">
+                                <video id="video" autoplay playsinline></video>
+                                <canvas id="canvas"></canvas>
+                                <div class="camera-overlay">
+                                    <div class="camera-label">${checkpoint.label}</div>
+                                    <div class="camera-corners corner-tl"></div>
+                                    <div class="camera-corners corner-tr"></div>
+                                    <div class="camera-corners corner-bl"></div>
+                                    <div class="camera-corners corner-br"></div>
+                                    <div class="timestamp-display" id="liveTimestamp">00:00:00</div>
+                                </div>
+                            </div>
+                            <button class="capture-btn" onclick="capturePhoto()">📸 Capturar Foto</button>
+                        </div>
+                        <div id="photoPreview" style="display: none;">
+                            <img id="capturedImage" class="captured-photo">
+                            <div style="text-align:center;color:#fbbf24;font-size:14px;margin-bottom:10px;" id="capturedTimestamp"></div>
+                            <div class="photo-actions">
+                                <button class="retake-btn" onclick="retakePhoto()">🔄 Tomar Otra</button>
+                                <button class="confirm-btn" onclick="confirmPhoto()">✓ Confirmar Foto</button>
                             </div>
                         </div>
-                        <button class="capture-btn" onclick="capturePhoto()">📸 Capturar Foto</button>
-                    </div>
-                    <div id="photoPreview" style="display: none;">
-                        <img id="capturedImage" class="captured-photo">
-                        <div style="text-align: center; color: #fbbf24; font-size: 14px; margin-bottom: 10px;" id="capturedTimestamp"></div>
-                        <div class="photo-actions">
-                            <button class="retake-btn" onclick="retakePhoto()">🔄 Tomar Otra</button>
-                            <button class="confirm-btn" onclick="confirmPhoto()">✓ Confirmar Foto</button>
+                        <button class="capture-btn" id="startCameraBtn" onclick="startCamera()">📷 Iniciar Cámara</button>
+                        <div class="navigation-buttons" style="margin-top: 18px;">
+                            ${currentCheckpointIndex > 0 ? '<button class="nav-btn nav-btn-prev" onclick="previousCheckpoint()">← Anterior</button>' : ''}
+                            ${checkpoint.optional ?
+                                '<button class="nav-btn nav-btn-next" onclick="skipCheckpoint()">Omitir →</button>' :
+                                '<button class="nav-btn nav-btn-next" onclick="nextCheckpoint()">Siguiente →</button>'
+                            }
                         </div>
-                    </div>
-                    <button class="capture-btn" id="startCameraBtn" onclick="startCamera()">📷 Iniciar Cámara</button>
-                    <div class="navigation-buttons" style="margin-top: 20px;">
-                        ${currentCheckpointIndex > 0 ? '<button class="nav-btn nav-btn-prev" onclick="previousCheckpoint()">← Anterior</button>' : ''}
-                        ${checkpoint.optional ? 
-                            '<button class="nav-btn nav-btn-next" onclick="skipCheckpoint()">Omitir →</button>' : 
-                            '<button class="nav-btn nav-btn-next" onclick="nextCheckpoint()">Siguiente →</button>'
-                        }
-                    </div>
-                    <div class="checkpoint-actions">
-                        <button class="btn-skip-incident" onclick="skipToIncidents()">⚠️ Ir a Incidentes</button>
+                        <div class="checkpoint-actions">
+                            <button class="btn-skip-incident" onclick="skipToIncidents()">⚠️ Ir a Incidentes</button>
+                        </div>
                     </div>
                 `;
             }
@@ -895,12 +922,36 @@
             fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) }).catch(error => console.error('Error:', error));
         }
         
+        // ── Render accumulated saved-reports into the log box ──
+        function renderSavedReportsLog() {
+            const log = document.getElementById('savedReportsLog');
+            const entries = document.getElementById('savedReportsEntries');
+            if (!log || !entries) return;
+            if (savedReports.length === 0) { log.style.display = 'none'; return; }
+            log.style.display = 'block';
+            entries.innerHTML = savedReports.map((r, i) => {
+                if (r.type === 'sin_incidente') {
+                    return `<div class="saved-report-entry">
+                        <div class="sre-time">⏰ ${r.time} &nbsp;·&nbsp; Guardado desde checkpoint: <strong>${r.fromCheckpoint}</strong></div>
+                        <div class="sre-desc" style="color:#6ee7b7;margin-top:4px;">✅ Sin incidente registrado</div>
+                    </div>`;
+                }
+                return `<div class="saved-report-entry">
+                    <div class="sre-time">⏰ ${r.time} &nbsp;·&nbsp; Desde: <strong>${r.fromCheckpoint}</strong></div>
+                    <div class="sre-type">⚠️ ${r.incidentType} — Severidad: ${r.severity}</div>
+                    <div class="sre-desc">${r.description}</div>
+                    ${r.photoLabel ? `<div class="sre-sev">📸 Foto: ${r.photoLabel}</div>` : ''}
+                </div>`;
+            }).join('');
+        }
+
         function goToIncidents() {
             stopCamera();
             hideStep(1);
             document.getElementById('step-incident').classList.add('active');
             document.getElementById('stepCounter').textContent = 'Incidentes y Observaciones';
             renderIncidentPhotoSelector();
+            renderSavedReportsLog();
         }
         
         function toggleIncidentForm(show) {
@@ -943,6 +994,8 @@
         
         // Índice guardado cuando el inspector usó "⚠️ Ir a Incidentes"
         let savedCheckpointIndex = null;
+        // Accumulates every "Guardar y Regresar" entry during the session
+        const savedReports = [];
 
         function returnToCheckpoint() {
             document.getElementById('step-incident').classList.remove('active');
@@ -1059,65 +1112,70 @@
             document.getElementById('stepCounter').textContent = 'Seleccione la aerolínea';
         }
 
-        // ── Guardar incidente/observación y REGRESAR al checkpoint ──
-        // NO finaliza la inspección — solo persiste lo escrito y devuelve al inspector
+        // ── Guardar incidente/observación → log acumulado → regresar al checkpoint ──
         function saveReportNow() {
-            // Recoger datos del formulario de incidente si aplica
             const hasIncident = document.getElementById('incidentSi').checked;
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('es-CR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            const fromLabel = (savedCheckpointIndex !== null && checkpoints[savedCheckpointIndex])
+                ? `${checkpoints[savedCheckpointIndex].emoji} ${checkpoints[savedCheckpointIndex].label}`
+                : 'Último checkpoint';
+
             if (hasIncident) {
                 const type = document.getElementById('incidentType').value;
                 const severity = document.querySelector('input[name="severity"]:checked');
-                const description = document.getElementById('incidentDescription').value;
+                const description = document.getElementById('incidentDescription').value.trim();
                 if (!type || !severity || !description) {
                     alert('Por favor complete todos los campos del incidente antes de guardar');
                     return;
                 }
-                // Guardar incidentData en memoria para que esté disponible al finalizar
+                // Persist in memory (last one wins for final submit)
                 incidentData = {
-                    type: type, severity: severity.value, description: description,
-                    photoReference: selectedIncidentPhoto ? selectedIncidentPhoto.key : null,
-                    photoIndex: selectedIncidentPhoto ? selectedIncidentPhoto.index : null,
-                    photoLabel: selectedIncidentPhoto ? selectedIncidentPhoto.label : null
+                    type, severity: severity.value, description,
+                    photoReference: selectedIncidentPhoto ? selectedIncidentPhoto.key   : null,
+                    photoIndex:     selectedIncidentPhoto ? selectedIncidentPhoto.index : null,
+                    photoLabel:     selectedIncidentPhoto ? selectedIncidentPhoto.label : null
                 };
+                // Push to accumulated log
+                savedReports.push({
+                    time: timeStr, fromCheckpoint: fromLabel,
+                    incidentType: type, severity: severity.value,
+                    description, photoLabel: incidentData.photoLabel
+                });
             } else {
-                // Si no hay incidente marcado, limpiar incidentData guardado previamente
                 incidentData = null;
+                savedReports.push({ time: timeStr, fromCheckpoint: fromLabel, type: 'sin_incidente' });
             }
 
-            // Persistir en servidor como "En Proceso" (no Completado)
+            // Send partial save to server (En Proceso)
             fetch(SCRIPT_URL, {
                 method: 'POST', mode: 'no-cors',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     action: 'saveInspection',
-                    airline: selectedAirline,
-                    flightType: selectedFlightType,
-                    flightNumber: flightNumberValue,
-                    flightTimestamp: flightTimestamp,
-                    inspector: inspectionUser.username,
-                    role: inspectionUser.role,
-                    item: 'Observaciones',
-                    timestamp: new Date().toISOString(),
-                    status: 'En Proceso',
-                    incident: incidentData
+                    airline: selectedAirline, flightType: selectedFlightType,
+                    flightNumber: flightNumberValue, flightTimestamp,
+                    inspector: inspectionUser.username, role: inspectionUser.role,
+                    item: 'Observaciones', timestamp: now.toISOString(),
+                    status: 'En Proceso', incident: incidentData
                 })
-            }).catch(error => console.error('Error guardando:', error));
+            }).catch(e => console.error('Error guardando:', e));
 
-            // Feedback visual
-            const btn = event.currentTarget;
-            const original = btn.textContent;
-            btn.textContent = '✓ Guardado';
-            btn.style.background = 'rgba(16,185,129,0.35)';
-            btn.style.borderColor = 'rgba(16,185,129,0.7)';
-            setTimeout(() => {
-                btn.textContent = original;
-                btn.style.background = '';
-                btn.style.borderColor = '';
-            }, 1800);
+            // Button feedback
+            const btn = document.querySelector('.btn-resume-here');
+            if (btn) {
+                const orig = btn.textContent;
+                btn.textContent = '✓ Guardado';
+                btn.style.background = 'rgba(16,185,129,0.35)';
+                btn.style.borderColor = 'rgba(16,185,129,0.7)';
+                setTimeout(() => { btn.textContent = orig; btn.style.background = ''; btn.style.borderColor = ''; }, 1600);
+            }
 
-            // Regresar al checkpoint donde estaba
-            returnToCheckpoint();
+            // Refresh log then go back
+            renderSavedReportsLog();
+            setTimeout(() => returnToCheckpoint(), 400);
         }
+
 
         // ── Navegar al historial ──
         function goToHistory() {
