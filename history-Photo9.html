@@ -515,7 +515,7 @@
 
     <script>
         // ── CONFIG ──
-        const HISTORY_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwHYA0A_2EEc1WJUYod4sG0xPZxaCKkKVwrvTy23upxjkcvJo-DhNm3kQrehkRT7Nc3/exec';
+        const HISTORY_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx-i8j7HnVoUvsGeW-Z_41KyGBo_htiPLqyijJs7R-SgjnBRXfLER-I929d8SdHp4aO/exec';
 
         // ── USER ──
         let currentUser = null;
@@ -582,9 +582,9 @@
                 if (s) s.remove();
 
                 if (data && data.success) {
-                    // Normalizar status vacío → 'En Proceso'
+                    // Normalizar status: si progress < 100 = En Proceso, si = 100 = Completado
                     allReports = (data.reports || []).map(r => {
-                        if (!r.status || r.status.trim() === '') r.status = 'En Proceso';
+                        r.status = (r.progress >= 100) ? 'Completado' : 'En Proceso';
                         return r;
                     });
                     renderReports();
