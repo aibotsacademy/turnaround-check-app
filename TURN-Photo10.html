@@ -611,6 +611,87 @@
             window.location.href = 'login-P10.html';
         }
 
+
+        
+        const BRIEFING_TOPICS = [
+            { id: 'seguridad', label: 'Confirmar equipos de trabajo' },
+            { id: 'horarios', label: 'Seguridad y procedimientos' },
+            { id: 'equipaje', label: 'Manejo de equipaje especial' },
+            { id: 'combustible', label: 'Requerimientos especial de carga' },
+            { id: 'pasajeros', label: 'Encargado y supervisor rampa' },
+            { id: 'clima', label: 'Respetar pulgadas de bin' },
+            { id: 'mantenimiento', label: 'Tener EPP (Equipo de protección)' },
+            { id: 'emergencias', label: 'Procedimientos de emergencia' }
+        ];
+        
+        // ── CHECKPOINT LABELS MATCH EXACT SHEET COLUMN HEADERS ──
+        const QUESTIONS = {
+            TURN: [
+                { key: 'briefing',               label: 'Briefing',                  emoji: '⚡', type: 'briefing' },
+                { key: 'inicio_fod',             label: 'Inicio FOD',                emoji: '🔍' },
+                { key: 'beacon_off',             label: 'Beacon OFF',                emoji: '🚨' },
+                { key: 'planta_electrica',       label: 'Planta Eléctrica',          emoji: '⚡', optional: true },
+                { key: 'aire_acondicionado',     label: 'Aire Acondicionado',        emoji: '❄️', optional: true },
+                { key: 'banda',                  label: 'Banda',                     emoji: '📦' },
+                { key: 'escalera',               label: 'Escalera',                  emoji: '🪜', optional: true },
+                { key: 'inicia_descarga_carga',  label: 'Inicia Descarga Carga',     emoji: '🛄' },
+                { key: 'waste_water',            label: 'Waste & Water',             emoji: '💧' },
+                { key: 'descarga_equipaje',      label: 'Finaliza Descarga Carga',   emoji: '🛄' },
+                { key: 'inicia_equipaje',        label: 'Inicia Descarga Equipaje',  emoji: '🛄' },
+                { key: 'finaliza_equipaje',      label: 'Finaliza Descarga Equipaje',emoji: '🛄' },
+                { key: 'sube_limpieza',          label: 'Sube Limpieza',             emoji: '🧹' },
+                { key: 'baja_limpieza',          label: 'Baja Limpieza',             emoji: '🧹' },
+                { key: 'segundo_fod',            label: '2do FOD',                   emoji: '🔍' },
+                { key: 'ultimo_viaje_carreta',   label: 'Último Viaje Carreta',      emoji: '🚚' },
+                { key: 'inicia_carga_maleta',    label: 'Inicia Carga Maleta',       emoji: '🧳' },
+                { key: 'ultima_maleta',          label: 'Última Maleta',             emoji: '🧳' },
+                { key: 'towbar',                 label: 'Towbar',                    emoji: '🔧' },
+                { key: 'cierre_bines',           label: 'Cierre Bines',              emoji: '🚪' },
+                { key: 'push_back',              label: 'Push Back',                 emoji: '⬅️' },
+                { key: 'tercer_fod',             label: '3er FOD',                   emoji: '🔍' },
+                { key: 'en_aire',                label: 'En el Aire',                emoji: '✈️' }
+            ],
+            'RON-ARRIVAL': [
+                { key: 'briefing',          label: 'Briefing',                  emoji: '⚡', type: 'briefing' },
+                { key: 'fod',               label: 'FOD',                       emoji: '🔍' },
+                { key: 'beacon_off',        label: 'Beacon OFF',                emoji: '🚨' },
+                { key: 'planta_electrica',  label: 'Planta Eléctrica',          emoji: '⚡', optional: true },
+                { key: 'aire_acondicionado',label: 'Aire Acondicionado',        emoji: '❄️', optional: true },
+                { key: 'banda',             label: 'Banda',                     emoji: '📦' },
+                { key: 'escalera',          label: 'Escalera',                  emoji: '🪜', optional: true },
+                { key: 'inicia_descarga',   label: 'Inicia Descarga Equipaje',  emoji: '🛄' },
+                { key: 'finaliza_descarga', label: 'Finaliza Descarga Equipaje',emoji: '🛄' },
+                { key: 'inicia_carga',      label: 'Inicia Descarga Carga',     emoji: '🛄' },
+                { key: 'finaliza_carga',    label: 'Finaliza Descarga Carga',   emoji: '🛄' },
+                { key: 'waste_water',       label: 'Waste & Water',             emoji: '💧' },
+                { key: 'sube_limpieza',     label: 'Sube Limpieza',             emoji: '🧹' },
+                { key: 'baja_limpieza',     label: 'Baja Limpieza',             emoji: '🧹' },
+                { key: 'segundo_fod',       label: '2do FOD',                   emoji: '🔍' },
+                { key: 'ultimo_viaje_carreta', label: 'Último Viaje Carreta',   emoji: '🚚' },
+                { key: 'cierre_bines',      label: 'Cierre Bines',              emoji: '🚪' },
+                { key: 'towbar',            label: 'Towbar',                    emoji: '🔧' }
+            ],
+            'RON-DEPARTURE': [
+                { key: 'briefing',              label: 'Briefing',              emoji: '⚡', type: 'briefing' },
+                { key: 'fod',                   label: 'FOD',                   emoji: '🔍' },
+                { key: 'avion_posicion',        label: 'Avión en Posición',     emoji: '✈️' },
+                { key: 'planta_electrica',      label: 'Planta Eléctrica',      emoji: '⚡', optional: true },
+                { key: 'aire_acondicionado',    label: 'Aire Acondicionado',    emoji: '❄️', optional: true },
+                { key: 'banda',                 label: 'Banda',                 emoji: '📦' },
+                { key: 'escalera',              label: 'Escalera',              emoji: '🪜', optional: true },
+                { key: 'inicia_carga',          label: 'Inicia Carga de Equipaje', emoji: '🛄' },
+                { key: 'waste_water',           label: 'Waste & Water',         emoji: '💧', optional: true },
+                { key: 'segundo_fod',           label: '2do FOD',               emoji: '🔍' },
+                { key: 'finaliza_carga',        label: 'Finaliza Carga Equipaje', emoji: '🛄' },
+                { key: 'inicia_carga_carga',    label: 'Inicia carga de Carga', emoji: '🛄' },
+                { key: 'finaliza_carga_carga',  label: 'Finaliza carga de Carga', emoji: '🛄' },
+                { key: 'towbar',                label: 'Towbar',                emoji: '🔧' },
+                { key: 'cierre_bines',          label: 'Cierre Bines',          emoji: '🚪' },
+                { key: 'push_back',             label: 'Pushback',              emoji: '🔧' },
+                { key: 'tercer_fod',            label: '3er FOD',               emoji: '🔍' }
+            ]
+        };
+        
         // ── RESUME INSPECTION ──────────────────────────────────────────────────
         // Si el historial guardó un reporte en proceso, retomar desde el último
         // checkpoint completado en lugar de iniciar desde cero.
@@ -710,86 +791,7 @@
             setTimeout(() => div.remove(), 3000);
         }
         // ── END RESUME ─────────────────────────────────────────────────────────
-        
-        const BRIEFING_TOPICS = [
-            { id: 'seguridad', label: 'Confirmar equipos de trabajo' },
-            { id: 'horarios', label: 'Seguridad y procedimientos' },
-            { id: 'equipaje', label: 'Manejo de equipaje especial' },
-            { id: 'combustible', label: 'Requerimientos especial de carga' },
-            { id: 'pasajeros', label: 'Encargado y supervisor rampa' },
-            { id: 'clima', label: 'Respetar pulgadas de bin' },
-            { id: 'mantenimiento', label: 'Tener EPP (Equipo de protección)' },
-            { id: 'emergencias', label: 'Procedimientos de emergencia' }
-        ];
-        
-        // ── CHECKPOINT LABELS MATCH EXACT SHEET COLUMN HEADERS ──
-        const QUESTIONS = {
-            TURN: [
-                { key: 'briefing',               label: 'Briefing',                  emoji: '⚡', type: 'briefing' },
-                { key: 'inicio_fod',             label: 'Inicio FOD',                emoji: '🔍' },
-                { key: 'beacon_off',             label: 'Beacon OFF',                emoji: '🚨' },
-                { key: 'planta_electrica',       label: 'Planta Eléctrica',          emoji: '⚡', optional: true },
-                { key: 'aire_acondicionado',     label: 'Aire Acondicionado',        emoji: '❄️', optional: true },
-                { key: 'banda',                  label: 'Banda',                     emoji: '📦' },
-                { key: 'escalera',               label: 'Escalera',                  emoji: '🪜', optional: true },
-                { key: 'inicia_descarga_carga',  label: 'Inicia Descarga Carga',     emoji: '🛄' },
-                { key: 'waste_water',            label: 'Waste & Water',             emoji: '💧' },
-                { key: 'descarga_equipaje',      label: 'Finaliza Descarga Carga',   emoji: '🛄' },
-                { key: 'inicia_equipaje',        label: 'Inicia Descarga Equipaje',  emoji: '🛄' },
-                { key: 'finaliza_equipaje',      label: 'Finaliza Descarga Equipaje',emoji: '🛄' },
-                { key: 'sube_limpieza',          label: 'Sube Limpieza',             emoji: '🧹' },
-                { key: 'baja_limpieza',          label: 'Baja Limpieza',             emoji: '🧹' },
-                { key: 'segundo_fod',            label: '2do FOD',                   emoji: '🔍' },
-                { key: 'ultimo_viaje_carreta',   label: 'Último Viaje Carreta',      emoji: '🚚' },
-                { key: 'inicia_carga_maleta',    label: 'Inicia Carga Maleta',       emoji: '🧳' },
-                { key: 'ultima_maleta',          label: 'Última Maleta',             emoji: '🧳' },
-                { key: 'towbar',                 label: 'Towbar',                    emoji: '🔧' },
-                { key: 'cierre_bines',           label: 'Cierre Bines',              emoji: '🚪' },
-                { key: 'push_back',              label: 'Push Back',                 emoji: '⬅️' },
-                { key: 'tercer_fod',             label: '3er FOD',                   emoji: '🔍' },
-                { key: 'en_aire',                label: 'En el Aire',                emoji: '✈️' }
-            ],
-            'RON-ARRIVAL': [
-                { key: 'briefing',          label: 'Briefing',                  emoji: '⚡', type: 'briefing' },
-                { key: 'fod',               label: 'FOD',                       emoji: '🔍' },
-                { key: 'beacon_off',        label: 'Beacon OFF',                emoji: '🚨' },
-                { key: 'planta_electrica',  label: 'Planta Eléctrica',          emoji: '⚡', optional: true },
-                { key: 'aire_acondicionado',label: 'Aire Acondicionado',        emoji: '❄️', optional: true },
-                { key: 'banda',             label: 'Banda',                     emoji: '📦' },
-                { key: 'escalera',          label: 'Escalera',                  emoji: '🪜', optional: true },
-                { key: 'inicia_descarga',   label: 'Inicia Descarga Equipaje',  emoji: '🛄' },
-                { key: 'finaliza_descarga', label: 'Finaliza Descarga Equipaje',emoji: '🛄' },
-                { key: 'inicia_carga',      label: 'Inicia Descarga Carga',     emoji: '🛄' },
-                { key: 'finaliza_carga',    label: 'Finaliza Descarga Carga',   emoji: '🛄' },
-                { key: 'waste_water',       label: 'Waste & Water',             emoji: '💧' },
-                { key: 'sube_limpieza',     label: 'Sube Limpieza',             emoji: '🧹' },
-                { key: 'baja_limpieza',     label: 'Baja Limpieza',             emoji: '🧹' },
-                { key: 'segundo_fod',       label: '2do FOD',                   emoji: '🔍' },
-                { key: 'ultimo_viaje_carreta', label: 'Último Viaje Carreta',   emoji: '🚚' },
-                { key: 'cierre_bines',      label: 'Cierre Bines',              emoji: '🚪' },
-                { key: 'towbar',            label: 'Towbar',                    emoji: '🔧' }
-            ],
-            'RON-DEPARTURE': [
-                { key: 'briefing',              label: 'Briefing',              emoji: '⚡', type: 'briefing' },
-                { key: 'fod',                   label: 'FOD',                   emoji: '🔍' },
-                { key: 'avion_posicion',        label: 'Avión en Posición',     emoji: '✈️' },
-                { key: 'planta_electrica',      label: 'Planta Eléctrica',      emoji: '⚡', optional: true },
-                { key: 'aire_acondicionado',    label: 'Aire Acondicionado',    emoji: '❄️', optional: true },
-                { key: 'banda',                 label: 'Banda',                 emoji: '📦' },
-                { key: 'escalera',              label: 'Escalera',              emoji: '🪜', optional: true },
-                { key: 'inicia_carga',          label: 'Inicia Carga de Equipaje', emoji: '🛄' },
-                { key: 'waste_water',           label: 'Waste & Water',         emoji: '💧', optional: true },
-                { key: 'segundo_fod',           label: '2do FOD',               emoji: '🔍' },
-                { key: 'finaliza_carga',        label: 'Finaliza Carga Equipaje', emoji: '🛄' },
-                { key: 'inicia_carga_carga',    label: 'Inicia carga de Carga', emoji: '🛄' },
-                { key: 'finaliza_carga_carga',  label: 'Finaliza carga de Carga', emoji: '🛄' },
-                { key: 'towbar',                label: 'Towbar',                emoji: '🔧' },
-                { key: 'cierre_bines',          label: 'Cierre Bines',          emoji: '🚪' },
-                { key: 'push_back',             label: 'Pushback',              emoji: '🔧' },
-                { key: 'tercer_fod',            label: '3er FOD',               emoji: '🔍' }
-            ]
-        };
-        
+
         const container = document.getElementById('canvas-container');
         const scene = new THREE.Scene();
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
