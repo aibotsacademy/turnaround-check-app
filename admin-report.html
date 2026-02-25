@@ -1,0 +1,1394 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard — Turnaround Check</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap');
+
+        :root {
+            --blue: #3b82f6;
+            --purple: #8b5cf6;
+            --green: #10b981;
+            --yellow: #f59e0b;
+            --red: #ef4444;
+            --orange: #f97316;
+            --cyan: #06b6d4;
+            --bg: #050816;
+            --surface: rgba(15, 23, 42, 0.85);
+            --surface2: rgba(20, 30, 58, 0.7);
+            --border: rgba(59, 130, 246, 0.2);
+            --border2: rgba(59, 130, 246, 0.12);
+            --text: #e2e8f0;
+            --muted: #64748b;
+            --alert-critical: #ef4444;
+            --alert-warn: #f59e0b;
+            --alert-info: #3b82f6;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            font-family: 'Syne', sans-serif;
+            background: var(--bg);
+            min-height: 100vh;
+            overflow-x: hidden;
+            color: var(--text);
+        }
+
+        #canvas-container {
+            position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%; z-index: 1;
+            pointer-events: none;
+        }
+
+        .app {
+            position: relative; z-index: 2;
+            min-height: 100vh;
+            display: flex; flex-direction: column;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 16px;
+        }
+
+        /* ══ HEADER ══ */
+        .header {
+            padding: 14px 0 12px;
+            border-bottom: 1px solid var(--border);
+            background: rgba(5, 8, 22, 0.8);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            position: sticky; top: 0; z-index: 50;
+            margin: 0 -16px;
+            padding: 14px 16px 12px;
+        }
+
+        .header-top {
+            display: flex; align-items: center;
+            justify-content: space-between; gap: 12px;
+            margin-bottom: 14px;
+        }
+
+        .header-brand { display: flex; align-items: center; gap: 10px; }
+
+        .logo-icon {
+            width: 38px; height: 38px;
+            background: linear-gradient(135deg, var(--red), var(--orange));
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 18px; flex-shrink: 0;
+            box-shadow: 0 4px 16px rgba(239,68,68,0.35);
+        }
+
+        .logo-text {
+            font-size: 17px; font-weight: 800;
+            background: linear-gradient(135deg, var(--red) 0%, var(--orange) 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            line-height: 1.1;
+        }
+        .logo-sub {
+            font-size: 9px; color: var(--muted);
+            font-family: 'JetBrains Mono', monospace;
+            letter-spacing: 2px; text-transform: uppercase;
+        }
+
+        .admin-badge {
+            padding: 3px 10px;
+            background: rgba(239,68,68,0.12);
+            border: 1px solid rgba(239,68,68,0.35);
+            border-radius: 20px;
+            font-size: 10px; font-weight: 700;
+            color: #fca5a5;
+            font-family: 'JetBrains Mono', monospace;
+            letter-spacing: 1px;
+        }
+
+        .header-right { display: flex; align-items: center; gap: 8px; }
+
+        .live-badge {
+            display: flex; align-items: center; gap: 5px;
+            font-size: 10px; font-weight: 600;
+            color: var(--green); font-family: 'JetBrains Mono', monospace;
+        }
+        .live-dot {
+            width: 7px; height: 7px; border-radius: 50%;
+            background: var(--green);
+            animation: pulse-live 1.5s ease-in-out infinite;
+            box-shadow: 0 0 8px var(--green);
+        }
+        @keyframes pulse-live {
+            0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 8px var(--green); }
+            50% { opacity: 0.5; transform: scale(0.7); box-shadow: 0 0 3px var(--green); }
+        }
+
+        .btn-logout {
+            padding: 6px 14px;
+            background: rgba(239,68,68,0.1);
+            border: 1px solid rgba(239,68,68,0.3);
+            border-radius: 8px; color: #fca5a5;
+            font-size: 11px; font-weight: 600;
+            cursor: pointer; transition: all 0.2s;
+            font-family: 'Syne', sans-serif;
+        }
+        .btn-logout:hover { background: rgba(239,68,68,0.2); }
+
+        /* ══ FILTER BAR ══ */
+        .filter-bar {
+            display: flex; align-items: center;
+            gap: 8px; flex-wrap: wrap;
+        }
+
+        .filter-label {
+            font-size: 10px; font-weight: 700;
+            color: var(--muted); font-family: 'JetBrains Mono', monospace;
+            text-transform: uppercase; letter-spacing: 2px;
+            margin-right: 4px; flex-shrink: 0;
+        }
+
+        .date-pills { display: flex; gap: 5px; flex-wrap: wrap; }
+
+        .date-pill {
+            padding: 5px 13px;
+            background: rgba(30,41,59,0.5);
+            border: 1px solid var(--border2);
+            border-radius: 20px; font-size: 11px; font-weight: 600;
+            cursor: pointer; transition: all 0.18s; color: var(--muted);
+            font-family: 'JetBrains Mono', monospace;
+            white-space: nowrap;
+        }
+        .date-pill.active {
+            background: rgba(59,130,246,0.15);
+            border-color: var(--blue); color: var(--blue);
+        }
+        .date-pill:hover:not(.active) { border-color: rgba(59,130,246,0.3); color: var(--text); }
+
+        .date-input {
+            padding: 5px 12px;
+            background: rgba(30,41,59,0.5);
+            border: 1px solid var(--border2);
+            border-radius: 20px; font-size: 11px;
+            color: var(--text); outline: none;
+            font-family: 'JetBrains Mono', monospace;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+        .date-input:focus { border-color: var(--blue); }
+        .date-input::-webkit-calendar-picker-indicator { filter: invert(0.6); cursor: pointer; }
+
+        .user-select {
+            padding: 5px 12px;
+            background: rgba(30,41,59,0.5);
+            border: 1px solid var(--border2);
+            border-radius: 20px; font-size: 11px;
+            color: var(--text); outline: none;
+            font-family: 'JetBrains Mono', monospace;
+            cursor: pointer; transition: border-color 0.2s;
+            -webkit-appearance: none; appearance: none;
+            padding-right: 24px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2364748b' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 8px center;
+        }
+        .user-select:focus { border-color: var(--blue); }
+        .user-select option { background: #0f172a; }
+
+        .refresh-btn {
+            width: 30px; height: 30px; flex-shrink: 0;
+            background: rgba(59,130,246,0.1);
+            border: 1px solid var(--border);
+            border-radius: 8px; color: var(--blue);
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: all 0.2s; font-size: 16px;
+        }
+        .refresh-btn:hover { background: rgba(59,130,246,0.2); }
+        .refresh-btn.spinning { animation: spin 0.7s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ══ MAIN TABS ══ */
+        .main { padding: 16px 0; flex: 1; }
+
+        .tabs {
+            display: flex; gap: 4px;
+            margin-bottom: 20px;
+            background: rgba(15,23,42,0.5);
+            border: 1px solid var(--border);
+            border-radius: 14px; padding: 4px;
+        }
+
+        .tab-btn {
+            flex: 1; padding: 10px 16px;
+            background: transparent;
+            border: none; border-radius: 10px;
+            color: var(--muted); font-size: 13px; font-weight: 700;
+            cursor: pointer; transition: all 0.22s;
+            font-family: 'Syne', sans-serif;
+            display: flex; align-items: center; justify-content: center; gap: 7px;
+        }
+        .tab-btn.active {
+            background: rgba(59,130,246,0.15);
+            color: var(--text);
+            box-shadow: inset 0 0 0 1px var(--border);
+        }
+        .tab-btn:hover:not(.active) { color: var(--text); background: rgba(30,41,59,0.4); }
+
+        .tab-badge {
+            padding: 2px 8px; border-radius: 10px;
+            font-size: 10px; font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .tab-badge.alert { background: rgba(239,68,68,0.2); color: var(--red); }
+        .tab-badge.normal { background: rgba(59,130,246,0.15); color: var(--blue); }
+
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
+
+        /* ══ KPI ROW ══ */
+        .kpi-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px; margin-bottom: 20px;
+        }
+
+        .kpi-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px; padding: 14px 16px;
+            backdrop-filter: blur(12px);
+            position: relative; overflow: hidden;
+        }
+        .kpi-card::before {
+            content: ''; position: absolute;
+            top: 0; left: 0; right: 0; height: 2px;
+        }
+        .kpi-card.blue::before { background: linear-gradient(90deg, var(--blue), var(--purple)); }
+        .kpi-card.green::before { background: linear-gradient(90deg, var(--green), #059669); }
+        .kpi-card.yellow::before { background: linear-gradient(90deg, var(--yellow), var(--orange)); }
+        .kpi-card.red::before { background: linear-gradient(90deg, var(--red), var(--orange)); }
+        .kpi-card.cyan::before { background: linear-gradient(90deg, var(--cyan), var(--blue)); }
+
+        .kpi-label {
+            font-size: 9px; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 2px;
+            color: var(--muted); font-family: 'JetBrains Mono', monospace;
+            margin-bottom: 6px;
+        }
+        .kpi-value {
+            font-size: 30px; font-weight: 800; line-height: 1;
+            margin-bottom: 3px;
+        }
+        .kpi-value.blue { background: linear-gradient(135deg, var(--blue), var(--purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .kpi-value.green { background: linear-gradient(135deg, var(--green), #059669); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .kpi-value.yellow { background: linear-gradient(135deg, var(--yellow), var(--orange)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .kpi-value.red { background: linear-gradient(135deg, var(--red), var(--orange)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .kpi-value.cyan { background: linear-gradient(135deg, var(--cyan), var(--blue)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .kpi-sub { font-size: 10px; color: var(--muted); font-family: 'JetBrains Mono', monospace; }
+
+        /* ══ TOOLBAR ══ */
+        .toolbar {
+            display: flex; align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+        .toolbar-title {
+            font-size: 15px; font-weight: 800;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .count-tag {
+            padding: 2px 8px; border-radius: 8px;
+            font-size: 10px; font-weight: 700;
+            background: rgba(59,130,246,0.15); color: var(--blue);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* ══ REPORT TABLE ══ */
+        .report-table-wrap {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px; overflow: hidden;
+            backdrop-filter: blur(12px);
+        }
+
+        .rt-head {
+            display: grid;
+            grid-template-columns: 2fr 1.2fr 1fr 1fr 1fr 1fr 0.8fr;
+            gap: 0;
+            padding: 10px 16px;
+            border-bottom: 1px solid var(--border);
+            background: rgba(20,30,58,0.5);
+        }
+        .rt-head-cell {
+            font-size: 9px; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 1.5px;
+            color: var(--muted); font-family: 'JetBrains Mono', monospace;
+        }
+
+        .rt-body { max-height: 480px; overflow-y: auto; }
+        .rt-body::-webkit-scrollbar { width: 4px; }
+        .rt-body::-webkit-scrollbar-thumb { background: rgba(59,130,246,0.3); border-radius: 4px; }
+        .rt-body::-webkit-scrollbar-track { background: transparent; }
+
+        .rt-row {
+            display: grid;
+            grid-template-columns: 2fr 1.2fr 1fr 1fr 1fr 1fr 0.8fr;
+            gap: 0;
+            padding: 10px 16px;
+            border-bottom: 1px solid rgba(30,41,59,0.6);
+            transition: background 0.15s;
+            cursor: pointer;
+            animation: rowIn 0.3s ease both;
+        }
+        @keyframes rowIn { from { opacity: 0; transform: translateX(-8px); } to { opacity: 1; transform: translateX(0); } }
+        .rt-row:hover { background: rgba(59,130,246,0.05); }
+        .rt-row:last-child { border-bottom: none; }
+
+        .rt-cell {
+            font-size: 12px;
+            display: flex; align-items: center;
+            font-family: 'JetBrains Mono', monospace;
+            overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        }
+        .rt-cell.flight { font-weight: 700; font-family: 'Syne', sans-serif; font-size: 13px; }
+
+        .user-pill {
+            display: inline-flex; align-items: center; gap: 5px;
+            background: rgba(59,130,246,0.08);
+            border: 1px solid var(--border2);
+            border-radius: 20px; padding: 2px 8px 2px 4px;
+        }
+        .user-avatar {
+            width: 18px; height: 18px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--blue), var(--purple));
+            display: flex; align-items: center; justify-content: center;
+            font-size: 8px; font-weight: 700; color: #fff; flex-shrink: 0;
+        }
+        .user-name-text { font-size: 11px; font-weight: 600; font-family: 'Syne', sans-serif; }
+
+        .status-dot-wrap { display: flex; align-items: center; gap: 5px; }
+        .status-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+        .dot-done { background: var(--green); box-shadow: 0 0 5px var(--green); }
+        .dot-pending { background: var(--yellow); box-shadow: 0 0 5px var(--yellow); animation: blink 2s ease-in-out infinite; }
+        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+        .pct-bar-wrap { display: flex; align-items: center; gap: 6px; min-width: 0; }
+        .pct-bar-bg {
+            flex: 1; height: 4px; border-radius: 4px;
+            background: rgba(30,41,59,0.6); overflow: hidden;
+            min-width: 30px;
+        }
+        .pct-bar-fill {
+            height: 100%; border-radius: 4px;
+            background: linear-gradient(90deg, var(--blue), var(--purple));
+        }
+        .pct-bar-fill.done { background: linear-gradient(90deg, var(--green), #059669); }
+        .pct-text { font-size: 10px; color: var(--muted); flex-shrink: 0; }
+
+        .type-tag {
+            font-size: 9px; font-weight: 700;
+            padding: 2px 7px; border-radius: 5px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .tag-turn { background: rgba(59,130,246,0.15); color: var(--blue); }
+        .tag-arr { background: rgba(16,185,129,0.15); color: var(--green); }
+        .tag-dep { background: rgba(245,158,11,0.15); color: var(--yellow); }
+
+        /* ══ ALERTS PANEL ══ */
+        .alerts-header {
+            display: flex; align-items: center;
+            justify-content: space-between;
+            margin-bottom: 14px;
+        }
+        .alerts-title {
+            font-size: 15px; font-weight: 800;
+            display: flex; align-items: center; gap: 8px;
+        }
+
+        .alert-filters {
+            display: flex; gap: 5px; flex-wrap: wrap;
+            margin-bottom: 14px;
+        }
+        .alert-filter-btn {
+            padding: 4px 12px;
+            background: rgba(30,41,59,0.5);
+            border: 1px solid var(--border2);
+            border-radius: 20px; font-size: 10px; font-weight: 600;
+            cursor: pointer; transition: all 0.18s; color: var(--muted);
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .alert-filter-btn.active-all { border-color: var(--blue); color: var(--blue); background: rgba(59,130,246,0.1); }
+        .alert-filter-btn.active-crit { border-color: var(--red); color: var(--red); background: rgba(239,68,68,0.1); }
+        .alert-filter-btn.active-warn { border-color: var(--yellow); color: var(--yellow); background: rgba(245,158,11,0.1); }
+        .alert-filter-btn.active-info { border-color: var(--cyan); color: var(--cyan); background: rgba(6,182,212,0.1); }
+
+        .alerts-grid {
+            display: flex; flex-direction: column; gap: 8px;
+        }
+
+        .alert-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px; padding: 14px 16px;
+            backdrop-filter: blur(12px);
+            display: flex; align-items: flex-start; gap: 12px;
+            animation: alertIn 0.4s ease both;
+            position: relative; overflow: hidden;
+            cursor: pointer; transition: all 0.2s;
+        }
+        @keyframes alertIn {
+            from { opacity: 0; transform: translateY(-8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .alert-card:hover { transform: translateX(3px); }
+        .alert-card.critical { border-left: 3px solid var(--red); }
+        .alert-card.warning { border-left: 3px solid var(--yellow); }
+        .alert-card.info { border-left: 3px solid var(--cyan); }
+
+        /* Scanline effect on critical */
+        .alert-card.critical::after {
+            content: '';
+            position: absolute; top: 0; left: 0; right: 0;
+            height: 100%;
+            background: linear-gradient(transparent 50%, rgba(239,68,68,0.03) 50%);
+            background-size: 100% 4px;
+            pointer-events: none;
+            animation: scan 4s linear infinite;
+        }
+        @keyframes scan { 0% { background-position: 0 0; } 100% { background-position: 0 100px; } }
+
+        .alert-icon-wrap {
+            width: 38px; height: 38px; flex-shrink: 0;
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 17px;
+        }
+        .icon-crit { background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3); }
+        .icon-warn { background: rgba(245,158,11,0.15); border: 1px solid rgba(245,158,11,0.3); }
+        .icon-info { background: rgba(6,182,212,0.15); border: 1px solid rgba(6,182,212,0.3); }
+
+        .alert-body { flex: 1; min-width: 0; }
+        .alert-title {
+            font-size: 13px; font-weight: 700;
+            margin-bottom: 3px;
+        }
+        .alert-title.crit { color: #fca5a5; }
+        .alert-title.warn { color: #fcd34d; }
+        .alert-title.info { color: #67e8f9; }
+
+        .alert-desc {
+            font-size: 12px; color: var(--text);
+            margin-bottom: 5px; line-height: 1.4;
+        }
+        .alert-meta {
+            display: flex; align-items: center; gap: 10px;
+            flex-wrap: wrap;
+        }
+        .alert-tag {
+            padding: 2px 8px; border-radius: 6px;
+            font-size: 10px; font-weight: 700;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .atag-crit { background: rgba(239,68,68,0.12); color: #fca5a5; }
+        .atag-warn { background: rgba(245,158,11,0.12); color: #fcd34d; }
+        .atag-info { background: rgba(6,182,212,0.12); color: #67e8f9; }
+        .alert-time {
+            font-size: 10px; color: var(--muted);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .alert-right {
+            flex-shrink: 0; text-align: right;
+            display: flex; flex-direction: column;
+            align-items: flex-end; gap: 4px;
+        }
+
+        .alert-value {
+            font-size: 20px; font-weight: 800;
+            font-family: 'JetBrains Mono', monospace; line-height: 1;
+        }
+        .av-crit { color: var(--red); text-shadow: 0 0 12px rgba(239,68,68,0.5); }
+        .av-warn { color: var(--yellow); }
+        .av-info { color: var(--cyan); }
+
+        .alert-unit {
+            font-size: 9px; color: var(--muted);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* Pulse ring on critical value */
+        .pulse-ring {
+            display: inline-block;
+            position: relative;
+        }
+        .pulse-ring::before {
+            content: '';
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 40px; height: 40px;
+            border-radius: 50%;
+            border: 1px solid rgba(239,68,68,0.4);
+            animation: ringPulse 2s ease-out infinite;
+        }
+        @keyframes ringPulse {
+            0% { transform: translate(-50%,-50%) scale(0.5); opacity: 1; }
+            100% { transform: translate(-50%,-50%) scale(2.5); opacity: 0; }
+        }
+
+        /* ══ ALERT SUMMARY ROW ══ */
+        .alert-summary {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px; margin-bottom: 18px;
+        }
+        .summary-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px; padding: 12px 14px;
+            text-align: center;
+            backdrop-filter: blur(12px);
+        }
+        .summary-card.crit { border-color: rgba(239,68,68,0.3); background: rgba(239,68,68,0.05); }
+        .summary-card.warn { border-color: rgba(245,158,11,0.3); background: rgba(245,158,11,0.05); }
+        .summary-card.info { border-color: rgba(6,182,212,0.3); background: rgba(6,182,212,0.05); }
+        .sc-num { font-size: 26px; font-weight: 800; line-height: 1; margin-bottom: 3px; }
+        .sc-num.crit { color: var(--red); text-shadow: 0 0 20px rgba(239,68,68,0.4); }
+        .sc-num.warn { color: var(--yellow); }
+        .sc-num.info { color: var(--cyan); }
+        .sc-label { font-size: 10px; color: var(--muted); font-family: 'JetBrains Mono', monospace; }
+
+        /* ══ EMPTY / SKELETON ══ */
+        .empty-row {
+            padding: 40px; text-align: center;
+            color: var(--muted); font-size: 14px;
+        }
+        .skeleton-row {
+            padding: 12px 16px;
+            border-bottom: 1px solid rgba(30,41,59,0.5);
+            display: flex; gap: 12px; align-items: center;
+        }
+        .skel { border-radius: 6px; background: rgba(59,130,246,0.08); animation: shimmer 1.4s ease-in-out infinite; }
+        @keyframes shimmer { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+        /* ══ TOAST ══ */
+        .toast {
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(80px);
+            background: rgba(16,185,129,0.92);
+            backdrop-filter: blur(10px);
+            color: #fff; padding: 10px 20px;
+            border-radius: 24px; font-size: 12px; font-weight: 600;
+            z-index: 100; opacity: 0;
+            transition: all 0.3s ease;
+            font-family: 'JetBrains Mono', monospace;
+            white-space: nowrap;
+        }
+        .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+        .toast.error { background: rgba(239,68,68,0.92); }
+
+        /* ══ RESPONSIVE ══ */
+        @media (max-width: 768px) {
+            .rt-head, .rt-row { grid-template-columns: 2fr 1fr 1fr 0.8fr; }
+            .rt-head-cell:nth-child(3),
+            .rt-head-cell:nth-child(5),
+            .rt-cell:nth-child(3),
+            .rt-cell:nth-child(5) { display: none; }
+        }
+        @media (max-width: 520px) {
+            .rt-head, .rt-row { grid-template-columns: 2fr 1fr 0.8fr; }
+            .rt-head-cell:nth-child(4),
+            .rt-cell:nth-child(4) { display: none; }
+            .kpi-row { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+    <div id="canvas-container"></div>
+
+    <div class="app">
+        <header class="header">
+            <div class="header-top">
+                <div class="header-brand">
+                    <div class="logo-icon">🛡️</div>
+                    <div>
+                        <div class="logo-text">Admin Panel</div>
+                        <div class="logo-sub">Turnaround Check · Control Tower</div>
+                    </div>
+                    <div class="admin-badge">ADMIN</div>
+                </div>
+                <div class="header-right">
+                    <div class="live-badge"><div class="live-dot"></div>LIVE</div>
+                    <button class="btn-logout" onclick="logout()">Salir</button>
+                </div>
+            </div>
+
+            <!-- Filter Bar -->
+            <div class="filter-bar">
+                <span class="filter-label">📅</span>
+                <div class="date-pills">
+                    <button class="date-pill active" onclick="setDateFilter('today', this)">Hoy</button>
+                    <button class="date-pill" onclick="setDateFilter('yesterday', this)">Ayer</button>
+                    <button class="date-pill" onclick="setDateFilter('week', this)">Última semana</button>
+                    <button class="date-pill" onclick="setDateFilter('all', this)">Todo</button>
+                </div>
+                <input type="date" class="date-input" id="customDate" onchange="setCustomDate(this.value)" title="Fecha específica">
+                <span class="filter-label" style="margin-left:6px;">👤</span>
+                <select class="user-select" id="userFilter" onchange="applyFilters()">
+                    <option value="all">Todos los usuarios</option>
+                </select>
+                <div class="refresh-btn" id="refreshBtn" onclick="loadAllReports(true)" title="Actualizar">↻</div>
+            </div>
+        </header>
+
+        <main class="main">
+            <!-- KPI Row -->
+            <div class="kpi-row" id="kpiRow">
+                <div class="kpi-card blue">
+                    <div class="kpi-label">Total Reportes</div>
+                    <div class="kpi-value blue" id="kpiTotal">–</div>
+                    <div class="kpi-sub">en el período</div>
+                </div>
+                <div class="kpi-card green">
+                    <div class="kpi-label">Completados</div>
+                    <div class="kpi-value green" id="kpiDone">–</div>
+                    <div class="kpi-sub" id="kpiDonePct">–</div>
+                </div>
+                <div class="kpi-card yellow">
+                    <div class="kpi-label">En Proceso</div>
+                    <div class="kpi-value yellow" id="kpiPending">–</div>
+                    <div class="kpi-sub">sin cerrar</div>
+                </div>
+                <div class="kpi-card red">
+                    <div class="kpi-label">Alertas Activas</div>
+                    <div class="kpi-value red" id="kpiAlerts">–</div>
+                    <div class="kpi-sub">requieren atención</div>
+                </div>
+                <div class="kpi-card cyan">
+                    <div class="kpi-label">Inspectores</div>
+                    <div class="kpi-value cyan" id="kpiUsers">–</div>
+                    <div class="kpi-sub">activos en período</div>
+                </div>
+            </div>
+
+            <!-- Tabs -->
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab('reportes', this)">
+                    📋 Reportes
+                    <span class="tab-badge normal" id="tabBadgeReportes">0</span>
+                </button>
+                <button class="tab-btn" onclick="switchTab('alertas', this)">
+                    🚨 Alertas
+                    <span class="tab-badge alert" id="tabBadgeAlertas">0</span>
+                </button>
+            </div>
+
+            <!-- ═══ TAB: REPORTES ═══ -->
+            <div class="tab-panel active" id="tab-reportes">
+                <div class="toolbar">
+                    <div class="toolbar-title">
+                        📋 Todos los Reportes
+                        <span class="count-tag" id="filteredCount">0</span>
+                    </div>
+                </div>
+
+                <div class="report-table-wrap">
+                    <div class="rt-head">
+                        <div class="rt-head-cell">Vuelo</div>
+                        <div class="rt-head-cell">Inspector</div>
+                        <div class="rt-head-cell">Fecha / Hora</div>
+                        <div class="rt-head-cell">Aerolínea</div>
+                        <div class="rt-head-cell">Tipo</div>
+                        <div class="rt-head-cell">Avance</div>
+                        <div class="rt-head-cell">Estado</div>
+                    </div>
+                    <div class="rt-body" id="reportTableBody">
+                        <div class="skeleton-row"><div class="skel" style="width:120px;height:14px"></div><div class="skel" style="width:80px;height:14px"></div><div class="skel" style="width:100px;height:14px"></div></div>
+                        <div class="skeleton-row"><div class="skel" style="width:140px;height:14px"></div><div class="skel" style="width:90px;height:14px"></div><div class="skel" style="width:80px;height:14px"></div></div>
+                        <div class="skeleton-row"><div class="skel" style="width:110px;height:14px"></div><div class="skel" style="width:70px;height:14px"></div><div class="skel" style="width:120px;height:14px"></div></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ═══ TAB: ALERTAS ═══ -->
+            <div class="tab-panel" id="tab-alertas">
+                <div class="alerts-header">
+                    <div class="alerts-title">🚨 Alertas en Tiempo Real</div>
+                </div>
+
+                <div class="alert-summary">
+                    <div class="summary-card crit">
+                        <div class="sc-num crit" id="alertCritCount">0</div>
+                        <div class="sc-label">CRÍTICAS</div>
+                    </div>
+                    <div class="summary-card warn">
+                        <div class="sc-num warn" id="alertWarnCount">0</div>
+                        <div class="sc-label">ADVERTENCIAS</div>
+                    </div>
+                    <div class="summary-card info">
+                        <div class="sc-num info" id="alertInfoCount">0</div>
+                        <div class="sc-label">INFORMATIVAS</div>
+                    </div>
+                </div>
+
+                <div class="alert-filters">
+                    <button class="alert-filter-btn active-all" id="af-all" onclick="filterAlerts('all', this)">Todas</button>
+                    <button class="alert-filter-btn" id="af-crit" onclick="filterAlerts('critical', this)">🔴 Críticas</button>
+                    <button class="alert-filter-btn" id="af-warn" onclick="filterAlerts('warning', this)">🟡 Advertencias</button>
+                    <button class="alert-filter-btn" id="af-info" onclick="filterAlerts('info', this)">🔵 Informativas</button>
+                </div>
+
+                <div class="alerts-grid" id="alertsGrid">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+    // ══════════════════════════════════════════════════════
+    //  CONFIG
+    // ══════════════════════════════════════════════════════
+    const HISTORY_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxx4p3plw4z3Zj81MJYsPft5AgdNYI2sduIRo8Nac1fUrWt-79OQ7J4Urj3QZN_HoUA/exec';
+    const REFRESH_INTERVAL   = 30000; // 30 s
+
+    // ── Thresholds for alert generation ──
+    const THRESHOLDS = {
+        batteryDelayDelta: { warn: 15, crit: 30 },  // min above average for Battery checkpoint
+        pushbackMax: { warn: 60, crit: 100 },        // total time to Pushback checkpoint in min
+        incompleteMax: { warn: 180, crit: 300 },     // minutes en-proceso without completing
+    };
+
+    // Airlines to monitor for battery metric
+    const BATTERY_AIRLINES = ['Delta', 'United', 'DL', 'UA'];
+
+    // ══════════════════════════════════════════════════════
+    //  STATE
+    // ══════════════════════════════════════════════════════
+    let allReports      = [];
+    let filteredReports = [];
+    let activeAlerts    = [];
+    let alertFilterMode = 'all';
+    let dateFilter      = 'today';
+    let customDateVal   = null;
+    let userFilter      = 'all';
+
+    // ══════════════════════════════════════════════════════
+    //  BOOT
+    // ══════════════════════════════════════════════════════
+    const userData = sessionStorage.getItem('user');
+    if (!userData) {
+        alert('Sesión no encontrada. Por favor inicie sesión.');
+        window.location.href = 'login-P10.html';
+    }
+
+    loadAllReports();
+    setInterval(() => loadAllReports(false), REFRESH_INTERVAL);
+
+    // ══════════════════════════════════════════════════════
+    //  THREE.JS BACKGROUND
+    // ══════════════════════════════════════════════════════
+    (function initBG() {
+        const container = document.getElementById('canvas-container');
+        const scene = new THREE.Scene();
+        const cam   = new THREE.PerspectiveCamera(75, innerWidth / innerHeight, 0.1, 1000);
+        const ren   = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+        ren.setSize(innerWidth, innerHeight);
+        container.appendChild(ren.domElement);
+
+        const geo = new THREE.BufferGeometry();
+        const N = 2200, buf = new Float32Array(N * 3);
+        for (let i = 0; i < N * 3; i++) buf[i] = (Math.random() - 0.5) * 120;
+        geo.setAttribute('position', new THREE.BufferAttribute(buf, 3));
+        const mat = new THREE.PointsMaterial({ size: 0.055, color: 0x3b82f6, transparent: true, opacity: 0.45, blending: THREE.AdditiveBlending });
+        const pts = new THREE.Points(geo, mat);
+        scene.add(pts); cam.position.z = 35;
+
+        // Grid plane
+        const gridHelper = new THREE.GridHelper(80, 30, 0x1e293b, 0x0f172a);
+        gridHelper.position.y = -18;
+        gridHelper.material.transparent = true; gridHelper.material.opacity = 0.3;
+        scene.add(gridHelper);
+
+        (function anim() {
+            requestAnimationFrame(anim);
+            pts.rotation.y += 0.0007;
+            gridHelper.position.z = (gridHelper.position.z - 0.05) % 2;
+            ren.render(scene, cam);
+        })();
+
+        window.addEventListener('resize', () => {
+            cam.aspect = innerWidth / innerHeight;
+            cam.updateProjectionMatrix();
+            ren.setSize(innerWidth, innerHeight);
+        });
+    })();
+
+    // ══════════════════════════════════════════════════════
+    //  DATA LOADING — JSONP to Google Apps Script
+    // ══════════════════════════════════════════════════════
+    function loadAllReports(manual = false) {
+        if (manual) {
+            const rb = document.getElementById('refreshBtn');
+            rb.classList.add('spinning');
+            setTimeout(() => rb.classList.remove('spinning'), 700);
+        }
+
+        const cbName = 'admCb' + Date.now();
+        // Request ALL reports (no inspector filter)
+        const url = `${HISTORY_SCRIPT_URL}?action=getAllHistory&callback=${cbName}`;
+
+        window[cbName] = function(data) {
+            delete window[cbName];
+            const s = document.getElementById('jsonp-admin');
+            if (s) s.remove();
+
+            if (data && data.success) {
+                allReports = (data.reports || []).map(r => {
+                    r.status = (r.progress >= 100) ? 'Completado' : 'En Proceso';
+                    return r;
+                });
+                populateUserFilter();
+                applyFilters();
+                if (manual) showToast('✓ Actualizado — ' + allReports.length + ' reportes');
+            } else {
+                // Fallback: try getHistory per known user list OR show sample data
+                useSampleData();
+                if (manual) showToast('⚠ Sin datos reales. Mostrando demo.', true);
+            }
+        };
+
+        const script = document.createElement('script');
+        script.id  = 'jsonp-admin';
+        script.src = url;
+        script.onerror = () => {
+            delete window[cbName];
+            script.remove();
+            useSampleData();
+        };
+        document.body.appendChild(script);
+
+        setTimeout(() => {
+            if (window[cbName]) {
+                delete window[cbName];
+                const s = document.getElementById('jsonp-admin');
+                if (s) s.remove();
+                useSampleData();
+            }
+        }, 12000);
+    }
+
+    function useSampleData() {
+        // Realistic sample data to showcase the UI
+        const inspectors = ['Rodriguez', 'Martinez', 'Lopez', 'Sanchez', 'Gomez'];
+        const airlines   = ['Delta', 'United', 'American', 'Southwest', 'Copa', 'Avianca'];
+        const airlineCodes = ['DL','UA','AA','WN','CM','AV'];
+        const types      = ['TURN', 'RON-ARRIVAL', 'RON-DEPARTURE'];
+        const now        = new Date();
+
+        allReports = Array.from({ length: 28 }, (_, i) => {
+            const hoursAgo  = Math.random() * 160;
+            const ts        = new Date(now - hoursAgo * 3600000);
+            const airline   = airlineCodes[i % airlineCodes.length];
+            const airlineN  = airlines[i % airlines.length];
+            const inspector = inspectors[i % inspectors.length];
+            const prog      = Math.round(Math.random() * 100);
+            const cpCount   = Math.round(prog / 100 * 8);
+            const duration  = 20 + Math.round(Math.random() * 180);
+
+            const checkpoints = [
+                { label: 'Arribo de Vuelo', emoji: '✈️', timestamp: new Date(ts.getTime() + 5*60000).toISOString() },
+                { label: 'GPU / Batería', emoji: '🔋', timestamp: new Date(ts.getTime() + (15 + Math.random()*40)*60000).toISOString() },
+                { label: 'Desembarque', emoji: '👥', timestamp: new Date(ts.getTime() + 30*60000).toISOString() },
+                { label: 'Catering', emoji: '🍽️', timestamp: new Date(ts.getTime() + 45*60000).toISOString() },
+                { label: 'Fuel / Combustible', emoji: '⛽', timestamp: new Date(ts.getTime() + 55*60000).toISOString() },
+                { label: 'Limpieza', emoji: '🧹', timestamp: new Date(ts.getTime() + 65*60000).toISOString() },
+                { label: 'Pushback', emoji: '🚜', timestamp: new Date(ts.getTime() + duration*60000).toISOString() },
+                { label: 'Despegue', emoji: '🛫', timestamp: new Date(ts.getTime() + (duration+10)*60000).toISOString() },
+            ].slice(0, cpCount);
+
+            return {
+                flightKey: `${airline}${700+i}-${ts.toISOString()}`,
+                flightNumber: `${700 + i}`,
+                airline: airline,
+                airlineName: airlineN,
+                flightType: types[i % 3],
+                flightTimestamp: ts.toISOString(),
+                inspector: inspector,
+                aeropuerto: ['SJO', 'LIR'][i % 2],
+                progress: prog,
+                status: prog >= 100 ? 'Completado' : 'En Proceso',
+                tiempoTotal: prog >= 100 ? duration : null,
+                checkpoints: checkpoints,
+                incident: (i % 9 === 0) ? { type: 'Daño equipo', description: 'GPU averiada', severity: 'Media' } : null,
+            };
+        });
+
+        populateUserFilter();
+        applyFilters();
+    }
+
+    // ══════════════════════════════════════════════════════
+    //  FILTERS
+    // ══════════════════════════════════════════════════════
+    function populateUserFilter() {
+        const sel  = document.getElementById('userFilter');
+        const current = sel.value;
+        const users = [...new Set(allReports.map(r => r.inspector).filter(Boolean))].sort();
+        sel.innerHTML = '<option value="all">Todos los usuarios</option>';
+        users.forEach(u => {
+            const opt = document.createElement('option');
+            opt.value = u; opt.textContent = u;
+            if (u === current) opt.selected = true;
+            sel.appendChild(opt);
+        });
+    }
+
+    function setDateFilter(mode, el) {
+        dateFilter   = mode;
+        customDateVal = null;
+        document.getElementById('customDate').value = '';
+        document.querySelectorAll('.date-pill').forEach(p => p.classList.remove('active'));
+        el.classList.add('active');
+        applyFilters();
+    }
+
+    function setCustomDate(val) {
+        if (!val) return;
+        customDateVal = val;
+        dateFilter = 'custom';
+        document.querySelectorAll('.date-pill').forEach(p => p.classList.remove('active'));
+        applyFilters();
+    }
+
+    function applyFilters() {
+        userFilter = document.getElementById('userFilter').value;
+        const now  = new Date();
+
+        filteredReports = allReports.filter(r => {
+            // Date filter
+            const ts = parseFlightDate(r);
+            if (!ts) return false;
+            const rDate = new Date(ts);
+
+            if (dateFilter === 'today') {
+                if (rDate.toDateString() !== now.toDateString()) return false;
+            } else if (dateFilter === 'yesterday') {
+                const yest = new Date(now); yest.setDate(yest.getDate() - 1);
+                if (rDate.toDateString() !== yest.toDateString()) return false;
+            } else if (dateFilter === 'week') {
+                const weekAgo = new Date(now); weekAgo.setDate(weekAgo.getDate() - 7);
+                if (rDate < weekAgo) return false;
+            } else if (dateFilter === 'custom' && customDateVal) {
+                const chosen = new Date(customDateVal + 'T00:00:00');
+                if (rDate.toDateString() !== chosen.toDateString()) return false;
+            }
+
+            // User filter
+            if (userFilter !== 'all' && r.inspector !== userFilter) return false;
+
+            return true;
+        });
+
+        renderTable();
+        updateKPIs();
+        buildAlerts();
+    }
+
+    // ══════════════════════════════════════════════════════
+    //  TABLE RENDER
+    // ══════════════════════════════════════════════════════
+    function renderTable() {
+        const body = document.getElementById('reportTableBody');
+        document.getElementById('filteredCount').textContent = filteredReports.length;
+        document.getElementById('tabBadgeReportes').textContent = filteredReports.length;
+
+        if (filteredReports.length === 0) {
+            body.innerHTML = '<div class="empty-row">📭 Sin reportes para este período / filtro</div>';
+            return;
+        }
+
+        const sorted = [...filteredReports].sort((a, b) => parseFlightDate(b) - parseFlightDate(a));
+
+        body.innerHTML = sorted.map((r, i) => {
+            const ts    = parseFlightDate(r);
+            const dt    = ts ? formatDateTime(new Date(ts)) : '–';
+            const prog  = r.progress || 0;
+            const done  = r.status === 'Completado';
+            const inspector = r.inspector || '?';
+            const initials  = inspector.slice(0, 2).toUpperCase();
+            const typeTag   = buildTypeTag(r.flightType);
+            const incBadge  = r.incident ? '<span style="color:var(--red);margin-left:4px;">⚠</span>' : '';
+
+            return `
+            <div class="rt-row" style="animation-delay:${i*0.03}s">
+                <div class="rt-cell flight">
+                    ${r.airlineName || r.airline || '–'} ${r.flightNumber || '–'} ${incBadge}
+                    <span style="margin-left:6px;">${typeTag}</span>
+                </div>
+                <div class="rt-cell">
+                    <div class="user-pill">
+                        <div class="user-avatar">${initials}</div>
+                        <span class="user-name-text">${inspector}</span>
+                    </div>
+                </div>
+                <div class="rt-cell">${dt}</div>
+                <div class="rt-cell">${r.airline || '–'}</div>
+                <div class="rt-cell">${r.aeropuerto || '–'}</div>
+                <div class="rt-cell">
+                    <div class="pct-bar-wrap">
+                        <div class="pct-bar-bg">
+                            <div class="pct-bar-fill ${done ? 'done' : ''}" style="width:${prog}%"></div>
+                        </div>
+                        <span class="pct-text">${Math.round(prog)}%</span>
+                    </div>
+                </div>
+                <div class="rt-cell">
+                    <div class="status-dot-wrap">
+                        <div class="status-dot ${done ? 'dot-done' : 'dot-pending'}"></div>
+                        <span style="font-size:11px;">${done ? 'Listo' : 'En proceso'}</span>
+                    </div>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
+    // ══════════════════════════════════════════════════════
+    //  KPI UPDATE
+    // ══════════════════════════════════════════════════════
+    function updateKPIs() {
+        const total   = filteredReports.length;
+        const done    = filteredReports.filter(r => r.status === 'Completado').length;
+        const pending = total - done;
+        const users   = new Set(filteredReports.map(r => r.inspector).filter(Boolean)).size;
+        const pct     = total > 0 ? Math.round((done / total) * 100) : 0;
+
+        document.getElementById('kpiTotal').textContent   = total;
+        document.getElementById('kpiDone').textContent    = done;
+        document.getElementById('kpiDonePct').textContent = `${pct}% completitud`;
+        document.getElementById('kpiPending').textContent = pending;
+        document.getElementById('kpiUsers').textContent   = users;
+    }
+
+    // ══════════════════════════════════════════════════════
+    //  ALERTS ENGINE
+    // ══════════════════════════════════════════════════════
+    function buildAlerts() {
+        activeAlerts = [];
+        const now    = Date.now();
+
+        // ── 1. Battery / GPU delay in Delta & United ──
+        // Compute average GPU timestamp delta (minutes from flight arrival) across all reports
+        const gpuDeltas = [];
+        allReports.forEach(r => {
+            const arrival = r.checkpoints?.find(c => c.label.toLowerCase().includes('arribo') || c.label.toLowerCase().includes('arrival'));
+            const gpu     = r.checkpoints?.find(c => c.label.toLowerCase().includes('batería') || c.label.toLowerCase().includes('gpu') || c.label.toLowerCase().includes('battery'));
+            if (arrival && gpu) {
+                const delta = (new Date(gpu.timestamp) - new Date(arrival.timestamp)) / 60000;
+                if (delta > 0 && delta < 120) gpuDeltas.push(delta);
+            }
+        });
+        const avgGpuDelta = gpuDeltas.length > 0 ? gpuDeltas.reduce((a,b)=>a+b,0) / gpuDeltas.length : 18;
+
+        filteredReports.forEach(r => {
+            const isTargetAirline = BATTERY_AIRLINES.some(code =>
+                (r.airline || '').toUpperCase().includes(code) ||
+                (r.airlineName || '').toLowerCase().includes(code.toLowerCase())
+            );
+
+            if (isTargetAirline) {
+                const arrival = r.checkpoints?.find(c => c.label.toLowerCase().includes('arribo') || c.label.toLowerCase().includes('arrival'));
+                const gpu     = r.checkpoints?.find(c => c.label.toLowerCase().includes('batería') || c.label.toLowerCase().includes('gpu') || c.label.toLowerCase().includes('battery'));
+
+                if (arrival && gpu) {
+                    const delta = (new Date(gpu.timestamp) - new Date(arrival.timestamp)) / 60000;
+                    const over  = delta - avgGpuDelta;
+
+                    if (over >= THRESHOLDS.batteryDelayDelta.crit) {
+                        activeAlerts.push({
+                            id: `bat-crit-${r.flightKey}`,
+                            type: 'critical',
+                            icon: '🔋',
+                            iconClass: 'icon-crit',
+                            title: `Retraso Crítico en GPU/Batería — ${r.airlineName || r.airline}`,
+                            desc: `Vuelo ${r.flightNumber} (inspector: ${r.inspector}) registró GPU con ${Math.round(delta)} min desde arribo. Promedio fleet: ${Math.round(avgGpuDelta)} min.`,
+                            tags: [r.airline || '–', r.aeropuerto || '–', 'BATERÍA'],
+                            tagClass: 'atag-crit',
+                            value: `+${Math.round(over)}`,
+                            valueClass: 'av-crit',
+                            unit: 'min sobre promedio',
+                            time: formatTimeAgo(parseFlightDate(r)),
+                        });
+                    } else if (over >= THRESHOLDS.batteryDelayDelta.warn) {
+                        activeAlerts.push({
+                            id: `bat-warn-${r.flightKey}`,
+                            type: 'warning',
+                            icon: '🔋',
+                            iconClass: 'icon-warn',
+                            title: `Demora en GPU/Batería — ${r.airlineName || r.airline}`,
+                            desc: `Vuelo ${r.flightNumber} conectó GPU ${Math.round(delta)} min post-arribo (promedio: ${Math.round(avgGpuDelta)} min). Monitorear.`,
+                            tags: [r.airline || '–', r.aeropuerto || '–', 'BATERÍA'],
+                            tagClass: 'atag-warn',
+                            value: `+${Math.round(over)}`,
+                            valueClass: 'av-warn',
+                            unit: 'min sobre promedio',
+                            time: formatTimeAgo(parseFlightDate(r)),
+                        });
+                    }
+                }
+            }
+        });
+
+        // ── 2. Pushback > threshold ──
+        filteredReports.forEach(r => {
+            const arrival  = r.checkpoints?.find(c => c.label.toLowerCase().includes('arribo') || c.label.toLowerCase().includes('arrival'));
+            const pushback = r.checkpoints?.find(c => c.label.toLowerCase().includes('pushback'));
+
+            if (arrival && pushback) {
+                const minutes = (new Date(pushback.timestamp) - new Date(arrival.timestamp)) / 60000;
+
+                if (minutes >= THRESHOLDS.pushbackMax.crit) {
+                    activeAlerts.push({
+                        id: `push-crit-${r.flightKey}`,
+                        type: 'critical',
+                        icon: '🚜',
+                        iconClass: 'icon-crit',
+                        title: `Pushback Excesivo — ${r.airlineName || r.airline} ${r.flightNumber}`,
+                        desc: `Inspector ${r.inspector}: tiempo desde arribo hasta Pushback fue ${Math.round(minutes)} min. Umbral crítico: ${THRESHOLDS.pushbackMax.crit} min.`,
+                        tags: [r.airline || '–', r.inspector || '–', 'PUSHBACK'],
+                        tagClass: 'atag-crit',
+                        value: `${Math.round(minutes)}`,
+                        valueClass: 'av-crit',
+                        unit: 'min to Pushback',
+                        time: formatTimeAgo(parseFlightDate(r)),
+                    });
+                } else if (minutes >= THRESHOLDS.pushbackMax.warn) {
+                    activeAlerts.push({
+                        id: `push-warn-${r.flightKey}`,
+                        type: 'warning',
+                        icon: '🚜',
+                        iconClass: 'icon-warn',
+                        title: `Pushback Lento — ${r.airlineName || r.airline} ${r.flightNumber}`,
+                        desc: `Inspector ${r.inspector}: ${Math.round(minutes)} min hasta Pushback. Por encima del umbral de ${THRESHOLDS.pushbackMax.warn} min.`,
+                        tags: [r.airline || '–', r.inspector || '–', 'PUSHBACK'],
+                        tagClass: 'atag-warn',
+                        value: `${Math.round(minutes)}`,
+                        valueClass: 'av-warn',
+                        unit: 'min to Pushback',
+                        time: formatTimeAgo(parseFlightDate(r)),
+                    });
+                }
+            }
+        });
+
+        // ── 3. Incomplete reports open too long ──
+        allReports.filter(r => r.status === 'En Proceso').forEach(r => {
+            const ts = parseFlightDate(r);
+            if (!ts) return;
+            const minutesOpen = (now - ts) / 60000;
+
+            if (minutesOpen >= THRESHOLDS.incompleteMax.crit) {
+                activeAlerts.push({
+                    id: `open-crit-${r.flightKey}`,
+                    type: 'critical',
+                    icon: '⏳',
+                    iconClass: 'icon-crit',
+                    title: `Reporte Sin Cerrar — ${r.airlineName || r.airline} ${r.flightNumber}`,
+                    desc: `Inspector ${r.inspector} tiene este reporte abierto hace ${Math.round(minutesOpen)} min (${Math.round(minutesOpen/60*10)/10}h). Avance: ${r.progress || 0}%.`,
+                    tags: [r.inspector || '–', `${Math.round(r.progress||0)}% completo`, 'INCOMPLETO'],
+                    tagClass: 'atag-crit',
+                    value: `${Math.round(minutesOpen)}`,
+                    valueClass: 'av-crit',
+                    unit: 'min sin cerrar',
+                    time: formatTimeAgo(ts),
+                });
+            } else if (minutesOpen >= THRESHOLDS.incompleteMax.warn) {
+                activeAlerts.push({
+                    id: `open-warn-${r.flightKey}`,
+                    type: 'warning',
+                    icon: '⚠️',
+                    iconClass: 'icon-warn',
+                    title: `Reporte Prolongado — ${r.airlineName || r.airline} ${r.flightNumber}`,
+                    desc: `Inspector ${r.inspector}: reporte abierto ${Math.round(minutesOpen)} min. Avance: ${r.progress || 0}%. Verificar si hay problema.`,
+                    tags: [r.inspector || '–', `${Math.round(r.progress||0)}% completo`, 'EN PROCESO'],
+                    tagClass: 'atag-warn',
+                    value: `${Math.round(minutesOpen)}`,
+                    valueClass: 'av-warn',
+                    unit: 'min abierto',
+                    time: formatTimeAgo(ts),
+                });
+            }
+        });
+
+        // ── 4. Incidents ──
+        filteredReports.filter(r => r.incident).forEach(r => {
+            activeAlerts.push({
+                id: `inc-${r.flightKey}`,
+                type: r.incident.severity === 'Alta' ? 'critical' : 'warning',
+                icon: '🔴',
+                iconClass: r.incident.severity === 'Alta' ? 'icon-crit' : 'icon-warn',
+                title: `Incidente: ${r.incident.type} — ${r.airlineName || r.airline} ${r.flightNumber}`,
+                desc: `${r.incident.description || 'Sin descripción.'} Reportado por ${r.inspector}.`,
+                tags: [r.incident.severity || 'Sin severidad', r.airline || '–', 'INCIDENTE'],
+                tagClass: r.incident.severity === 'Alta' ? 'atag-crit' : 'atag-warn',
+                value: r.incident.severity || '–',
+                valueClass: r.incident.severity === 'Alta' ? 'av-crit' : 'av-warn',
+                unit: 'severidad',
+                time: formatTimeAgo(parseFlightDate(r)),
+            });
+        });
+
+        // ── 5. Informational: high completion rate users ──
+        const byUser = {};
+        filteredReports.forEach(r => {
+            if (!byUser[r.inspector]) byUser[r.inspector] = { total: 0, done: 0 };
+            byUser[r.inspector].total++;
+            if (r.status === 'Completado') byUser[r.inspector].done++;
+        });
+        Object.entries(byUser).forEach(([user, stats]) => {
+            if (stats.total >= 3) {
+                const pct = Math.round((stats.done / stats.total) * 100);
+                if (pct === 100) {
+                    activeAlerts.push({
+                        id: `perf-${user}`,
+                        type: 'info',
+                        icon: '⭐',
+                        iconClass: 'icon-info',
+                        title: `Desempeño Excelente — ${user}`,
+                        desc: `${user} completó el 100% de sus ${stats.total} reportes en el período seleccionado.`,
+                        tags: [`${stats.total} reportes`, '100% completitud', 'RENDIMIENTO'],
+                        tagClass: 'atag-info',
+                        value: '100%',
+                        valueClass: 'av-info',
+                        unit: 'completitud',
+                        time: 'período activo',
+                    });
+                }
+            }
+        });
+
+        // Update counts
+        const crit = activeAlerts.filter(a => a.type === 'critical').length;
+        const warn = activeAlerts.filter(a => a.type === 'warning').length;
+        const info = activeAlerts.filter(a => a.type === 'info').length;
+
+        document.getElementById('alertCritCount').textContent = crit;
+        document.getElementById('alertWarnCount').textContent = warn;
+        document.getElementById('alertInfoCount').textContent = info;
+        document.getElementById('kpiAlerts').textContent = crit + warn;
+        document.getElementById('tabBadgeAlertas').textContent = activeAlerts.length;
+
+        renderAlerts();
+    }
+
+    function renderAlerts() {
+        const grid = document.getElementById('alertsGrid');
+        const show = alertFilterMode === 'all'
+            ? activeAlerts
+            : activeAlerts.filter(a => a.type === alertFilterMode);
+
+        if (show.length === 0) {
+            grid.innerHTML = `<div style="text-align:center;padding:48px;color:var(--muted);font-size:14px;background:var(--surface);border:1px solid var(--border);border-radius:14px;">
+                ✅ Sin alertas activas en este filtro
+            </div>`;
+            return;
+        }
+
+        grid.innerHTML = show.map((a, i) => `
+            <div class="alert-card ${a.type}" style="animation-delay:${i*0.06}s">
+                <div class="alert-icon-wrap ${a.iconClass}">${a.icon}</div>
+                <div class="alert-body">
+                    <div class="alert-title ${a.type === 'critical' ? 'crit' : a.type === 'warning' ? 'warn' : 'info'}">${a.title}</div>
+                    <div class="alert-desc">${a.desc}</div>
+                    <div class="alert-meta">
+                        ${a.tags.map(t => `<span class="alert-tag ${a.tagClass}">${t}</span>`).join('')}
+                        <span class="alert-time">${a.time}</span>
+                    </div>
+                </div>
+                <div class="alert-right">
+                    <div class="alert-value ${a.valueClass}${a.type==='critical'?' pulse-ring':''}">${a.value}</div>
+                    <div class="alert-unit">${a.unit}</div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function filterAlerts(mode, el) {
+        alertFilterMode = mode;
+        document.querySelectorAll('.alert-filter-btn').forEach(b => {
+            b.className = 'alert-filter-btn';
+        });
+        const modeMap = { all: 'active-all', critical: 'active-crit', warning: 'active-warn', info: 'active-info' };
+        el.classList.add(modeMap[mode] || 'active-all');
+        renderAlerts();
+    }
+
+    // ══════════════════════════════════════════════════════
+    //  TAB SWITCHING
+    // ══════════════════════════════════════════════════════
+    function switchTab(name, el) {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+        el.classList.add('active');
+        document.getElementById(`tab-${name}`).classList.add('active');
+    }
+
+    // ══════════════════════════════════════════════════════
+    //  HELPERS
+    // ══════════════════════════════════════════════════════
+    function parseFlightDate(r) {
+        try {
+            let ts = r.flightTimestamp || '';
+            if (!ts && r.flightKey) {
+                const m = r.flightKey.match(/(\d{4}-\d{2}-\d{2}T[\d:.Z]+)/);
+                if (m) ts = m[1];
+            }
+            if (!ts) return 0;
+            const d = new Date(ts);
+            if (!isNaN(d.getTime())) return d.getTime();
+            const parts = ts.match(/(\d+)\/(\d+)\/(\d+)\s+(\d+):(\d+):?(\d*)/);
+            if (parts) return new Date(
+                parseInt(parts[3]), parseInt(parts[1])-1, parseInt(parts[2]),
+                parseInt(parts[4]), parseInt(parts[5]), parseInt(parts[6]||0)
+            ).getTime();
+            return 0;
+        } catch(e) { return 0; }
+    }
+
+    function formatDateTime(d) {
+        return d.toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })
+            + ' ' + d.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function formatTimeAgo(ts) {
+        if (!ts) return '–';
+        const diff = (Date.now() - ts) / 1000;
+        if (diff < 60) return 'hace un momento';
+        if (diff < 3600) return `hace ${Math.round(diff/60)} min`;
+        if (diff < 86400) return `hace ${Math.round(diff/3600)}h`;
+        return `hace ${Math.round(diff/86400)}d`;
+    }
+
+    function buildTypeTag(type) {
+        const map = { 'TURN': ['tag-turn','TURN'], 'RON-ARRIVAL': ['tag-arr','ARR'], 'RON-DEPARTURE': ['tag-dep','DEP'] };
+        const [cls, label] = map[type] || ['tag-turn', type || '–'];
+        return `<span class="type-tag ${cls}">${label}</span>`;
+    }
+
+    function showToast(msg, isErr = false) {
+        const t = document.getElementById('toast');
+        t.textContent = msg;
+        t.className = 'toast' + (isErr ? ' error' : '');
+        t.classList.add('show');
+        setTimeout(() => t.classList.remove('show'), 2800);
+    }
+
+    function logout() {
+        if (confirm('¿Cerrar sesión?')) {
+            sessionStorage.clear();
+            window.location.href = 'login-P10.html';
+        }
+    }
+    </script>
+</body>
+</html>
