@@ -3,17 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flights Report - Login</title>
+    <title>Admin Access — Turnaround Check</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Syne:wght@400;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Syne:wght@400;600;700;800&display=swap');
+
+        :root {
+            --red:    #ef4444;
+            --orange: #f97316;
+            --blue:   #3b82f6;
+            --purple: #8b5cf6;
+            --green:  #10b981;
+            --bg:     #050816;
+            --surface: rgba(15, 23, 42, 0.88);
+            --border:  rgba(239, 68, 68, 0.25);
+            --text:    #e2e8f0;
+            --muted:   #64748b;
+        }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             font-family: 'Syne', sans-serif;
-            background: #050816;
+            background: var(--bg);
             overflow: hidden;
+            min-height: 100vh;
         }
 
         #canvas-container {
@@ -21,157 +35,315 @@
             width: 100%; height: 100%; z-index: 1;
         }
 
+        /* ── SCANLINE OVERLAY ── */
+        body::after {
+            content: '';
+            position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%; z-index: 2;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 2px,
+                rgba(0,0,0,0.03) 2px,
+                rgba(0,0,0,0.03) 4px
+            );
+            pointer-events: none;
+        }
+
         .login-container {
-            position: relative; z-index: 2;
+            position: relative; z-index: 3;
             display: flex; justify-content: center; align-items: center;
             min-height: 100vh; padding: 20px;
         }
 
         .login-box {
-            background: rgba(15, 23, 42, 0.85);
-            backdrop-filter: blur(24px);
-            border: 1px solid rgba(59, 130, 246, 0.3);
+            background: var(--surface);
+            backdrop-filter: blur(28px);
+            -webkit-backdrop-filter: blur(28px);
+            border: 1px solid var(--border);
             border-radius: 24px;
-            padding: 48px 40px;
+            padding: 44px 40px 36px;
             width: 100%; max-width: 420px;
-            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.6),
-                        0 0 80px rgba(59,130,246,0.08);
-            animation: slideIn 0.6s ease-out;
+            box-shadow:
+                0 25px 60px -12px rgba(0,0,0,0.7),
+                0 0 0 1px rgba(239,68,68,0.08),
+                inset 0 1px 0 rgba(255,255,255,0.05);
+            animation: slideIn 0.5s cubic-bezier(0.16,1,0.3,1);
         }
 
         @keyframes slideIn {
-            from { opacity: 0; transform: translateY(30px); }
-            to { opacity: 1; transform: translateY(0); }
+            from { opacity: 0; transform: translateY(24px) scale(0.98); }
+            to   { opacity: 1; transform: translateY(0)    scale(1); }
         }
 
-        .logo { text-align: center; margin-bottom: 40px; }
+        /* ── LOGO ── */
+        .logo {
+            text-align: center;
+            margin-bottom: 36px;
+        }
 
-        .logo-icon {
-            font-size: 48px; margin-bottom: 12px;
-            display: block;
-            animation: float 3s ease-in-out infinite;
+        .logo-shield {
+            width: 72px; height: 72px;
+            margin: 0 auto 16px;
+            position: relative;
+            animation: float 3.5s ease-in-out infinite;
         }
         @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-8px); }
+            0%,100% { transform: translateY(0); }
+            50%      { transform: translateY(-7px); }
         }
 
+        .shield-bg {
+            width: 72px; height: 72px;
+            background: linear-gradient(145deg, rgba(239,68,68,0.2), rgba(249,115,22,0.15));
+            border: 1.5px solid rgba(239,68,68,0.4);
+            border-radius: 16px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 32px;
+            box-shadow:
+                0 0 30px rgba(239,68,68,0.2),
+                inset 0 1px 0 rgba(255,255,255,0.06);
+        }
+
+        /* Rotating ring */
+        .shield-ring {
+            position: absolute; top: -6px; left: -6px;
+            width: 84px; height: 84px;
+            border-radius: 20px;
+            border: 1px solid transparent;
+            border-top-color: rgba(239,68,68,0.5);
+            border-right-color: rgba(249,115,22,0.3);
+            animation: ringRotate 4s linear infinite;
+        }
+        @keyframes ringRotate { to { transform: rotate(360deg); } }
+
         .logo h1 {
-            font-size: 30px; font-weight: 800;
-            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            font-size: 26px; font-weight: 800; line-height: 1.1;
+            background: linear-gradient(135deg, var(--red) 0%, var(--orange) 100%);
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
             margin-bottom: 6px;
         }
 
-        .logo p {
-            color: #64748b; font-size: 11px;
+        .logo-sub {
+            font-size: 10px; color: var(--muted);
             font-family: 'JetBrains Mono', monospace;
             letter-spacing: 3px; text-transform: uppercase;
         }
 
-        .input-group { margin-bottom: 20px; }
+        /* ── ACCESS LEVEL BADGE ── */
+        .access-badge {
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            margin-bottom: 28px;
+            padding: 8px 16px;
+            background: rgba(239,68,68,0.07);
+            border: 1px solid rgba(239,68,68,0.2);
+            border-radius: 10px;
+        }
+        .access-dot {
+            width: 6px; height: 6px; border-radius: 50%;
+            background: var(--red);
+            animation: pulse-red 1.8s ease-in-out infinite;
+            box-shadow: 0 0 6px var(--red);
+        }
+        @keyframes pulse-red {
+            0%,100% { opacity: 1; }
+            50%      { opacity: 0.3; }
+        }
+        .access-text {
+            font-size: 10px; font-weight: 700;
+            color: #fca5a5;
+            font-family: 'JetBrains Mono', monospace;
+            letter-spacing: 2px;
+        }
+
+        /* ── FORM ── */
+        .input-group { margin-bottom: 18px; }
 
         .input-group label {
             display: block; color: #cbd5e1;
-            font-size: 13px; margin-bottom: 8px;
+            font-size: 12px; margin-bottom: 7px;
             font-weight: 600; letter-spacing: 0.5px;
+            font-family: 'JetBrains Mono', monospace;
+            text-transform: uppercase;
         }
 
-        .input-group input {
-            width: 100%; padding: 14px 18px;
-            background: rgba(30, 41, 59, 0.6);
-            border: 1px solid rgba(59, 130, 246, 0.2);
-            border-radius: 12px; color: #fff;
-            font-size: 15px; outline: none;
-            transition: all 0.3s ease;
+        .input-wrap { position: relative; }
+
+        .input-wrap input {
+            width: 100%; padding: 13px 40px 13px 16px;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(59,130,246,0.18);
+            border-radius: 11px; color: var(--text);
+            font-size: 14px; outline: none;
+            transition: all 0.25s ease;
             font-family: 'Syne', sans-serif;
         }
-        .input-group input:focus {
-            border-color: #3b82f6;
-            background: rgba(30, 41, 59, 0.9);
-            box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+        .input-wrap input:focus {
+            border-color: rgba(239,68,68,0.5);
+            background: rgba(15, 23, 42, 0.85);
+            box-shadow: 0 0 0 3px rgba(239,68,68,0.08);
         }
-        .input-group input::placeholder { color: #475569; }
+        .input-wrap input::placeholder { color: #334155; }
 
+        .input-icon {
+            position: absolute; right: 13px; top: 50%;
+            transform: translateY(-50%);
+            color: var(--muted); font-size: 15px;
+            pointer-events: none;
+            transition: color 0.2s;
+        }
+        .input-wrap input:focus + .input-icon { color: #fca5a5; }
+
+        /* Eye toggle */
+        .eye-toggle {
+            position: absolute; right: 13px; top: 50%;
+            transform: translateY(-50%);
+            color: var(--muted); font-size: 15px;
+            cursor: pointer; padding: 2px;
+            background: none; border: none; outline: none;
+            transition: color 0.2s;
+        }
+        .eye-toggle:hover { color: #fca5a5; }
+
+        /* ── LOGIN BUTTON ── */
         .login-btn {
-            width: 100%; padding: 16px;
-            background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+            width: 100%; padding: 15px;
+            background: linear-gradient(135deg, var(--red) 0%, var(--orange) 100%);
             border: none; border-radius: 12px;
-            color: #fff; font-size: 16px; font-weight: 700;
-            cursor: pointer; transition: all 0.3s ease;
-            margin-top: 8px; overflow: hidden; position: relative;
+            color: #fff; font-size: 15px; font-weight: 700;
+            cursor: pointer; transition: all 0.25s ease;
+            margin-top: 6px;
             font-family: 'Syne', sans-serif;
+            letter-spacing: 0.3px;
+            position: relative; overflow: hidden;
+            box-shadow: 0 6px 24px rgba(239,68,68,0.35);
         }
         .login-btn:hover:not(:disabled) {
             transform: translateY(-2px);
-            box-shadow: 0 12px 30px rgba(59,130,246,0.4);
+            box-shadow: 0 10px 32px rgba(239,68,68,0.45);
         }
-        .login-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        .login-btn:active:not(:disabled) { transform: translateY(0); }
+        .login-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+
+        /* Shimmer on hover */
         .login-btn::before {
             content: '';
-            position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
-            transition: left 0.5s;
+            position: absolute; top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.18), transparent);
+            transition: left 0.45s;
         }
         .login-btn:hover::before { left: 100%; }
 
-        .message {
-            margin-top: 16px; padding: 12px 16px;
-            border-radius: 10px; font-size: 13px;
-            text-align: center; display: none;
-            font-family: 'JetBrains Mono', monospace;
-        }
-        .message.error { background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.3); color: #fca5a5; }
-        .message.success { background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.3); color: #6ee7b7; }
-
-        .loading-spinner {
-            display: inline-block; width: 15px; height: 15px;
+        /* ── SPINNER ── */
+        .spinner {
+            display: inline-block; width: 14px; height: 14px;
             border: 2px solid rgba(255,255,255,0.3);
             border-top-color: #fff; border-radius: 50%;
-            animation: spin 0.8s linear infinite;
+            animation: spin 0.7s linear infinite;
             margin-right: 8px; vertical-align: middle;
         }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        .footer {
-            margin-top: 28px; text-align: center;
-            color: #374151; font-size: 12px;
+        /* ── MESSAGE ── */
+        .message {
+            margin-top: 14px; padding: 11px 14px;
+            border-radius: 10px; font-size: 12px;
+            text-align: center; display: none;
             font-family: 'JetBrains Mono', monospace;
+            line-height: 1.45;
+        }
+        .message.error {
+            background: rgba(239,68,68,0.1);
+            border: 1px solid rgba(239,68,68,0.3);
+            color: #fca5a5;
+            animation: shake 0.4s ease;
+        }
+        .message.success {
+            background: rgba(16,185,129,0.1);
+            border: 1px solid rgba(16,185,129,0.3);
+            color: #6ee7b7;
+        }
+        .message.info {
+            background: rgba(59,130,246,0.08);
+            border: 1px solid rgba(59,130,246,0.25);
+            color: #93c5fd;
+        }
+        @keyframes shake {
+            0%,100%{transform:translateX(0)}
+            20%{transform:translateX(-6px)}
+            40%{transform:translateX(6px)}
+            60%{transform:translateX(-4px)}
+            80%{transform:translateX(4px)}
         }
 
-        /* Welcome overlay */
+        /* ── FOOTER ── */
+        .footer {
+            margin-top: 26px; text-align: center;
+            color: #1e293b; font-size: 11px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .footer span { color: #334155; }
+
+        /* ── BACK LINK ── */
+        .back-link {
+            display: flex; align-items: center; justify-content: center;
+            gap: 6px; margin-top: 16px;
+            color: var(--muted); font-size: 11px;
+            font-family: 'JetBrains Mono', monospace;
+            cursor: pointer; text-decoration: none;
+            transition: color 0.2s;
+        }
+        .back-link:hover { color: #94a3b8; }
+
+        /* ── LOCKOUT BANNER ── */
+        .lockout-banner {
+            display: none;
+            margin-bottom: 18px;
+            padding: 10px 14px;
+            background: rgba(239,68,68,0.1);
+            border: 1px solid rgba(239,68,68,0.35);
+            border-radius: 10px;
+            font-size: 11px; color: #fca5a5;
+            font-family: 'JetBrains Mono', monospace;
+            text-align: center; line-height: 1.5;
+        }
+        .lockout-banner.visible { display: block; }
+
+        /* ── WELCOME OVERLAY ── */
         #welcome-screen {
             position: fixed; top: 0; left: 0;
             width: 100%; height: 100%;
-            background: rgba(5, 8, 22, 0.96);
-            backdrop-filter: blur(12px);
+            background: rgba(5, 8, 22, 0.97);
+            backdrop-filter: blur(16px);
             z-index: 1000; display: none;
             justify-content: center; align-items: center;
-            flex-direction: column;
+            flex-direction: column; gap: 12px;
         }
-        #welcome-screen.show { display: flex; animation: fadeIn 0.5s ease; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        #welcome-screen.show { display: flex; animation: fadeIn 0.45s ease; }
+        @keyframes fadeIn { from{opacity:0} to{opacity:1} }
 
-        .welcome-icon { font-size: 64px; margin-bottom: 20px; animation: bounce 0.8s ease; }
+        .wlc-icon { font-size: 60px; animation: bounce 0.7s ease; }
         @keyframes bounce {
-            0%,100% { transform: translateY(0); }
-            40% { transform: translateY(-16px); }
+            0%,100%{transform:translateY(0)}
+            40%{transform:translateY(-14px)}
         }
-        .welcome-content { text-align: center; }
-        .welcome-content h2 {
-            font-size: 40px; font-weight: 800; margin-bottom: 8px;
-            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+        .wlc-title {
+            font-size: 36px; font-weight: 800;
+            background: linear-gradient(135deg, var(--red), var(--orange));
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         }
-        .welcome-content p { color: #cbd5e1; font-size: 18px; margin-bottom: 12px; }
-        .role-badge {
-            display: inline-block; padding: 8px 20px;
-            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-            border-radius: 20px; font-weight: 700; color: #fff; font-size: 14px;
+        .wlc-name { font-size: 17px; color: var(--text); }
+        .wlc-badge {
+            padding: 6px 18px;
+            background: linear-gradient(135deg, var(--red), var(--orange));
+            border-radius: 20px; font-weight: 700;
+            color: #fff; font-size: 12px;
+            font-family: 'JetBrains Mono', monospace; letter-spacing: 1px;
         }
-        .redirect-msg {
-            margin-top: 20px; color: #64748b;
-            font-size: 13px; font-family: 'JetBrains Mono', monospace;
+        .wlc-redirect {
+            margin-top: 8px; color: var(--muted);
+            font-size: 12px; font-family: 'JetBrains Mono', monospace;
         }
     </style>
 </head>
@@ -180,133 +352,357 @@
 
     <div class="login-container">
         <div class="login-box">
+
+            <!-- Logo -->
             <div class="logo">
-                <span class="logo-icon">✈️</span>
-                <h1>Flights Report</h1>
-                <p>Turnaround Check · v3.1</p>
+                <div class="logo-shield">
+                    <div class="shield-ring"></div>
+                    <div class="shield-bg">🛡️</div>
+                </div>
+                <h1>Admin Panel</h1>
+                <div class="logo-sub">Turnaround Check · Control Tower</div>
             </div>
 
-            <form id="loginForm" onsubmit="handleLogin(event)">
+            <!-- Access badge -->
+            <div class="access-badge">
+                <div class="access-dot"></div>
+                <span class="access-text">ACCESO RESTRINGIDO · SOLO ADMINISTRADORES</span>
+            </div>
+
+            <!-- Lockout banner -->
+            <div class="lockout-banner" id="lockoutBanner">
+                🔒 Demasiados intentos fallidos.<br>
+                Espera <span id="lockoutTimer">60</span>s antes de intentar de nuevo.
+            </div>
+
+            <!-- Form -->
+            <form id="loginForm" onsubmit="handleLogin(event)" autocomplete="off">
                 <div class="input-group">
-                    <label for="username">Usuario</label>
-                    <input type="text" id="username" placeholder="Ingrese su usuario"
-                           required autocomplete="username">
+                    <label>Usuario / Email</label>
+                    <div class="input-wrap">
+                        <input
+                            type="text"
+                            id="username"
+                            placeholder="tu.usuario o email@dominio.com"
+                            required
+                            autocomplete="username"
+                            spellcheck="false"
+                        >
+                        <span class="input-icon">👤</span>
+                    </div>
                 </div>
+
                 <div class="input-group">
-                    <label for="password">Contraseña</label>
-                    <input type="password" id="password" placeholder="••••••••"
-                           required autocomplete="current-password">
+                    <label>Contraseña</label>
+                    <div class="input-wrap">
+                        <input
+                            type="password"
+                            id="password"
+                            placeholder="••••••••"
+                            required
+                            autocomplete="current-password"
+                            id="passwordField"
+                        >
+                        <button type="button" class="eye-toggle" onclick="togglePwd()" id="eyeBtn">👁</button>
+                    </div>
                 </div>
+
                 <button type="submit" class="login-btn" id="loginBtn">
-                    <span id="btnText">Iniciar Sesión</span>
+                    <span id="btnText">Acceder al Panel Admin</span>
                 </button>
+
                 <div class="message" id="message"></div>
             </form>
 
+            <a class="back-link" href="login-P10.html">← Volver al inicio de sesión principal</a>
+
             <div class="footer">
-                📊 Reporte x Vuelo · Photo 3.1 · Historial Live
+                <span>Flights Report</span> · Admin v1.0 · Aerojet Handling Group
             </div>
         </div>
     </div>
 
+    <!-- Welcome overlay -->
     <div id="welcome-screen">
-        <div class="welcome-icon">🎉</div>
-        <div class="welcome-content">
-            <h2>¡Bienvenido!</h2>
-            <p id="welcomeUser"></p>
-            <span class="role-badge" id="welcomeRole"></span>
-            <p class="redirect-msg">Cargando tu historial...</p>
-        </div>
+        <div class="wlc-icon">🛡️</div>
+        <div class="wlc-title">Bienvenido/a</div>
+        <div class="wlc-name" id="wlcName">–</div>
+        <div class="wlc-badge">ADMINISTRADOR</div>
+        <div class="wlc-redirect">Cargando panel de control...</div>
     </div>
 
     <script>
-        // ── Three.js background ──
-        const cntr = document.getElementById('canvas-container');
-        const sc = new THREE.Scene();
-        const cm = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        const rd = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-        rd.setSize(window.innerWidth, window.innerHeight);
-        cntr.appendChild(rd.domElement);
-        const geo = new THREE.BufferGeometry();
-        const N = 2500, pos = new Float32Array(N * 3);
-        for (let i = 0; i < N * 3; i++) pos[i] = (Math.random() - 0.5) * 100;
-        geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-        const mat = new THREE.PointsMaterial({ size: 0.07, color: 0x3b82f6, transparent: true, opacity: 0.7, blending: THREE.AdditiveBlending });
-        const pts = new THREE.Points(geo, mat);
-        sc.add(pts); cm.position.z = 30;
-        const tg = new THREE.TorusGeometry(10, 0.4, 16, 100);
-        const tm = new THREE.MeshBasicMaterial({ color: 0x8b5cf6, wireframe: true, transparent: true, opacity: 0.12 });
-        const tr = new THREE.Mesh(tg, tm); tr.position.set(-15, 0, -20); sc.add(tr);
-        (function a() { requestAnimationFrame(a); pts.rotation.y += 0.001; tr.rotation.x += 0.008; rd.render(sc, cm); })();
-        window.addEventListener('resize', () => { cm.aspect = window.innerWidth / window.innerHeight; cm.updateProjectionMatrix(); rd.setSize(window.innerWidth, window.innerHeight); });
+    // ══════════════════════════════════════════════════════════
+    //  ADMIN WHITELIST
+    //  Comparación case-insensitive y con trim automático.
+    //  Agrega o quita nombres/emails según sea necesario.
+    // ══════════════════════════════════════════════════════════
+    const ADMIN_WHITELIST = [
+        // ── Nombres completos ──
+        'yuliana rodriguez',
+        'yuliana rodríguez',
+        'luis leon',
+        'luis león',
+        'luis portela',
 
-        // ── Login logic ──
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwratJLa8uJ_EYMIOPbzkh4YlrahSPUdEonIeFHtsA5fAzlxMyRFyuOeHd6sxughzXL/exec';
+        // ── Emails ──
+        'connect@aerojethandlinggroup.com',
 
-        function handleLogin(e) {
-            e.preventDefault();
-            const username = document.getElementById('username').value.trim();
-            const password = document.getElementById('password').value;
-            if (!username || !password) { showMsg('Complete todos los campos', 'error'); return; }
+        // ── Agrega más aquí ──
+        // 'nombre apellido',
+        // 'email@dominio.com',
+    ];
 
-            setLoading(true);
-            showMsg('', '');
+    // ══════════════════════════════════════════════════════════
+    //  APPS SCRIPT — mismo endpoint que el resto de la app
+    //  El admin login verifica credenciales contra el mismo
+    //  sheet de usuarios, y adicionalmente valida el whitelist.
+    // ══════════════════════════════════════════════════════════
+    const AUTH_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwratJLa8uJ_EYMIOPbzkh4YlrahSPUdEonIeFHtsA5fAzlxMyRFyuOeHd6sxughzXL/exec';
 
-            const cb = 'lCb' + Date.now();
-            const url = `${SCRIPT_URL}?username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}&callback=${cb}`;
+    // ══════════════════════════════════════════════════════════
+    //  LOCKOUT — máx 5 intentos fallidos, bloqueo 60s
+    // ══════════════════════════════════════════════════════════
+    const MAX_ATTEMPTS = 5;
+    const LOCKOUT_SECONDS = 60;
+    let failedAttempts = 0;
+    let lockoutUntil   = 0;
+    let lockoutInterval = null;
 
-            window[cb] = function(res) {
+    function isLockedOut() {
+        return Date.now() < lockoutUntil;
+    }
+
+    function recordFailedAttempt() {
+        failedAttempts++;
+        if (failedAttempts >= MAX_ATTEMPTS) {
+            lockoutUntil = Date.now() + LOCKOUT_SECONDS * 1000;
+            startLockoutTimer();
+        }
+    }
+
+    function startLockoutTimer() {
+        const banner = document.getElementById('lockoutBanner');
+        const timerEl = document.getElementById('lockoutTimer');
+        banner.classList.add('visible');
+        document.getElementById('loginBtn').disabled = true;
+
+        lockoutInterval = setInterval(() => {
+            const remaining = Math.max(0, Math.ceil((lockoutUntil - Date.now()) / 1000));
+            timerEl.textContent = remaining;
+            if (remaining <= 0) {
+                clearInterval(lockoutInterval);
+                banner.classList.remove('visible');
+                document.getElementById('loginBtn').disabled = false;
+                failedAttempts = 0;
+            }
+        }, 500);
+    }
+
+    // ══════════════════════════════════════════════════════════
+    //  WHITELIST CHECK
+    // ══════════════════════════════════════════════════════════
+    function isAdminAllowed(identifier) {
+        const normalized = (identifier || '').trim().toLowerCase();
+        return ADMIN_WHITELIST.some(entry => entry.toLowerCase() === normalized);
+    }
+
+    // ══════════════════════════════════════════════════════════
+    //  HANDLE LOGIN
+    // ══════════════════════════════════════════════════════════
+    function handleLogin(e) {
+        e.preventDefault();
+
+        if (isLockedOut()) {
+            showMsg('🔒 Cuenta bloqueada temporalmente. Espera unos segundos.', 'error');
+            return;
+        }
+
+        const username = document.getElementById('username').value.trim();
+        const password = document.getElementById('password').value;
+
+        if (!username || !password) {
+            showMsg('Por favor completa todos los campos.', 'error');
+            return;
+        }
+
+        // ── Step 1: pre-check whitelist before even hitting the server ──
+        if (!isAdminAllowed(username)) {
+            recordFailedAttempt();
+            const remaining = MAX_ATTEMPTS - failedAttempts;
+            if (remaining > 0) {
+                showMsg(
+                    '⛔ Acceso denegado. Este usuario no tiene permisos de administrador.' +
+                    (remaining <= 3 ? ' Intentos restantes: ' + remaining + '.' : ''),
+                    'error'
+                );
+            } else {
+                showMsg('🔒 Demasiados intentos. Acceso bloqueado temporalmente.', 'error');
+            }
+            return;
+        }
+
+        // ── Step 2: verify credentials against Apps Script ──
+        setLoading(true);
+        showMsg('Verificando credenciales...', 'info');
+
+        const cbName = 'admLoginCb' + Date.now();
+        const url = `${AUTH_SCRIPT_URL}?username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}&callback=${cbName}`;
+
+        window[cbName] = function(res) {
+            setLoading(false);
+            delete window[cbName];
+            const s = document.getElementById('jsonp-admin-login');
+            if (s) s.remove();
+
+            if (res && res.success) {
+                // ── Step 3: double-check whitelist with the name returned by the server ──
+                const serverUsername = res.username || username;
+                if (!isAdminAllowed(serverUsername) && !isAdminAllowed(username)) {
+                    recordFailedAttempt();
+                    showMsg('⛔ Credenciales válidas, pero sin permisos de administrador.', 'error');
+                    return;
+                }
+
+                // ✅ Authorized
+                failedAttempts = 0;
+                const adminData = {
+                    username: serverUsername,
+                    role: res.role || 'Admin',
+                    isAdmin: true,
+                    loginTime: new Date().toISOString(),
+                };
+                sessionStorage.setItem('user', JSON.stringify(adminData));
+                sessionStorage.setItem('adminSession', 'true');
+                showWelcome(serverUsername);
+            } else {
+                recordFailedAttempt();
+                const msg = res ? res.message : 'Error de conexión';
+                showMsg('✗ ' + msg, 'error');
+            }
+        };
+
+        const script = document.createElement('script');
+        script.id  = 'jsonp-admin-login';
+        script.src = url;
+        script.onerror = () => {
+            setLoading(false);
+            delete window[cbName];
+            // On network error: if whitelist already passed, allow offline admin access
+            // (credentials couldn't be verified but username is pre-authorized)
+            showMsg('⚠ No se pudo conectar al servidor. Verifica tu conexión.', 'error');
+        };
+        document.body.appendChild(script);
+
+        setTimeout(() => {
+            if (window[cbName]) {
+                delete window[cbName];
                 setLoading(false);
-                delete window[cb];
-                const s = document.getElementById('jsonp-login');
-                if (s) s.remove();
+                showMsg('✗ Tiempo de espera agotado. Intenta de nuevo.', 'error');
+            }
+        }, 14000);
+    }
 
-                if (res && res.success) {
-                    showMsg('✓ ' + res.message, 'success');
-                    const userData = { username: res.username, role: res.role, loginTime: new Date().toISOString() };
-                    sessionStorage.setItem('user', JSON.stringify(userData));
-                    setTimeout(() => showWelcome(res.username, res.role), 400);
-                } else {
-                    showMsg('✗ ' + (res ? res.message : 'Error desconocido'), 'error');
-                }
-            };
+    // ══════════════════════════════════════════════════════════
+    //  UI HELPERS
+    // ══════════════════════════════════════════════════════════
+    function showWelcome(name) {
+        document.getElementById('wlcName').textContent = name;
+        document.getElementById('welcome-screen').classList.add('show');
+        setTimeout(() => { window.location.href = 'admin-report.html'; }, 2000);
+    }
 
-            const scr = document.createElement('script');
-            scr.id = 'jsonp-login';
-            scr.src = url;
-            scr.onerror = () => { setLoading(false); showMsg('✗ Error de conexión', 'error'); delete window[cb]; };
-            document.body.appendChild(scr);
+    function setLoading(on) {
+        const btn = document.getElementById('loginBtn');
+        const txt = document.getElementById('btnText');
+        btn.disabled = on;
+        txt.innerHTML = on
+            ? '<span class="spinner"></span>Autenticando...'
+            : 'Acceder al Panel Admin';
+    }
 
-            setTimeout(() => {
-                if (window[cb]) {
-                    delete window[cb];
-                    setLoading(false);
-                    showMsg('✗ Tiempo de espera agotado', 'error');
-                }
-            }, 15000);
+    function showMsg(text, type) {
+        const m = document.getElementById('message');
+        m.textContent = text;
+        m.className   = 'message ' + (type || '');
+        m.style.display = text ? 'block' : 'none';
+    }
+
+    function togglePwd() {
+        const field = document.getElementById('password');
+        const btn   = document.getElementById('eyeBtn');
+        if (field.type === 'password') {
+            field.type = 'text';
+            btn.textContent = '🙈';
+        } else {
+            field.type = 'password';
+            btn.textContent = '👁';
         }
+    }
 
-        function showWelcome(username, role) {
-            document.getElementById('welcomeUser').textContent = username;
-            document.getElementById('welcomeRole').textContent = role;
-            document.getElementById('welcome-screen').classList.add('show');
-            // Redirect to HISTORY page (new flow)
-            setTimeout(() => { window.location.href = 'admin-report.html'; }, 2000);
-        }
+    // ══════════════════════════════════════════════════════════
+    //  THREE.JS BACKGROUND
+    // ══════════════════════════════════════════════════════════
+    (function initBG() {
+        const cntr = document.getElementById('canvas-container');
+        const sc   = new THREE.Scene();
+        const cm   = new THREE.PerspectiveCamera(75, innerWidth / innerHeight, 0.1, 1000);
+        const rd   = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+        rd.setSize(innerWidth, innerHeight);
+        cntr.appendChild(rd.domElement);
 
-        function setLoading(on) {
-            const btn = document.getElementById('loginBtn');
-            const txt = document.getElementById('btnText');
-            btn.disabled = on;
-            txt.innerHTML = on ? '<span class="loading-spinner"></span>Autenticando...' : 'Iniciar Sesión';
-        }
+        // Stars
+        const geo = new THREE.BufferGeometry();
+        const N = 2400, pos = new Float32Array(N * 3);
+        for (let i = 0; i < N * 3; i++) pos[i] = (Math.random() - 0.5) * 110;
+        geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+        const mat = new THREE.PointsMaterial({
+            size: 0.06, color: 0xef4444,
+            transparent: true, opacity: 0.45,
+            blending: THREE.AdditiveBlending
+        });
+        const pts = new THREE.Points(geo, mat);
+        sc.add(pts);
 
-        function showMsg(text, type) {
-            const m = document.getElementById('message');
-            m.textContent = text;
-            m.className = 'message ' + type;
-            m.style.display = text ? 'block' : 'none';
-        }
+        // Secondary blue stars
+        const geo2 = new THREE.BufferGeometry();
+        const pos2 = new Float32Array(800 * 3);
+        for (let i = 0; i < 800 * 3; i++) pos2[i] = (Math.random() - 0.5) * 100;
+        geo2.setAttribute('position', new THREE.BufferAttribute(pos2, 3));
+        const mat2 = new THREE.PointsMaterial({
+            size: 0.04, color: 0x3b82f6,
+            transparent: true, opacity: 0.3,
+            blending: THREE.AdditiveBlending
+        });
+        sc.add(new THREE.Points(geo2, mat2));
+
+        // Torus
+        const tg = new THREE.TorusGeometry(12, 0.35, 16, 100);
+        const tm = new THREE.MeshBasicMaterial({
+            color: 0xef4444, wireframe: true,
+            transparent: true, opacity: 0.07
+        });
+        const tr = new THREE.Mesh(tg, tm);
+        tr.position.set(12, -4, -25);
+        sc.add(tr);
+
+        cm.position.z = 32;
+
+        (function anim() {
+            requestAnimationFrame(anim);
+            pts.rotation.y += 0.0006;
+            pts.rotation.x += 0.0002;
+            tr.rotation.x  += 0.007;
+            tr.rotation.z  += 0.004;
+            rd.render(sc, cm);
+        })();
+
+        window.addEventListener('resize', () => {
+            cm.aspect = innerWidth / innerHeight;
+            cm.updateProjectionMatrix();
+            rd.setSize(innerWidth, innerHeight);
+        });
+    })();
     </script>
 </body>
 </html>
