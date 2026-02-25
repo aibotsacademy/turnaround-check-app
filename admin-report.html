@@ -353,17 +353,43 @@
 
         .user-pill {
             display: inline-flex; align-items: center; gap: 5px;
-            background: rgba(59,130,246,0.08);
-            border: 1px solid var(--border2);
+            background: var(--ipill-bg, rgba(59,130,246,0.08));
+            border: 1px solid var(--ipill-border, rgba(59,130,246,0.2));
             border-radius: 20px; padding: 2px 8px 2px 4px;
+            transition: background 0.2s;
         }
         .user-avatar {
             width: 18px; height: 18px; border-radius: 50%;
-            background: linear-gradient(135deg, var(--blue), var(--purple));
+            background: var(--iavatar-bg, linear-gradient(135deg, #3b82f6, #8b5cf6));
             display: flex; align-items: center; justify-content: center;
             font-size: 8px; font-weight: 700; color: #fff; flex-shrink: 0;
+            box-shadow: 0 0 6px var(--iavatar-glow, rgba(59,130,246,0.4));
         }
-        .user-name-text { font-size: 11px; font-weight: 600; font-family: 'Syne', sans-serif; }
+        .user-name-text {
+            font-size: 11px; font-weight: 600; font-family: 'Syne', sans-serif;
+            color: var(--ipill-text, #e2e8f0);
+        }
+
+        /* ── Inspector legend strip ── */
+        .inspector-legend {
+            display: flex; flex-wrap: wrap; gap: 6px;
+            margin-bottom: 12px;
+        }
+        .legend-chip {
+            display: inline-flex; align-items: center; gap: 5px;
+            padding: 4px 10px 4px 5px;
+            border-radius: 20px; cursor: pointer;
+            font-size: 11px; font-weight: 600;
+            font-family: 'Syne', sans-serif;
+            border: 1px solid transparent;
+            transition: all 0.18s; opacity: 0.75;
+        }
+        .legend-chip:hover { opacity: 1; transform: translateY(-1px); }
+        .legend-chip.active { opacity: 1; box-shadow: 0 2px 10px rgba(0,0,0,0.3); }
+        .legend-chip.dimmed { opacity: 0.3; }
+        .legend-dot {
+            width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+        }
 
         .status-dot-wrap { display: flex; align-items: center; gap: 5px; }
         .status-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
@@ -689,6 +715,9 @@
                     </div>
                 </div>
 
+                <!-- Inspector color legend -->
+                <div class="inspector-legend" id="inspectorLegend"></div>
+
                 <div class="report-table-wrap">
                     <div class="rt-head">
                         <div class="rt-head-cell">Vuelo</div>
@@ -797,7 +826,7 @@
     const userData = sessionStorage.getItem('user');
     if (!userData) {
         alert('Sesión no encontrada. Por favor inicie sesión.');
-        window.location.href = 'login-admin.html';
+        window.location.href = 'login-P10.html';
     }
 
     loadAllReports();
@@ -956,6 +985,8 @@
     //  Estatus | Aeropuerto
     // ══════════════════════════════════════════════════════
     function processRawReports(rawReports) {
+        resetInspectorColors();
+        activeInspectorFilter = null;
         allReports = rawReports.map(normalizeReport);
         knownInspectors = [...new Set(allReports.map(function(r){ return r.inspector; }).filter(Boolean))].sort();
         populateUserFilter();
@@ -1098,6 +1129,85 @@
     }
 
     // ══════════════════════════════════════════════════════
+    //  INSPECTOR COLOR SYSTEM
+    //  20-color palette designed for dark backgrounds —
+    //  each inspector gets a stable color (hash-based)
+    // ══════════════════════════════════════════════════════
+    const INSPECTOR_PALETTE = [
+        { bg: 'rgba(59,130,246,0.15)',  border: 'rgba(59,130,246,0.45)',  grad: 'linear-gradient(135deg,#3b82f6,#2563eb)', glow: 'rgba(59,130,246,0.5)',  text: '#93c5fd', dot: '#3b82f6'  }, // blue
+        { bg: 'rgba(16,185,129,0.15)',  border: 'rgba(16,185,129,0.45)',  grad: 'linear-gradient(135deg,#10b981,#059669)', glow: 'rgba(16,185,129,0.5)',  text: '#6ee7b7', dot: '#10b981'  }, // green
+        { bg: 'rgba(245,158,11,0.15)',  border: 'rgba(245,158,11,0.45)',  grad: 'linear-gradient(135deg,#f59e0b,#d97706)', glow: 'rgba(245,158,11,0.5)',  text: '#fcd34d', dot: '#f59e0b'  }, // yellow
+        { bg: 'rgba(239,68,68,0.15)',   border: 'rgba(239,68,68,0.45)',   grad: 'linear-gradient(135deg,#ef4444,#dc2626)', glow: 'rgba(239,68,68,0.5)',   text: '#fca5a5', dot: '#ef4444'  }, // red
+        { bg: 'rgba(139,92,246,0.15)',  border: 'rgba(139,92,246,0.45)',  grad: 'linear-gradient(135deg,#8b5cf6,#7c3aed)', glow: 'rgba(139,92,246,0.5)',  text: '#c4b5fd', dot: '#8b5cf6'  }, // purple
+        { bg: 'rgba(6,182,212,0.15)',   border: 'rgba(6,182,212,0.45)',   grad: 'linear-gradient(135deg,#06b6d4,#0891b2)', glow: 'rgba(6,182,212,0.5)',   text: '#67e8f9', dot: '#06b6d4'  }, // cyan
+        { bg: 'rgba(249,115,22,0.15)',  border: 'rgba(249,115,22,0.45)',  grad: 'linear-gradient(135deg,#f97316,#ea580c)', glow: 'rgba(249,115,22,0.5)',  text: '#fdba74', dot: '#f97316'  }, // orange
+        { bg: 'rgba(236,72,153,0.15)',  border: 'rgba(236,72,153,0.45)',  grad: 'linear-gradient(135deg,#ec4899,#db2777)', glow: 'rgba(236,72,153,0.5)',  text: '#f9a8d4', dot: '#ec4899'  }, // pink
+        { bg: 'rgba(20,184,166,0.15)',  border: 'rgba(20,184,166,0.45)',  grad: 'linear-gradient(135deg,#14b8a6,#0d9488)', glow: 'rgba(20,184,166,0.5)',  text: '#5eead4', dot: '#14b8a6'  }, // teal
+        { bg: 'rgba(99,102,241,0.15)',  border: 'rgba(99,102,241,0.45)',  grad: 'linear-gradient(135deg,#6366f1,#4f46e5)', glow: 'rgba(99,102,241,0.5)',  text: '#a5b4fc', dot: '#6366f1'  }, // indigo
+        { bg: 'rgba(217,70,239,0.15)',  border: 'rgba(217,70,239,0.45)',  grad: 'linear-gradient(135deg,#d946ef,#c026d3)', glow: 'rgba(217,70,239,0.5)',  text: '#f0abfc', dot: '#d946ef'  }, // fuchsia
+        { bg: 'rgba(132,204,22,0.15)',  border: 'rgba(132,204,22,0.45)',  grad: 'linear-gradient(135deg,#84cc16,#65a30d)', glow: 'rgba(132,204,22,0.5)',  text: '#bef264', dot: '#84cc16'  }, // lime
+        { bg: 'rgba(251,191,36,0.15)',  border: 'rgba(251,191,36,0.45)',  grad: 'linear-gradient(135deg,#fbbf24,#f59e0b)', glow: 'rgba(251,191,36,0.5)',  text: '#fde68a', dot: '#fbbf24'  }, // amber
+        { bg: 'rgba(52,211,153,0.15)',  border: 'rgba(52,211,153,0.45)',  grad: 'linear-gradient(135deg,#34d399,#10b981)', glow: 'rgba(52,211,153,0.5)',  text: '#6ee7b7', dot: '#34d399'  }, // emerald
+        { bg: 'rgba(251,113,133,0.15)', border: 'rgba(251,113,133,0.45)', grad: 'linear-gradient(135deg,#fb7185,#f43f5e)', glow: 'rgba(251,113,133,0.5)', text: '#fda4af', dot: '#fb7185'  }, // rose
+        { bg: 'rgba(56,189,248,0.15)',  border: 'rgba(56,189,248,0.45)',  grad: 'linear-gradient(135deg,#38bdf8,#0ea5e9)', glow: 'rgba(56,189,248,0.5)',  text: '#7dd3fc', dot: '#38bdf8'  }, // sky
+        { bg: 'rgba(163,230,53,0.15)',  border: 'rgba(163,230,53,0.45)',  grad: 'linear-gradient(135deg,#a3e635,#84cc16)', glow: 'rgba(163,230,53,0.5)',  text: '#d9f99d', dot: '#a3e635'  }, // yellow-green
+        { bg: 'rgba(248,113,113,0.15)', border: 'rgba(248,113,113,0.45)', grad: 'linear-gradient(135deg,#f87171,#ef4444)', glow: 'rgba(248,113,113,0.5)', text: '#fecaca', dot: '#f87171'  }, // light-red
+        { bg: 'rgba(167,139,250,0.15)', border: 'rgba(167,139,250,0.45)', grad: 'linear-gradient(135deg,#a78bfa,#8b5cf6)', glow: 'rgba(167,139,250,0.5)', text: '#ddd6fe', dot: '#a78bfa'  }, // violet
+        { bg: 'rgba(45,212,191,0.15)',  border: 'rgba(45,212,191,0.45)',  grad: 'linear-gradient(135deg,#2dd4bf,#14b8a6)', glow: 'rgba(45,212,191,0.5)',  text: '#99f6e4', dot: '#2dd4bf'  }, // turquoise
+    ];
+
+    // inspectorColorMap: inspector name → palette index (assigned in order of first appearance)
+    let inspectorColorMap = {};
+    let inspectorColorCounter = 0;
+
+    function getInspectorColor(name) {
+        if (!name) return INSPECTOR_PALETTE[0];
+        if (inspectorColorMap[name] === undefined) {
+            inspectorColorMap[name] = inspectorColorCounter % INSPECTOR_PALETTE.length;
+            inspectorColorCounter++;
+        }
+        return INSPECTOR_PALETTE[inspectorColorMap[name]];
+    }
+
+    function resetInspectorColors() {
+        inspectorColorMap = {};
+        inspectorColorCounter = 0;
+    }
+
+    // Active inspector filter (click legend chip to isolate)
+    let activeInspectorFilter = null;
+
+    function renderInspectorLegend() {
+        const legend = document.getElementById('inspectorLegend');
+        if (!legend) return;
+
+        // Collect unique inspectors from all reports (not just filtered)
+        const inspectors = [...new Set(allReports.map(r => r.inspector).filter(Boolean))].sort();
+
+        if (inspectors.length === 0) { legend.innerHTML = ''; return; }
+
+        legend.innerHTML = inspectors.map(name => {
+            const c       = getInspectorColor(name);
+            const isActive = activeInspectorFilter === name;
+            const isDimmed = activeInspectorFilter && activeInspectorFilter !== name;
+            const count   = filteredReports.filter(r => r.inspector === name).length;
+            return `<div class="legend-chip ${isActive ? 'active' : ''} ${isDimmed ? 'dimmed' : ''}"
+                        style="background:${c.bg};border-color:${c.border};color:${c.text};"
+                        onclick="toggleInspectorHighlight('${name.replace(/'/g,"\\'")}')">
+                        <div class="legend-dot" style="background:${c.dot};box-shadow:0 0 5px ${c.glow};"></div>
+                        ${name}
+                        <span style="opacity:0.6;font-size:10px;margin-left:2px;">${count}</span>
+                    </div>`;
+        }).join('');
+    }
+
+    function toggleInspectorHighlight(name) {
+        activeInspectorFilter = (activeInspectorFilter === name) ? null : name;
+        renderInspectorLegend();
+        renderTable();
+    }
+
+    // ══════════════════════════════════════════════════════
     //  TABLE RENDER
     // ══════════════════════════════════════════════════════
     function renderTable() {
@@ -1107,30 +1217,40 @@
 
         if (filteredReports.length === 0) {
             body.innerHTML = '<div class="empty-row">📭 Sin reportes para este período / filtro</div>';
+            renderInspectorLegend();
             return;
         }
 
-        const sorted = [...filteredReports].sort((a, b) => parseFlightDate(b) - parseFlightDate(a));
+        // Apply inspector highlight filter if active
+        let display = [...filteredReports].sort((a, b) => parseFlightDate(b) - parseFlightDate(a));
+        const dimmed = activeInspectorFilter !== null;
 
-        body.innerHTML = sorted.map((r, i) => {
-            const ts    = parseFlightDate(r);
-            const dt    = ts ? formatDateTime(new Date(ts)) : '–';
-            const prog  = r.progress || 0;
-            const done  = r.status === 'Completado';
+        body.innerHTML = display.map((r, i) => {
+            const ts        = parseFlightDate(r);
+            const dt        = ts ? formatDateTime(new Date(ts)) : '–';
+            const prog      = r.progress || 0;
+            const done      = r.status === 'Completado';
             const inspector = r.inspector || '?';
-            const initials  = inspector.slice(0, 2).toUpperCase();
+            const initials  = inspector.length >= 2
+                ? (inspector.split(/[\s@._-]/)[0]?.[0] || '?').toUpperCase() +
+                  (inspector.split(/[\s@._-]/)[1]?.[0] || inspector[1] || '').toUpperCase()
+                : inspector.slice(0, 2).toUpperCase();
             const typeTag   = buildTypeTag(r.flightType);
             const incBadge  = r.incident ? '<span style="color:var(--red);margin-left:4px;">⚠</span>' : '';
+            const c         = getInspectorColor(inspector);
+            const isHighlighted = !activeInspectorFilter || activeInspectorFilter === inspector;
+            const rowOpacity    = isHighlighted ? '1' : '0.2';
+            const leftAccent    = isHighlighted ? `border-left: 2px solid ${c.dot};` : '';
 
             return `
-            <div class="rt-row" style="animation-delay:${i*0.03}s">
+            <div class="rt-row" style="animation-delay:${i*0.03}s;opacity:${rowOpacity};transition:opacity 0.25s;${leftAccent}">
                 <div class="rt-cell flight">
                     ${r.airlineName || r.airline || '–'} ${r.flightNumber || '–'} ${incBadge}
                     <span style="margin-left:6px;">${typeTag}</span>
                 </div>
                 <div class="rt-cell">
-                    <div class="user-pill">
-                        <div class="user-avatar">${initials}</div>
+                    <div class="user-pill" style="--ipill-bg:${c.bg};--ipill-border:${c.border};--ipill-text:${c.text};">
+                        <div class="user-avatar" style="--iavatar-bg:${c.grad};--iavatar-glow:${c.glow};">${initials}</div>
                         <span class="user-name-text">${inspector}</span>
                     </div>
                 </div>
@@ -1153,6 +1273,8 @@
                 </div>
             </div>`;
         }).join('');
+
+        renderInspectorLegend();
     }
 
     // ══════════════════════════════════════════════════════
@@ -1514,7 +1636,7 @@
     function logout() {
         if (confirm('¿Cerrar sesión?')) {
             sessionStorage.clear();
-            window.location.href = 'login-admin.html';
+            window.location.href = 'login-P10.html';
         }
     }
     </script>
