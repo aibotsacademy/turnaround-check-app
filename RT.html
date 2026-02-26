@@ -3,437 +3,968 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reporte de Silla de Ruedas - Aero Servicio</title>
+    <title>Reporte de Silla de Ruedas</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    
-    <!-- MISMO CSS QUE EL ORIGINAL -->
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0a0e27; }
-        #canvas-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
-        .container { position: relative; z-index: 2; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
-        .form-box { background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(20px); border: 1px solid rgba(236, 72, 153, 0.3); border-radius: 24px; padding: 50px 40px; width: 100%; max-width: 500px; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 100px rgba(236, 72, 153, 0.1); animation: slideIn 0.6s ease-out; }
-        @keyframes slideIn { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
-        .header { text-align: center; margin-bottom: 40px; }
-        .header h1 { font-size: 28px; font-weight: 700; background: linear-gradient(135deg, #ec4899 0%, #a855f7 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 8px; }
-        .user-info { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding: 12px 16px; background: rgba(236, 72, 153, 0.1); border-radius: 12px; border: 1px solid rgba(236, 72, 153, 0.2); }
-        .user-info span { color: #cbd5e1; font-size: 14px; }
-        .user-info .role { background: linear-gradient(135deg, #ec4899 0%, #a855f7 100%); padding: 4px 12px; border-radius: 8px; font-weight: 600; color: #fff; font-size: 12px; }
-        .progress-bar { width: 100%; height: 8px; background: rgba(30, 41, 59, 0.6); border-radius: 10px; margin-bottom: 30px; overflow: hidden; }
-        .progress-fill { height: 100%; background: linear-gradient(90deg, #ec4899 0%, #a855f7 100%); border-radius: 10px; transition: width 0.4s ease; width: 0%; }
-        .step-counter { text-align: center; color: #94a3b8; font-size: 14px; margin-bottom: 20px; }
-        .question-card { display: none; animation: fadeInScale 0.4s ease; }
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Syne:wght@400;600;700;800&display=swap');
+
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        :root {
+            --pink:   #ec4899;
+            --purple: #a855f7;
+            --green:  #10b981;
+            --yellow: #f59e0b;
+            --red:    #ef4444;
+            --bg:     #0a0e27;
+            --surface: rgba(15, 23, 42, 0.85);
+            --border: rgba(236, 72, 153, 0.25);
+            --text:   #e2e8f0;
+            --muted:  #64748b;
+        }
+
+        body {
+            font-family: 'Syne', sans-serif;
+            background: var(--bg);
+            min-height: 100vh; min-height: 100dvh;
+            color: var(--text);
+            overflow-x: hidden;
+        }
+
+        /* ── PARTICLES ── */
+        #canvas-container {
+            position: fixed; top: 0; left: 0;
+            width: 100%; height: 100%; z-index: 1; pointer-events: none;
+        }
+
+        /* ── APP SHELL ── */
+        .app-shell { position: relative; z-index: 2; min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; }
+
+        /* ── HEADER ── */
+        .app-header {
+            background: rgba(10, 14, 39, 0.90);
+            backdrop-filter: blur(22px); -webkit-backdrop-filter: blur(22px);
+            border-bottom: 1px solid var(--border);
+            padding: 12px 20px 0;
+            position: sticky; top: 0; z-index: 10; flex-shrink: 0;
+        }
+        .header-row {
+            display: flex; align-items: center;
+            justify-content: space-between; gap: 10px; margin-bottom: 10px;
+        }
+        .header-brand { display: flex; align-items: center; gap: 9px; }
+        .brand-icon {
+            width: 32px; height: 32px; border-radius: 9px;
+            background: linear-gradient(135deg, var(--pink), var(--purple));
+            display: flex; align-items: center; justify-content: center; font-size: 16px;
+        }
+        .brand-text { font-size: 15px; font-weight: 800; background: linear-gradient(135deg, var(--pink), var(--purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .brand-sub  { font-size: 9px; color: var(--muted); font-family: 'JetBrains Mono', monospace; letter-spacing: 2px; text-transform: uppercase; }
+
+        .header-actions { display: flex; align-items: center; gap: 8px; }
+        .user-chip {
+            display: flex; align-items: center; gap: 6px;
+            background: rgba(236,72,153,0.08); border: 1px solid var(--border);
+            border-radius: 20px; padding: 4px 10px 4px 4px;
+        }
+        .user-chip .av {
+            width: 22px; height: 22px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--pink), var(--purple));
+            display: flex; align-items: center; justify-content: center;
+            font-size: 9px; font-weight: 700; color: #fff; flex-shrink: 0;
+        }
+        .user-chip .un { font-size: 11px; font-weight: 600; max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .btn-hist {
+            background: rgba(168,85,247,0.15); border: 1px solid rgba(168,85,247,0.35);
+            color: #c4b5fd; border-radius: 8px; padding: 5px 12px;
+            font-size: 11px; font-weight: 600; cursor: pointer; font-family: 'Syne', sans-serif;
+            white-space: nowrap; transition: background 0.2s;
+        }
+        .btn-hist:hover  { background: rgba(168,85,247,0.28); }
+        .btn-logout {
+            background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3);
+            color: #fca5a5; border-radius: 8px; padding: 5px 10px;
+            font-size: 11px; font-weight: 600; cursor: pointer; font-family: 'Syne', sans-serif;
+            white-space: nowrap; transition: background 0.2s;
+        }
+        .btn-logout:hover { background: rgba(239,68,68,0.25); }
+
+        /* Progress */
+        .progress-wrap { height: 4px; background: rgba(236,72,153,0.12); overflow: hidden; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, var(--pink), var(--purple)); transition: width 0.4s ease; width: 0%; }
+        .step-counter  { text-align: center; color: var(--muted); font-size: 11px; font-family: 'JetBrains Mono', monospace; padding: 7px 0 9px; }
+
+        /* ── RESUME BANNER ── */
+        .resume-banner {
+            background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.4);
+            border-radius: 12px; padding: 10px 16px; margin: 12px 16px 0;
+            display: none; align-items: center; gap: 10px; font-size: 13px;
+        }
+        .resume-banner.show { display: flex; animation: fadeIn .3s ease; }
+        .resume-badge { background: var(--green); color: #fff; border-radius: 6px; padding: 2px 8px; font-size: 10px; font-weight: 700; font-family: 'JetBrains Mono', monospace; flex-shrink: 0; }
+
+        /* ── SCROLLABLE CONTENT ── */
+        .app-content {
+            flex: 1; overflow-y: auto; overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
+            padding: 20px 16px 40px;
+            max-width: 500px; margin: 0 auto; width: 100%;
+        }
+        .app-content::-webkit-scrollbar { width: 3px; }
+
+        /* ── GLASS CARD ── */
+        .card {
+            background: var(--surface);
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            border-radius: 20px; padding: 26px 22px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.45), 0 0 80px rgba(236,72,153,0.05);
+            margin-bottom: 14px;
+        }
+
+        /* ── QUESTION CARDS ── */
+        .question-card { display: none; animation: fadeUp .35s ease; }
         .question-card.active { display: block; }
-        @keyframes fadeInScale { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
-        .question-title { font-size: 24px; color: #fff; margin-bottom: 10px; font-weight: 600; }
-        .question-subtitle { color: #94a3b8; font-size: 14px; margin-bottom: 30px; }
-        .input-field { width: 100%; padding: 16px 20px; background: rgba(30, 41, 59, 0.6); border: 1px solid rgba(236, 72, 153, 0.3); border-radius: 12px; color: #fff; font-size: 16px; outline: none; transition: all 0.3s ease; margin-bottom: 10px; }
-        .input-field:focus { border-color: #ec4899; background: rgba(30, 41, 59, 0.8); box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.1); }
+        @keyframes fadeUp   { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
+        @keyframes fadeIn   { from { opacity:0; } to { opacity:1; } }
+
+        .question-title    { font-size: 22px; font-weight: 800; color: #fff; margin-bottom: 8px; }
+        .question-subtitle { font-size: 13px; color: var(--muted); margin-bottom: 22px; }
+
+        /* ── FORM ELEMENTS ── */
+        .form-group { margin-bottom: 18px; }
+        .form-group label { display: block; color: #cbd5e1; font-size: 13px; font-weight: 600; margin-bottom: 7px; letter-spacing: 0.3px; }
+
+        .input-field {
+            width: 100%; padding: 13px 16px;
+            background: rgba(30,41,59,0.6);
+            border: 1px solid rgba(236,72,153,0.22);
+            border-radius: 12px; color: #fff; font-size: 15px; outline: none;
+            transition: all 0.25s; font-family: 'Syne', sans-serif;
+        }
+        .input-field:focus { border-color: var(--pink); background: rgba(30,41,59,0.88); box-shadow: 0 0 0 3px rgba(236,72,153,0.1); }
+        .input-field::placeholder { color: #475569; }
         select.input-field { cursor: pointer; }
         select.input-field option { background: #1e293b; color: #fff; }
-        label { display: block; color: #cbd5e1; font-size: 14px; margin-bottom: 8px; font-weight: 500; }
-        .checkbox-container { display: flex; align-items: center; justify-content: center; margin: 40px 0; }
-        .custom-checkbox { position: relative; cursor: pointer; }
-        .custom-checkbox input { position: absolute; opacity: 0; cursor: pointer; }
-        .checkmark { display: flex; align-items: center; justify-content: center; width: 80px; height: 80px; background: rgba(30, 41, 59, 0.6); border: 2px solid rgba(236, 72, 153, 0.3); border-radius: 16px; transition: all 0.3s ease; }
-        .custom-checkbox:hover .checkmark { border-color: #ec4899; background: rgba(236, 72, 153, 0.1); transform: scale(1.05); }
-        .custom-checkbox input:checked ~ .checkmark { background: linear-gradient(135deg, #ec4899 0%, #a855f7 100%); border-color: transparent; }
-        .checkmark svg { width: 40px; height: 40px; stroke: #fff; stroke-width: 3; stroke-dasharray: 50; stroke-dashoffset: 50; transition: stroke-dashoffset 0.3s ease; }
-        .custom-checkbox input:checked ~ .checkmark svg { stroke-dashoffset: 0; }
-        .checkbox-label { display: block; text-align: center; margin-top: 15px; color: #cbd5e1; font-size: 16px; font-weight: 500; }
-        .continue-btn { width: 100%; padding: 16px; background: linear-gradient(135deg, #ec4899 0%, #a855f7 100%); border: none; border-radius: 12px; color: #fff; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; margin-top: 10px; }
-        .continue-btn:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(236, 72, 153, 0.4); }
-        .photo-upload-container { margin: 20px 0; }
-        .photo-upload-btn { width: 100%; padding: 50px 20px; background: rgba(30, 41, 59, 0.6); border: 2px dashed rgba(236, 72, 153, 0.3); border-radius: 12px; color: #94a3b8; cursor: pointer; transition: all 0.3s ease; text-align: center; }
-        .photo-upload-btn:hover { border-color: #ec4899; background: rgba(236, 72, 153, 0.1); }
-        .photo-upload-btn input[type="file"] { display: none; }
-        .photo-preview { margin-top: 15px; border-radius: 12px; overflow: hidden; display: none; }
+        textarea.input-field { resize: vertical; min-height: 90px; }
+
+        /* ── CHECKBOX STEP ── */
+        .checkbox-area { display: flex; flex-direction: column; align-items: center; padding: 10px 0 20px; }
+        .big-check {
+            position: relative; width: 90px; height: 90px; cursor: pointer; margin-bottom: 14px;
+        }
+        .big-check input { position: absolute; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+        .checkmark {
+            width: 90px; height: 90px;
+            background: rgba(30,41,59,0.6);
+            border: 2px solid rgba(236,72,153,0.3);
+            border-radius: 18px;
+            display: flex; align-items: center; justify-content: center;
+            transition: all 0.3s ease;
+        }
+        .big-check:hover .checkmark { border-color: var(--pink); background: rgba(236,72,153,0.1); transform: scale(1.05); }
+        .big-check input:checked ~ .checkmark {
+            background: linear-gradient(135deg, var(--pink), var(--purple));
+            border-color: transparent;
+            animation: pop .25s ease;
+        }
+        @keyframes pop { 0%,100%{transform:scale(1)} 50%{transform:scale(1.1)} }
+        .checkmark svg { width: 44px; height: 44px; stroke: #fff; stroke-width: 3; stroke-dasharray: 52; stroke-dashoffset: 52; transition: stroke-dashoffset 0.3s ease; }
+        .big-check input:checked ~ .checkmark svg { stroke-dashoffset: 0; }
+        .check-label { font-size: 15px; color: #cbd5e1; font-weight: 600; }
+
+        /* Already-done indicator */
+        .already-done {
+            background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3);
+            border-radius: 12px; padding: 12px 14px; margin-bottom: 16px;
+            display: none; align-items: center; gap: 10px; font-size: 13px; color: #6ee7b7;
+        }
+        .already-done.show { display: flex; }
+
+        /* ── PHOTO UPLOAD ── */
+        .photo-upload-zone {
+            width: 100%; padding: 36px 20px;
+            background: rgba(30,41,59,0.5);
+            border: 2px dashed rgba(236,72,153,0.3);
+            border-radius: 14px; cursor: pointer; text-align: center;
+            transition: all 0.25s; display: block;
+        }
+        .photo-upload-zone:hover { border-color: var(--pink); background: rgba(236,72,153,0.08); }
+        .photo-upload-zone input { display: none; }
+        .photo-upload-zone .up-icon { font-size: 38px; margin-bottom: 8px; }
+        .photo-upload-zone .up-text { font-size: 13px; font-weight: 600; color: #94a3b8; }
+        .photo-upload-zone .up-sub  { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+        .photo-preview { margin-top: 12px; border-radius: 12px; overflow: hidden; display: none; }
         .photo-preview img { width: 100%; height: auto; display: block; }
-        .completion-screen { display: none; text-align: center; }
-        .completion-screen.active { display: block; }
-        .completion-icon { width: 100px; height: 100px; margin: 0 auto 30px; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; animation: scaleIn 0.5s ease; }
-        @keyframes scaleIn { from { transform: scale(0); } to { transform: scale(1); } }
-        .completion-icon svg { width: 50px; height: 50px; stroke: #fff; stroke-width: 3; }
-        .completion-title { font-size: 32px; color: #fff; margin-bottom: 15px; font-weight: 700; }
-        .completion-message { color: #94a3b8; font-size: 16px; margin-bottom: 30px; }
-        .report-id { background: rgba(236, 72, 153, 0.1); border: 1px solid rgba(236, 72, 153, 0.3); border-radius: 12px; padding: 15px; margin-bottom: 15px; }
-        .report-id p { color: #cbd5e1; font-size: 14px; margin-bottom: 5px; }
-        .report-id strong { color: #fff; font-size: 18px; }
-        .btn-new-report { width: 100%; padding: 16px; background: linear-gradient(135deg, #ec4899 0%, #a855f7 100%); border: none; border-radius: 12px; color: #fff; font-size: 16px; font-weight: 600; cursor: pointer; transition: all 0.3s ease; }
-        .btn-new-report:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(236, 72, 153, 0.4); }
-        .logout-btn { position: fixed; top: 20px; right: 20px; padding: 10px 20px; background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 10px; color: #fca5a5; font-size: 14px; cursor: pointer; transition: all 0.3s ease; z-index: 10; }
-        .logout-btn:hover { background: rgba(239, 68, 68, 0.3); transform: translateY(-2px); }
-        .report-details { margin: 20px 0; padding: 15px; background: rgba(30, 41, 59, 0.3); border-radius: 12px; text-align: left; }
-        .detail-item { margin-bottom: 15px; padding: 10px; background: rgba(236, 72, 153, 0.1); border-left: 3px solid #ec4899; border-radius: 8px; }
-        .detail-item-title { color: #fff; font-weight: 600; margin-bottom: 5px; }
-        .detail-item-time { color: #94a3b8; font-size: 12px; }
-        .detail-item-duration { color: #10b981; font-size: 12px; margin-top: 3px; }
+
+        /* ── BUTTONS ── */
+        .btn-primary {
+            width: 100%; padding: 15px;
+            background: linear-gradient(135deg, var(--pink), var(--purple));
+            border: none; border-radius: 12px; color: #fff;
+            font-size: 15px; font-weight: 700; cursor: pointer;
+            font-family: 'Syne', sans-serif; transition: all 0.25s; margin-top: 4px;
+        }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(236,72,153,0.4); }
+        .btn-primary:active { opacity: 0.82; transform: none; }
+        .btn-primary:disabled { opacity: 0.5; pointer-events: none; }
+
+        .btn-secondary {
+            width: 100%; padding: 13px;
+            background: rgba(71,85,105,0.25); color: #cbd5e1;
+            border: 1px solid rgba(71,85,105,0.4); border-radius: 12px;
+            font-size: 14px; font-weight: 600; cursor: pointer;
+            font-family: 'Syne', sans-serif; margin-top: 8px; transition: background 0.2s;
+        }
+        .btn-secondary:hover { background: rgba(71,85,105,0.4); }
+
+        /* ── COMPLETION ── */
+        .completion-screen { display: none; }
+        .completion-screen.active { display: block; animation: fadeUp .4s ease; }
+
+        .completion-icon {
+            font-size: 64px; text-align: center; margin-bottom: 16px;
+            animation: bounce .7s ease;
+        }
+        @keyframes bounce { 0%,100%{transform:translateY(0)} 40%{transform:translateY(-18px)} 60%{transform:translateY(-9px)} }
+        .completion-title { font-size: 28px; font-weight: 800; color: #fff; text-align: center; margin-bottom: 8px; }
+        .completion-sub   { font-size: 14px; color: var(--muted); text-align: center; margin-bottom: 22px; }
+
+        .summary-card {
+            background: var(--surface); border: 1px solid var(--border);
+            border-radius: 16px; padding: 18px; margin-bottom: 12px;
+            backdrop-filter: blur(12px);
+        }
+        .summary-title { font-size: 13px; font-weight: 700; color: #fff; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+        .summary-row {
+            display: flex; justify-content: space-between; align-items: flex-start;
+            padding: 8px 0; border-bottom: 1px solid rgba(236,72,153,0.1); gap: 10px;
+        }
+        .summary-row:last-child { border-bottom: none; }
+        .summary-label { font-size: 12px; color: var(--muted); flex-shrink: 0; }
+        .summary-value { font-size: 13px; font-weight: 600; text-align: right; }
+
+        .time-row {
+            background: rgba(30,41,59,0.4); border: 1px solid rgba(236,72,153,0.1);
+            border-radius: 10px; padding: 10px 12px; margin-bottom: 7px;
+        }
+        .time-row:last-child { margin-bottom: 0; }
+        .time-row-label { font-size: 12px; color: var(--muted); margin-bottom: 3px; font-family: 'JetBrains Mono', monospace; }
+        .time-row-value { font-size: 14px; font-weight: 700; color: #fff; }
+        .time-row-diff  { font-size: 11px; color: var(--green); margin-top: 2px; font-family: 'JetBrains Mono', monospace; }
+
+        /* ── TOAST ── */
+        .toast {
+            position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%) translateY(80px);
+            background: rgba(16,185,129,0.92); backdrop-filter: blur(10px);
+            color: #fff; padding: 10px 22px; border-radius: 24px;
+            font-size: 13px; font-weight: 600; z-index: 999; opacity: 0;
+            transition: all 0.3s ease; font-family: 'JetBrains Mono', monospace; white-space: nowrap;
+        }
+        .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+        .toast.error { background: rgba(239,68,68,0.92); }
+
+        /* ── SENDING OVERLAY ── */
+        .sending-overlay {
+            position: fixed; inset: 0; background: rgba(10,14,39,0.88);
+            backdrop-filter: blur(8px); z-index: 500;
+            display: none; flex-direction: column; align-items: center; justify-content: center; gap: 16px;
+        }
+        .sending-overlay.show { display: flex; }
+        .send-spinner {
+            width: 44px; height: 44px; border: 3px solid rgba(236,72,153,0.2);
+            border-top-color: var(--pink); border-radius: 50%;
+            animation: spin .8s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .send-label { color: #cbd5e1; font-size: 14px; font-family: 'JetBrains Mono', monospace; }
+
+        @media (max-width: 480px) {
+            .app-content { padding: 14px 12px 32px; }
+            .card { padding: 20px 16px; }
+        }
     </style>
 </head>
 <body>
     <div id="canvas-container"></div>
-    <button class="logout-btn" onclick="logout()">Cerrar Sesión</button>
 
-    <div class="container">
-        <div class="form-box">
-            <div class="header">
-                <h1>Reporte de Silla ♿</h1>
-            </div>
-
-            <div class="user-info">
-                <span id="userName">Cargando...</span>
-                <span class="role" id="userRole">-</span>
-            </div>
-
-            <div class="progress-bar">
-                <div class="progress-fill" id="progressBar"></div>
-            </div>
-
-            <div class="step-counter" id="stepCounter">Información de Vuelo</div>
-
-            <!-- Step 0: Flight Information -->
-            <div class="question-card active" data-step="0">
-                <h2 class="question-title">Información de Vuelo</h2>
-                <p class="question-subtitle">Seleccione tipo, aerolínea e ingrese número de vuelo</p>
-                
-                <div style="margin: 20px 0;">
-                    <label>Tipo de Servicio</label>
-                    <select id="airlineType" class="input-field">
-                        <option value="">Seleccione tipo</option>
-                        <option value="asistencia-sala">Asistencia a Sala</option>
-                        <option value="Desabordaje">Desabordaje</option>
-                          <option value="Abordaje">Abordaje</option>
-                          <option value="otro">Otro</option>
-                    </select>
-                </div>
-
-                <div style="margin: 20px 0;">
-                    <label>Aerolínea</label>
-                    <select id="airlineSelect" class="input-field">
-                        <option value="">Seleccione aerolínea</option>
-                        <option value="B6">Jetblue</option>
-                        <option value="AS">Alaska</option>
-                        <option value="DL">Delta</option>
-                        <option value="WN">Southwest</option>
-                        <option value="AA">American</option>
-                        <option value="WS">Westjet</option>
-                        <option value="AC">Air Canada</option>
-                        <option value="PD">Porter</option>
-                        <option value="UA">United</option>
-                        <option value="WK">Edelweiss</option>
-                    </select>
-                </div>
-
-                <div style="margin: 20px 0;">
-                    <label># de Vuelo</label>
-                    <input type="text" id="flightNumber" class="input-field" placeholder="Ej: 1234">
-                </div>
-                
-                <button class="continue-btn" onclick="submitFlightInfo()">Continuar</button>
-            </div>
-
-            <!-- Steps 1-5: MISMOS QUE EL ORIGINAL -->
-            <div class="question-card" data-step="1">
-                <h2 class="question-title">Silla Asignada 🦽</h2>
-                <p class="question-subtitle">Servicio de silla de ruedas asignado</p>
-                <div class="checkbox-container">
-                    <label class="custom-checkbox">
-                        <input type="checkbox" onchange="nextStep(1, 'Silla Asignada')">
-                        <span class="checkmark"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-                    </label>
-                </div>
-                <span class="checkbox-label">Marcar como completado</span>
-            </div>
-
-            <div class="question-card" data-step="2">
-                <h2 class="question-title">Inicio de Servicio 👤</h2>
-                <p class="question-subtitle">He recogido al pasajero</p>
-                <div class="checkbox-container">
-                    <label class="custom-checkbox">
-                        <input type="checkbox" onchange="nextStep(2, 'Inicio de Servicio')">
-                        <span class="checkmark"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-                    </label>
-                </div>
-                <span class="checkbox-label">Marcar como completado</span>
-            </div>
-
-            <div class="question-card" data-step="3">
-                <h2 class="question-title">Finalización de Servicio ✅</h2>
-                <p class="question-subtitle">He dejado al pasajero</p>
-                <div class="checkbox-container">
-                    <label class="custom-checkbox">
-                        <input type="checkbox" onchange="nextStep(3, 'Finalización de Servicio')">
-                        <span class="checkmark"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-                    </label>
-                </div>
-                <span class="checkbox-label">Marcar como completado</span>
-            </div>
-
-            <div class="question-card" data-step="4">
-                <h2 class="question-title">Reporte de Incidente 📸</h2>
-                <p class="question-subtitle">¿Hubo algún incidente? (Opcional)</p>
-                <div style="margin: 20px 0;">
-                    <label>Descripción del Incidente</label>
-                    <textarea id="incidentDescription" class="input-field" placeholder="Describa el incidente (opcional)" rows="4" style="resize: vertical; font-family: inherit;"></textarea>
-                </div>
-                <div class="photo-upload-container">
-                    <label class="photo-upload-btn">
-                        <div style="font-size: 40px; margin-bottom: 10px;">📷</div>
-                        <div style="font-size: 14px; font-weight: 600;">Agregar Foto (Opcional)</div>
-                        <div style="font-size: 12px; margin-top: 5px;">Click para seleccionar imagen</div>
-                        <input type="file" id="incidentPhoto" accept="image/*" onchange="previewPhoto(this)">
-                    </label>
-                    <div class="photo-preview" id="photoPreview">
-                        <img id="previewImage" src="" alt="Vista previa">
-                    </div>
-                </div>
-                <button class="continue-btn" onclick="submitIncident()">Continuar</button>
-            </div>
-
-            <div class="question-card" data-step="5">
-                <h2 class="question-title">Retorno de Silla 🔄</h2>
-                <p class="question-subtitle">Silla de ruedas devuelta</p>
-                <div class="checkbox-container">
-                    <label class="custom-checkbox">
-                        <input type="checkbox" onchange="nextStep(5, 'Retorno de Silla')">
-                        <span class="checkmark"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-                    </label>
-                </div>
-                <span class="checkbox-label">Marcar como completado</span>
-            </div>
-
-            <!-- Completion Screen: MISMA QUE EL ORIGINAL -->
-            <div class="completion-screen">
-                <div class="completion-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-                <h2 class="completion-title">¡Reporte Creado!</h2>
-                <p class="completion-message">El servicio de silla de ruedas se ha completado exitosamente</p>
-                <div class="report-id"><p>Número de Reporte:</p><strong id="reportId">-</strong></div>
-                <div class="report-id"><p>Número de Vuelo:</p><strong id="reportFlight">-</strong></div>
-                <div class="report-id"><p>Hora de Asignación:</p><strong id="reportAssignTime">-</strong></div>
-                <div class="report-id"><p>Hora de Inicio de Servicio:</p><strong id="reportStartTime">-</strong></div>
-                <div class="report-id"><p>Hora de Finalización:</p><strong id="reportEndTime">-</strong></div>
-                <div class="report-details" id="reportDetails"></div>
-                <button class="btn-new-report" onclick="newReport()">Nuevo Reporte</button>
-            </div>
-        </div>
+    <!-- Sending overlay -->
+    <div class="sending-overlay" id="sendingOverlay">
+        <div class="send-spinner"></div>
+        <div class="send-label" id="sendLabel">Guardando…</div>
     </div>
 
+    <div class="app-shell">
+        <!-- HEADER -->
+        <header class="app-header">
+            <div class="header-row">
+                <div class="header-brand">
+                    <div class="brand-icon">♿</div>
+                    <div>
+                        <div class="brand-text">Reporte de Silla</div>
+                        <div class="brand-sub">Wheelchair Services</div>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <div class="user-chip">
+                        <div class="av" id="avatarInitial">?</div>
+                        <div class="un" id="usernameDisplay">…</div>
+                    </div>
+                    <button class="btn-hist" onclick="goToHistory()">📋 Historial</button>
+                    <button class="btn-logout" onclick="logout()">Salir</button>
+                </div>
+            </div>
+            <div class="progress-wrap"><div class="progress-fill" id="progressBar"></div></div>
+            <div class="step-counter" id="stepCounter">Información de Vuelo</div>
+        </header>
+
+        <!-- Resume banner -->
+        <div class="resume-banner" id="resumeBanner">
+            <span class="resume-badge">▶ RETOMANDO</span>
+            <span id="resumeBannerText">Cargando datos del reporte…</span>
+        </div>
+
+        <!-- SCROLLABLE CONTENT -->
+        <div class="app-content">
+
+            <!-- ══ STEP 0: Flight info ══ -->
+            <div class="question-card active" id="step0">
+                <div class="card">
+                    <h2 class="question-title">✈️ Información de Vuelo</h2>
+                    <p class="question-subtitle">Seleccione tipo de servicio, aerolínea y número de vuelo</p>
+
+                    <div class="form-group">
+                        <label>Tipo de Servicio</label>
+                        <select id="airlineType" class="input-field">
+                            <option value="">-- Seleccione tipo --</option>
+                            <option value="asistencia-sala">Asistencia a Sala</option>
+                            <option value="Desabordaje">Desabordaje</option>
+                            <option value="Abordaje">Abordaje</option>
+                            <option value="otro">Otro</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Aerolínea</label>
+                        <select id="airlineSelect" class="input-field">
+                            <option value="">-- Seleccione aerolínea --</option>
+                            <option value="B6">Jetblue</option>
+                            <option value="AS">Alaska</option>
+                            <option value="DL">Delta</option>
+                            <option value="WN">Southwest</option>
+                            <option value="AA">American</option>
+                            <option value="WS">Westjet</option>
+                            <option value="AC">Air Canada</option>
+                            <option value="PD">Porter</option>
+                            <option value="UA">United</option>
+                            <option value="WK">Edelweiss</option>
+                            <option value="E9">Iberojet</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label># de Vuelo</label>
+                        <input type="text" id="flightNumber" class="input-field" placeholder="Ej: 1234">
+                    </div>
+
+                    <button class="btn-primary" onclick="submitFlightInfo()">Continuar →</button>
+                </div>
+            </div>
+
+            <!-- ══ STEP 1: Silla Asignada ══ -->
+            <div class="question-card" id="step1">
+                <div class="card">
+                    <h2 class="question-title">🦽 Silla Asignada</h2>
+                    <p class="question-subtitle">Confirme cuando se haya asignado la silla de ruedas al pasajero</p>
+
+                    <div class="already-done" id="done1">
+                        <span>✅</span><span>Ya registrado — <span id="doneTime1" style="font-family:'JetBrains Mono',monospace;color:#fbbf24;"></span></span>
+                    </div>
+
+                    <div class="checkbox-area">
+                        <label class="big-check">
+                            <input type="checkbox" id="cb1" onchange="handleCheckbox(1, 'Silla Asignada')">
+                            <span class="checkmark">
+                                <svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            </span>
+                        </label>
+                        <span class="check-label">Marcar como completado</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ══ STEP 2: Inicio de Servicio ══ -->
+            <div class="question-card" id="step2">
+                <div class="card">
+                    <h2 class="question-title">👤 Inicio de Servicio</h2>
+                    <p class="question-subtitle">Confirme cuando haya recogido al pasajero</p>
+
+                    <div class="already-done" id="done2">
+                        <span>✅</span><span>Ya registrado — <span id="doneTime2" style="font-family:'JetBrains Mono',monospace;color:#fbbf24;"></span></span>
+                    </div>
+
+                    <div class="checkbox-area">
+                        <label class="big-check">
+                            <input type="checkbox" id="cb2" onchange="handleCheckbox(2, 'Inicio de Servicio')">
+                            <span class="checkmark">
+                                <svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            </span>
+                        </label>
+                        <span class="check-label">Marcar como completado</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ══ STEP 3: Finalización de Servicio ══ -->
+            <div class="question-card" id="step3">
+                <div class="card">
+                    <h2 class="question-title">✅ Finalización de Servicio</h2>
+                    <p class="question-subtitle">Confirme cuando haya dejado al pasajero en su destino</p>
+
+                    <div class="already-done" id="done3">
+                        <span>✅</span><span>Ya registrado — <span id="doneTime3" style="font-family:'JetBrains Mono',monospace;color:#fbbf24;"></span></span>
+                    </div>
+
+                    <div class="checkbox-area">
+                        <label class="big-check">
+                            <input type="checkbox" id="cb3" onchange="handleCheckbox(3, 'Finalización de Servicio')">
+                            <span class="checkmark">
+                                <svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            </span>
+                        </label>
+                        <span class="check-label">Marcar como completado</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ══ STEP 4: Reporte de Incidente ══ -->
+            <div class="question-card" id="step4">
+                <div class="card">
+                    <h2 class="question-title">📝 Reporte de Incidente</h2>
+                    <p class="question-subtitle">¿Hubo algún incidente durante el servicio? (Opcional)</p>
+
+                    <div class="form-group">
+                        <label>Descripción del Incidente</label>
+                        <textarea id="incidentDescription" class="input-field" placeholder="Describa el incidente (deje en blanco si no hubo ninguno)"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Foto de Evidencia (Opcional)</label>
+                        <label class="photo-upload-zone">
+                            <div class="up-icon">📷</div>
+                            <div class="up-text">Agregar Foto</div>
+                            <div class="up-sub">Click para seleccionar imagen</div>
+                            <input type="file" id="incidentPhoto" accept="image/*" onchange="previewPhoto(this)">
+                        </label>
+                        <div class="photo-preview" id="photoPreview">
+                            <img id="previewImage" src="" alt="Vista previa">
+                        </div>
+                    </div>
+
+                    <button class="btn-primary" onclick="submitIncident()">Continuar →</button>
+                </div>
+            </div>
+
+            <!-- ══ STEP 5: Retorno de Silla ══ -->
+            <div class="question-card" id="step5">
+                <div class="card">
+                    <h2 class="question-title">🔄 Retorno de Silla</h2>
+                    <p class="question-subtitle">Confirme cuando la silla de ruedas haya sido devuelta</p>
+
+                    <div class="checkbox-area">
+                        <label class="big-check">
+                            <input type="checkbox" id="cb5" onchange="handleCheckbox(5, 'Retorno de Silla')">
+                            <span class="checkmark">
+                                <svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            </span>
+                        </label>
+                        <span class="check-label">Marcar como completado</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ══ COMPLETION SCREEN ══ -->
+            <div class="completion-screen" id="completionScreen">
+                <div class="completion-icon">🎉</div>
+                <h2 class="completion-title">¡Reporte Completado!</h2>
+                <p class="completion-sub">El servicio de silla de ruedas se ha registrado exitosamente</p>
+
+                <div class="summary-card">
+                    <div class="summary-title">✈️ Vuelo</div>
+                    <div class="summary-row"><span class="summary-label">Reporte #</span><span class="summary-value" id="sumReporte">–</span></div>
+                    <div class="summary-row"><span class="summary-label">Vuelo</span><span class="summary-value" id="sumVuelo">–</span></div>
+                    <div class="summary-row"><span class="summary-label">Aerolínea</span><span class="summary-value" id="sumAerolinea">–</span></div>
+                    <div class="summary-row"><span class="summary-label">Tipo de Servicio</span><span class="summary-value" id="sumTipo">–</span></div>
+                    <div class="summary-row"><span class="summary-label">Inspector</span><span class="summary-value" id="sumInspector">–</span></div>
+                </div>
+
+                <div class="summary-card">
+                    <div class="summary-title">⏱️ Tiempos del Servicio</div>
+                    <div id="timeSummary"></div>
+                </div>
+
+                <div class="summary-card" id="incidentCard" style="display:none;">
+                    <div class="summary-title" style="color:#fca5a5;">⚠️ Incidente Registrado</div>
+                    <div id="incidentSummary"></div>
+                </div>
+
+                <button class="btn-primary" onclick="newReport()" style="margin-bottom:10px;">🔄 Nuevo Reporte</button>
+                <button class="btn-secondary" onclick="goToHistory()">📋 Ver Historial</button>
+                <button class="btn-secondary" onclick="logout()">🚪 Cerrar Sesión</button>
+            </div>
+
+        </div><!-- /app-content -->
+    </div><!-- /app-shell -->
+
+    <div class="toast" id="toast"></div>
+
     <script>
+        // ══════════════════════════════════════════════════════════
+        //  CONFIG
+        // ══════════════════════════════════════════════════════════
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxUBk_-yW99Fw-yExqrTtXZulen78EbWfHhs6iSG7GYZom-d7Aa16wLQy8QrgHp9c7Z/exec';
 
+        const TOTAL_STEPS = 5;
+        const STEP_NAMES  = ['Información de Vuelo','Silla Asignada','Inicio de Servicio','Finalización de Servicio','Reporte de Incidente','Retorno de Silla'];
+        const AIRLINE_NAMES = { B6:'Jetblue', AS:'Alaska', DL:'Delta', WN:'Southwest', AA:'American', WS:'Westjet', AC:'Air Canada', PD:'Porter', UA:'United', WK:'Edelweiss', E9:'Iberojet' };
 
-      
-        // Three.js background (MISMO QUE EL ORIGINAL)
-        const container = document.getElementById('canvas-container');
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        container.appendChild(renderer.domElement);
-        const particlesGeometry = new THREE.BufferGeometry();
-        const particlesCount = 2000;
-        const posArray = new Float32Array(particlesCount * 3);
-        for(let i = 0; i < particlesCount * 3; i++) { posArray[i] = (Math.random() - 0.5) * 100; }
-        particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
-        const particlesMaterial = new THREE.PointsMaterial({ size: 0.08, color: 0xec4899, transparent: true, opacity: 0.6, blending: THREE.AdditiveBlending });
-        const particlesMesh = new THREE.Points(particlesGeometry, particlesMaterial);
-        scene.add(particlesMesh);
-        camera.position.z = 30;
-        function animate() { requestAnimationFrame(animate); particlesMesh.rotation.y += 0.0005; particlesMesh.rotation.x += 0.0003; renderer.render(scene, camera); }
-        animate();
-        window.addEventListener('resize', () => { camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); });
+        // ── State ──
+        let currentUser      = null;
+        let currentStep      = 0;
+        let isResume         = false;
+        let resumeRowId      = null;   // fila del sheet para actualizar en lugar de crear nueva
+        let reportId         = '';     // WCH-xxxxx asignado en step 0
+        let flightNumberValue= '';     // "AA 1234"
+        let serviceType      = '';
+        let airlineCode      = '';
+        let timestamps       = {};     // { 1: ISO, 2: ISO, ... }
+        let incidentText     = '';
+        let incidentPhotoB64 = '';
 
-        // Check authentication
-        const userData = sessionStorage.getItem('user');
-        if (!userData) {
-            window.location.href = 'LT.html';
-        } else {
-            const user = JSON.parse(userData);
-            document.getElementById('userName').textContent = user.username;
-            document.getElementById('userRole').textContent = user.role;
+        // ══════════════════════════════════════════════════════════
+        //  AUTHENTICATION
+        // ══════════════════════════════════════════════════════════
+        (function checkAuth() {
+            const raw = sessionStorage.getItem('user');
+            if (!raw) { window.location.href = 'sillas.html'; return; }
+            try {
+                currentUser = JSON.parse(raw);
+                document.getElementById('usernameDisplay').textContent = currentUser.username;
+                document.getElementById('avatarInitial').textContent   = (currentUser.username||'?').slice(0,2).toUpperCase();
+            } catch(e) {
+                window.location.href = 'LT.html';
+            }
+        })();
+
+        // ══════════════════════════════════════════════════════════
+        //  THREE.JS BACKGROUND
+        // ══════════════════════════════════════════════════════════
+        const cntr = document.getElementById('canvas-container');
+        const sc   = new THREE.Scene();
+        const cm   = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+        const rd   = new THREE.WebGLRenderer({ alpha:true, antialias:true });
+        rd.setSize(window.innerWidth, window.innerHeight);
+        cntr.appendChild(rd.domElement);
+        const geo = new THREE.BufferGeometry();
+        const N   = 2500, pos = new Float32Array(N*3);
+        for(let i=0; i<N*3; i++) pos[i]=(Math.random()-.5)*100;
+        geo.setAttribute('position', new THREE.BufferAttribute(pos,3));
+        const mat = new THREE.PointsMaterial({size:.07, color:0xec4899, transparent:true, opacity:.65, blending:THREE.AdditiveBlending});
+        const pts = new THREE.Points(geo, mat);
+        sc.add(pts); cm.position.z=30;
+        (function a(){requestAnimationFrame(a); pts.rotation.y+=.0008; rd.render(sc,cm);})();
+        window.addEventListener('resize',()=>{cm.aspect=window.innerWidth/window.innerHeight; cm.updateProjectionMatrix(); rd.setSize(window.innerWidth,window.innerHeight);});
+
+        // ══════════════════════════════════════════════════════════
+        //  RESUME LOGIC — lee sessionStorage y pre-llena formulario
+        // ══════════════════════════════════════════════════════════
+        (function tryResume() {
+            const raw = sessionStorage.getItem('resumeSillaReport');
+            if (!raw) return;
+            sessionStorage.removeItem('resumeSillaReport');
+
+            let r;
+            try { r = JSON.parse(raw); } catch(e) { return; }
+
+            isResume = true;
+            resumeRowId = r.id || null;
+
+            // Pre-fill state variables from saved report
+            airlineCode       = r.aerolinea || '';
+            serviceType       = r.tipoServicio || r.asistenciaSala ? 'asistencia-sala' : (r.abordaje ? 'Abordaje' : (r.desabordaje ? 'Desabordaje' : 'otro'));
+            flightNumberValue = (r.aerolinea || '') + ' ' + (r.vuelo || '');
+            reportId          = r.numeroReporte || ('WCH-' + Date.now());
+
+            // Pre-fill step 0 form fields
+            trySetVal('airlineSelect', r.aerolinea || '');
+            trySetVal('flightNumber',  r.vuelo     || '');
+            // Map tipoServicio back to select value
+            const svcMap = { 'asistencia-sala':'asistencia-sala', 'Abordaje':'Abordaje', 'Desabordaje':'Desabordaje', 'otro':'otro' };
+            const svcVal = r.tipoServicio || (r.asistenciaSala?'asistencia-sala': r.abordaje?'Abordaje': r.desabordaje?'Desabordaje':'otro');
+            trySetVal('airlineType', svcMap[svcVal] || '');
+
+            // Restore timestamps already recorded
+            if (r.horaAsignacion)      { timestamps[1] = buildISOFromSheetRow(r.fechaAsignacion, r.horaAsignacion); }
+            if (r.horaInicioServicio)  { timestamps[2] = buildISOFromSheetRow(r.fechaInicioServicio, r.horaInicioServicio); }
+            if (r.horaFinServicio)     { timestamps[3] = buildISOFromSheetRow(r.fechaFinServicio, r.horaFinServicio); }
+
+            // Show already-done banners for completed steps
+            [1,2,3].forEach(s => {
+                if (timestamps[s]) {
+                    const el = document.getElementById('done'+s);
+                    const tEl= document.getElementById('doneTime'+s);
+                    if (el)  el.classList.add('show');
+                    if (tEl) tEl.textContent = formatTimeOnly(timestamps[s]);
+                }
+            });
+
+            // Determine resume step
+            let resumeStep = 0;
+            if (r.fechaCreacion)        resumeStep = 1;
+            if (r.fechaAsignacion)      resumeStep = 2;
+            if (r.fechaInicioServicio)  resumeStep = 3;
+            if (r.fechaFinServicio)     resumeStep = 4;
+
+            // Show resume banner
+            const banner = document.getElementById('resumeBanner');
+            const txt    = document.getElementById('resumeBannerText');
+            banner.classList.add('show');
+            txt.textContent = `${AIRLINE_NAMES[r.aerolinea]||r.aerolinea||'–'} · Vuelo ${r.vuelo||'–'} — continúa desde paso ${resumeStep + 1}`;
+
+            // Jump to correct step
+            showStep(resumeStep);
+            updateProgress(resumeStep);
+
+            console.log('[Resume] Retomando desde paso', resumeStep, '| Row:', resumeRowId);
+        })();
+
+        function buildISOFromSheetRow(dateStr, timeStr) {
+            if (!dateStr || !timeStr) return '';
+            try {
+                const parts = String(dateStr).split('/');
+                if (parts.length === 3) {
+                    const d = new Date(parseInt(parts[2]), parseInt(parts[1])-1, parseInt(parts[0]));
+                    const tp = String(timeStr).split(':');
+                    d.setHours(parseInt(tp[0]||0), parseInt(tp[1]||0), parseInt(tp[2]||0));
+                    return d.toISOString();
+                }
+            } catch(e){}
+            return '';
         }
 
-        // Apps Script URL
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzVu9TxhEOah4Mj7q8hva6_2HVGWJ0ky668j4aDyHZL1BrP0vy2FIZ5mi8xRyOpKVXb/exec';
+        function trySetVal(id, val) {
+            const el = document.getElementById(id);
+            if (el && val) el.value = val;
+        }
 
-        const userDataString = sessionStorage.getItem('user');
-        let wheelchairUser = JSON.parse(userDataString);
+        // ══════════════════════════════════════════════════════════
+        //  STEP NAVIGATION
+        // ══════════════════════════════════════════════════════════
+        function showStep(n) {
+            document.querySelectorAll('.question-card').forEach(c => c.classList.remove('active'));
+            const el = document.getElementById('step'+n);
+            if (el) { el.classList.add('active'); currentStep = n; }
+        }
 
-        let currentStep = 0;
-        const totalSteps = 5;
-        let flightNumberValue = '';
-        let serviceType = ''; // ✅ NUEVO
-        let assignmentTimestamp = '';
-        let startServiceTimestamp = '';
-        let endServiceTimestamp = '';
-        let wheelchairResponses = [];
-        let incidentPhotoBase64 = '';
+        function updateProgress(step) {
+            const pct = (step / TOTAL_STEPS) * 100;
+            document.getElementById('progressBar').style.width = pct + '%';
+            document.getElementById('stepCounter').textContent = STEP_NAMES[step] || 'Completado';
+        }
 
+        function goNextStep(from) {
+            const next = from + 1;
+            if (next <= TOTAL_STEPS) {
+                document.getElementById('step'+from).classList.remove('active');
+                setTimeout(() => { showStep(next); updateProgress(next); scrollToTop(); }, 280);
+            } else {
+                showCompletionScreen();
+            }
+        }
+
+        function scrollToTop() {
+            const content = document.querySelector('.app-content');
+            if (content) content.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // ══════════════════════════════════════════════════════════
+        //  STEP 0 — submit flight info
+        // ══════════════════════════════════════════════════════════
         function submitFlightInfo() {
-            const airlineType = document.getElementById('airlineType').value;
-            const airlineCode = document.getElementById('airlineSelect').value;
-            const flightNumber = document.getElementById('flightNumber').value.trim();
-            
-            if (!airlineType) { alert('Por favor seleccione el tipo de servicio'); return; }
-            if (!airlineCode) { alert('Por favor seleccione una aerolínea'); return; }
-            if (!flightNumber) { alert('Por favor ingrese el número de vuelo'); return; }
-            
-            flightNumberValue = airlineCode + ' ' + flightNumber;
-            serviceType = airlineType; // ✅ GUARDAR
-            
-            console.log('✈️ Vuelo:', flightNumberValue);
-            console.log('📋 Tipo:', serviceType);
-            
-            sendToSheet(0, 'Vuelo: ' + flightNumberValue, new Date().toISOString());
-            
-            document.querySelector('[data-step="0"]').classList.remove('active');
-            setTimeout(() => { currentStep = 1; document.querySelector('[data-step="1"]').classList.add('active'); updateProgress(); }, 300);
+            const type   = document.getElementById('airlineType').value;
+            const airline= document.getElementById('airlineSelect').value;
+            const flight = document.getElementById('flightNumber').value.trim();
+
+            if (!type)   { showToast('Seleccione el tipo de servicio', true); return; }
+            if (!airline){ showToast('Seleccione una aerolínea', true); return; }
+            if (!flight) { showToast('Ingrese el número de vuelo', true); return; }
+
+            serviceType       = type;
+            airlineCode       = airline;
+            flightNumberValue = airline + ' ' + flight;
+
+            // If resuming and we already have a reportId from server, keep it;
+            // otherwise generate new one
+            if (!reportId) reportId = 'WCH-' + Date.now();
+
+            const ts = new Date().toISOString();
+            timestamps[0] = ts;
+
+            showSending('Guardando información de vuelo…');
+            sendToSheet(0, 'Vuelo: ' + flightNumberValue, ts, () => {
+                hideSending();
+                showToast('✓ Vuelo registrado');
+                goNextStep(0);
+            });
         }
 
-        function nextStep(step, item) {
-            const timestamp = new Date().toISOString();
-            console.log(`✅ ${item} - ${timestamp}`);
-            if (step === 1) assignmentTimestamp = timestamp;
-            else if (step === 2) startServiceTimestamp = timestamp;
-            else if (step === 3) endServiceTimestamp = timestamp;
-            wheelchairResponses.push({ step, item, timestamp });
-            sendToSheet(step, item, timestamp);
-            if (step < totalSteps) {
-                document.querySelector(`[data-step="${step}"]`).classList.remove('active');
-                setTimeout(() => { currentStep = step + 1; document.querySelector(`[data-step="${currentStep}"]`).classList.add('active'); updateProgress(); }, 300);
-            } else { completeReport(); }
+        // ══════════════════════════════════════════════════════════
+        //  STEPS 1, 2, 3, 5 — checkbox handler
+        // ══════════════════════════════════════════════════════════
+        function handleCheckbox(step, label) {
+            const cb = document.getElementById('cb'+step);
+            if (!cb || !cb.checked) return;
+            cb.disabled = true; // prevent double-tap
+
+            const ts = new Date().toISOString();
+            timestamps[step] = ts;
+
+            // Show done banner if it exists
+            const doneEl = document.getElementById('done'+step);
+            const tEl    = document.getElementById('doneTime'+step);
+            if (doneEl) doneEl.classList.add('show');
+            if (tEl)    tEl.textContent = formatTimeOnly(ts);
+
+            showSending('Guardando ' + label + '…');
+            sendToSheet(step, label, ts, () => {
+                hideSending();
+                showToast('✓ ' + label + ' registrado');
+                if (step === 5) {
+                    showCompletionScreen();
+                } else {
+                    goNextStep(step);
+                }
+            });
         }
 
+        // ══════════════════════════════════════════════════════════
+        //  STEP 4 — incident form
+        // ══════════════════════════════════════════════════════════
         function submitIncident() {
-            const description = document.getElementById('incidentDescription').value.trim();
-            const timestamp = new Date().toISOString();
-            const incidentData = description || 'Sin incidentes reportados';
-            console.log('📝 Incidente:', incidentData);
-            wheelchairResponses.push({ step: 4, item: 'Reporte de Incidente', timestamp, description: incidentData, hasPhoto: incidentPhotoBase64 !== '' });
-            sendToSheet(4, 'Incidente: ' + incidentData, timestamp);
-            document.querySelector('[data-step="4"]').classList.remove('active');
-            setTimeout(() => { currentStep = 5; document.querySelector('[data-step="5"]').classList.add('active'); updateProgress(); }, 300);
+            const desc = document.getElementById('incidentDescription').value.trim();
+            incidentText     = desc || 'Sin incidentes reportados';
+            const ts = new Date().toISOString();
+            timestamps[4] = ts;
+
+            showSending('Guardando reporte de incidente…');
+            sendToSheet(4, 'Incidente: ' + incidentText, ts, () => {
+                hideSending();
+                showToast(desc ? '⚠ Incidente registrado' : '✓ Sin incidentes');
+                goNextStep(4);
+            });
         }
 
         function previewPhoto(input) {
             if (input.files && input.files[0]) {
                 const reader = new FileReader();
-                reader.onload = function(e) {
+                reader.onload = e => {
                     document.getElementById('previewImage').src = e.target.result;
                     document.getElementById('photoPreview').style.display = 'block';
-                    incidentPhotoBase64 = e.target.result;
-                    console.log('📸 Foto cargada');
+                    incidentPhotoB64 = e.target.result;
                 };
                 reader.readAsDataURL(input.files[0]);
             }
         }
 
-        function updateProgress() {
-            const progress = (currentStep / totalSteps) * 100;
-            document.getElementById('progressBar').style.width = progress + '%';
-            const stepNames = ['Información de Vuelo', 'Silla Asignada', 'Inicio de Servicio', 'Finalización de Servicio', 'Reporte de Incidente', 'Retorno de Silla'];
-            document.getElementById('stepCounter').textContent = stepNames[currentStep] || 'Completado';
-        }
+        // ══════════════════════════════════════════════════════════
+        //  SEND TO SHEET via JSONP GET
+        //  The existing Apps Script reads these GET params and writes
+        //  to Reportes_Sillas in the spreadsheet.
+        //  step=0 → createNewReport, step 1-5 → updateReportTimestamp
+        // ══════════════════════════════════════════════════════════
+        function sendToSheet(step, item, timestamp, onDone) {
+            const cbName = 'sillaCb' + Date.now() + '_' + step;
 
-        function sendToSheet(step, item, timestamp) {
-            const callbackName = 'callback' + Date.now();
-            window[callbackName] = function(response) {
-                console.log('Respuesta:', response);
-                if (!response.success) { console.error('Error:', response.message); alert('Error: ' + response.message); }
-                delete window[callbackName];
-                const script = document.getElementById('data-script');
-                if (script) document.body.removeChild(script);
+            window[cbName] = function(response) {
+                delete window[cbName];
+                const scr = document.getElementById('silla-script');
+                if (scr) scr.remove();
+                if (response && response.success) {
+                    if (onDone) onDone(response);
+                } else {
+                    hideSending();
+                    const msg = response ? response.message : 'Error de conexión';
+                    showToast('Error: ' + msg, true);
+                    console.error('[Silla] Send error:', msg);
+                    // Still proceed so user isn't stuck
+                    if (onDone) onDone({ success: false });
+                }
             };
 
-            let url = SCRIPT_URL + 
-                '?user=' + encodeURIComponent(wheelchairUser.username) +
-                '&role=' + encodeURIComponent(wheelchairUser.role) +
-                '&step=' + step +
-                '&item=' + encodeURIComponent(item) +
-                '&timestamp=' + encodeURIComponent(timestamp) +
-                '&callback=' + callbackName;
+            let url = SCRIPT_URL
+                + '?user='       + encodeURIComponent(currentUser.username)
+                + '&role='       + encodeURIComponent(currentUser.role)
+                + '&step='       + step
+                + '&item='       + encodeURIComponent(item)
+                + '&timestamp='  + encodeURIComponent(timestamp)
+                + '&callback='   + cbName;
 
-            if (step === 0) { url += '&serviceType=' + encodeURIComponent(serviceType); } // ✅ ENVIAR
+            // Step 0 extras
+            if (step === 0) {
+                url += '&serviceType=' + encodeURIComponent(serviceType);
+                url += '&reportId='    + encodeURIComponent(reportId);
+                if (isResume && resumeRowId) {
+                    url += '&resumeRowId=' + encodeURIComponent(resumeRowId);
+                }
+            }
 
-            console.log('📤 Datos:', { user: wheelchairUser.username, step, item, timestamp, serviceType: step === 0 ? serviceType : 'N/A' });
+            const scr = document.createElement('script');
+            scr.id  = 'silla-script';
+            scr.src = url;
+            scr.onerror = () => {
+                delete window[cbName];
+                scr.remove();
+                hideSending();
+                showToast('Error de conexión', true);
+                if (onDone) onDone({ success: false });
+            };
+            document.body.appendChild(scr);
 
-            const script = document.createElement('script');
-            script.id = 'data-script';
-            script.src = url;
-            script.onerror = function() { console.error('Error de conexión'); alert('Error de conexión. Verifica tu URL.'); delete window[callbackName]; };
-            document.body.appendChild(script);
+            // Safety timeout: 15s
+            setTimeout(() => {
+                if (window[cbName]) {
+                    delete window[cbName];
+                    hideSending();
+                    showToast('Tiempo de espera agotado', true);
+                    if (onDone) onDone({ success: false });
+                }
+            }, 15000);
         }
 
-        function completeReport() {
-            const reportId = 'WCH-' + Date.now();
-            console.log('🎉 Completado');
-            document.querySelectorAll('.question-card').forEach(card => card.classList.remove('active'));
+        // ══════════════════════════════════════════════════════════
+        //  COMPLETION SCREEN
+        // ══════════════════════════════════════════════════════════
+        function showCompletionScreen() {
+            document.querySelectorAll('.question-card').forEach(c => c.classList.remove('active'));
+            updateProgress(TOTAL_STEPS);
+
+            document.getElementById('sumReporte').textContent   = reportId;
+            document.getElementById('sumVuelo').textContent     = document.getElementById('flightNumber')?.value || flightNumberValue;
+            document.getElementById('sumAerolinea').textContent = AIRLINE_NAMES[airlineCode] || airlineCode;
+            document.getElementById('sumTipo').textContent      = serviceType;
+            document.getElementById('sumInspector').textContent = currentUser.username;
+
+            // Time summary
+            const timeLabels = { 1:'🦽 Silla Asignada', 2:'👤 Inicio Servicio', 3:'✅ Fin Servicio', 4:'📝 Incidente', 5:'🔄 Retorno' };
+            let html = '';
+            for (let s = 1; s <= 5; s++) {
+                if (!timestamps[s]) continue;
+                const dt = new Date(timestamps[s]);
+                let diff = '';
+                if (s > 1 && timestamps[s-1]) {
+                    const ms = dt - new Date(timestamps[s > 4 ? 3 : s-1]);
+                    if (ms >= 0) diff = '+' + Math.round(ms/60000) + ' min';
+                }
+                html += `<div class="time-row">
+                    <div class="time-row-label">${timeLabels[s]}</div>
+                    <div class="time-row-value">${formatTimestamp(timestamps[s])}</div>
+                    ${diff ? `<div class="time-row-diff">${diff} desde paso anterior</div>` : ''}
+                </div>`;
+            }
+            document.getElementById('timeSummary').innerHTML = html || '<div style="color:var(--muted);font-size:12px;padding:8px 0;">Sin tiempos registrados</div>';
+
+            // Incident card
+            if (incidentText && incidentText !== 'Sin incidentes reportados') {
+                document.getElementById('incidentCard').style.display = 'block';
+                document.getElementById('incidentSummary').innerHTML = `
+                    <div class="summary-row"><span class="summary-label">Descripción</span><span class="summary-value">${incidentText}</span></div>
+                    ${incidentPhotoB64 ? '<div class="summary-row"><span class="summary-label">Foto</span><span class="summary-value" style="color:var(--green);">✓ Adjunta</span></div>' : ''}
+                `;
+            }
+
             setTimeout(() => {
-                document.getElementById('reportId').textContent = reportId;
-                document.getElementById('reportFlight').textContent = flightNumberValue;
-                document.getElementById('reportAssignTime').textContent = formatTimestamp(assignmentTimestamp);
-                document.getElementById('reportStartTime').textContent = formatTimestamp(startServiceTimestamp);
-                document.getElementById('reportEndTime').textContent = formatTimestamp(endServiceTimestamp);
-                let detailsHTML = '';
-                wheelchairResponses.forEach((response, index) => {
-                    let baseTimestamp = assignmentTimestamp;
-                    const timeDiff = calculateTimeDifference(baseTimestamp, response.timestamp);
-                    let itemText = `${index + 1}. ${response.item}`;
-                    if (response.description) itemText += `<br><span style="font-size: 12px; color: #94a3b8;">${response.description}</span>`;
-                    if (response.hasPhoto) itemText += `<br><span style="font-size: 12px; color: #10b981;">📸 Foto adjunta</span>`;
-                    detailsHTML += `<div class="detail-item"><div class="detail-item-title">${itemText}</div><div class="detail-item-time">⏱️ ${formatTimestamp(response.timestamp)}</div><div class="detail-item-duration">⏳ ${timeDiff}</div></div>`;
-                });
-                document.getElementById('reportDetails').innerHTML = detailsHTML;
-                document.querySelector('.completion-screen').classList.add('active');
-                document.getElementById('progressBar').style.width = '100%';
-                document.getElementById('stepCounter').textContent = 'Completado';
+                document.getElementById('completionScreen').classList.add('active');
+                scrollToTop();
             }, 300);
         }
 
-        function calculateTimeDifference(startTime, endTime) {
-            const start = new Date(startTime);
-            const end = new Date(endTime);
-            const diffMs = end - start;
-            const hours = Math.floor(diffMs / (1000 * 60 * 60));
-            const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-            const seconds = Math.floor((diffMs % (1000 * 60)) / 1000);
-            const parts = [];
-            if (hours > 0) parts.push(`${hours}h`);
-            if (minutes > 0) parts.push(`${minutes}m`);
-            if (seconds > 0 || parts.length === 0) parts.push(`${seconds}s`);
-            return '+' + parts.join(' ');
-        }
-
-        function formatTimestamp(timestamp) {
-            const date = new Date(timestamp);
-            return date.toLocaleString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' });
-        }
-
+        // ══════════════════════════════════════════════════════════
+        //  NEW REPORT — reset all state
+        // ══════════════════════════════════════════════════════════
         function newReport() {
-            currentStep = 0;
+            currentStep       = 0;
+            isResume          = false;
+            resumeRowId       = null;
+            reportId          = '';
             flightNumberValue = '';
-            serviceType = ''; // ✅ RESET
-            assignmentTimestamp = '';
-            startServiceTimestamp = '';
-            endServiceTimestamp = '';
-            wheelchairResponses = [];
-            incidentPhotoBase64 = '';
+            serviceType       = '';
+            airlineCode       = '';
+            timestamps        = {};
+            incidentText      = '';
+            incidentPhotoB64  = '';
+
             document.getElementById('airlineType').value = '';
             document.getElementById('airlineSelect').value = '';
             document.getElementById('flightNumber').value = '';
             document.getElementById('incidentDescription').value = '';
             document.getElementById('incidentPhoto').value = '';
             document.getElementById('photoPreview').style.display = 'none';
-            document.querySelector('.completion-screen').classList.remove('active');
-            document.querySelector('[data-step="0"]').classList.add('active');
-            document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
-            document.getElementById('progressBar').style.width = '0%';
-            document.getElementById('stepCounter').textContent = 'Información de Vuelo';
+            document.getElementById('completionScreen').classList.remove('active');
+            document.getElementById('incidentCard').style.display = 'none';
+            document.getElementById('resumeBanner').classList.remove('show');
+            document.querySelectorAll('input[type="checkbox"]').forEach(cb => { cb.checked = false; cb.disabled = false; });
+            document.querySelectorAll('.already-done').forEach(el => el.classList.remove('show'));
+
+            updateProgress(0);
+            showStep(0);
+            scrollToTop();
         }
 
-        function logout() {
-            sessionStorage.removeItem('user');
-            window.location.href = 'LT.html';
+        // ══════════════════════════════════════════════════════════
+        //  HELPERS
+        // ══════════════════════════════════════════════════════════
+        function formatTimestamp(iso) {
+            try {
+                const d = new Date(iso);
+                return d.toLocaleDateString('es-CR', {day:'2-digit',month:'2-digit',year:'numeric'})
+                    + ' ' + d.toLocaleTimeString('es-CR', {hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});
+            } catch { return iso; }
         }
+
+        function formatTimeOnly(iso) {
+            try {
+                const d = new Date(iso);
+                return d.toLocaleTimeString('es-CR', {hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false});
+            } catch { return iso; }
+        }
+
+        function showSending(msg) {
+            document.getElementById('sendLabel').textContent = msg || 'Guardando…';
+            document.getElementById('sendingOverlay').classList.add('show');
+        }
+        function hideSending() {
+            document.getElementById('sendingOverlay').classList.remove('show');
+        }
+
+        function showToast(msg, isErr = false) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.className = 'toast' + (isErr ? ' error' : '');
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 2800);
+        }
+
+        function goToHistory() { window.location.href = 'HT.html'; }
+
+        function logout() {
+            if (confirm('¿Cerrar sesión?')) {
+                sessionStorage.clear();
+                window.location.href = 'LT.html';
+            }
+        }
+
+        console.log('♿ RT.html cargado | usuario:', currentUser?.username);
     </script>
 </body>
 </html>
