@@ -1355,7 +1355,7 @@
         });
         airlines.sort((a, b) => a.code.localeCompare(b.code));
 
-        if (airlines.length === 0) { container.innerHTML = '<span style="font-size:11px;color:var(--muted);font-family:'JetBrains Mono',monospace;">–</span>'; return; }
+        if (airlines.length === 0) { container.innerHTML = '<span style="font-size:11px;color:var(--muted);font-family:\'JetBrains Mono\',monospace;">\u2013</span>'; return; }
 
         container.innerHTML = airlines.map(({ code, name }) => {
             const isActive = activeAirlineFilter === code;
