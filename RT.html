@@ -245,7 +245,7 @@
         // Check authentication
         const userData = sessionStorage.getItem('user');
         if (!userData) {
-            window.location.href = 'sillas.html';
+            window.location.href = 'LT.html';
         } else {
             const user = JSON.parse(userData);
             document.getElementById('userName').textContent = user.username;
@@ -432,7 +432,7 @@
 
         function logout() {
             sessionStorage.removeItem('user');
-            window.location.href = 'sillas.html';
+            window.location.href = 'LT.html';
         }
     </script>
 </body>
