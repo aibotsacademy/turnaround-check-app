@@ -1123,8 +1123,11 @@
     const BATTERY_AIRLINES = ['Delta','United','DL','UA'];
 
     // ══════════════════════════════════════════════════════
-    //  STATE
+    //  STATE — shared
     // ══════════════════════════════════════════════════════
+    let activeModule = 'turnaround'; // must be declared before loadAllReports() runs
+
+    // Turnaround state
     let allReports      = [];
     let filteredReports = [];
     let activeAlerts    = [];
@@ -1132,7 +1135,17 @@
     let dateFilter      = 'today';
     let customDateVal   = null;
     let userFilter      = 'all';
-    let knownInspectors = []; // populated from data
+    let knownInspectors = [];
+
+    // Sillas state — declared here so loadAllReports() / switchModule() can reference them
+    let sAllReports      = [];
+    let sFiltered        = [];
+    let sAirlineFilter   = null;
+    let sSvcFilter       = null;
+    let sFlightSearch    = '';
+    let sInspectorFilter = null;
+    let sInspColorMap    = {};
+    let sInspColorIdx    = 0;
 
     // ══════════════════════════════════════════════════════
     //  BOOT
@@ -1140,7 +1153,7 @@
     const userData = sessionStorage.getItem('user');
     if (!userData) {
         alert('Sesión no encontrada. Por favor inicie sesión.');
-        window.location.href = 'L27.html';
+        window.location.href = 'login-P10.html';
     }
 
     loadAllReports();
@@ -2086,14 +2099,14 @@
     function logout() {
         if (confirm('¿Cerrar sesión?')) {
             sessionStorage.clear();
-            window.location.href = 'L27.html';
+            window.location.href = 'login-P10.html';
         }
     }
 
     // ══════════════════════════════════════════════════════════════
     //  MODULE SWITCHER
     // ══════════════════════════════════════════════════════════════
-    let activeModule = 'turnaround';
+    // activeModule declared in STATE block above
 
     function switchModule(mod) {
         activeModule = mod;
@@ -2125,16 +2138,8 @@
     const SILLAS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwheYKBzkthxzge-zD4HmKRu9J1ZetWG0BtqSp-c4IAq8sLpIU31CJey2Y25kboLf7w/exec';
 
     // ══════════════════════════════════════════════════════════════
-    //  SILLAS — STATE
+    //  SILLAS — STATE (declared in main STATE block above)
     // ══════════════════════════════════════════════════════════════
-    let sAllReports      = [];
-    let sFiltered        = [];
-    let sAirlineFilter   = null;
-    let sSvcFilter       = null;    // 'abordaje' | 'desabordaje' | 'sala' | 'otro'
-    let sFlightSearch    = '';
-    let sInspectorFilter = null;
-    let sInspColorMap    = {};
-    let sInspColorIdx    = 0;
 
     function getSInspectorColor(name) {
         if (!name) return INSPECTOR_PALETTE[0];
