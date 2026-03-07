@@ -538,7 +538,7 @@
     </div>
 
     <script>
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby4JDxfC2aas-M-pYvzTFH4Iy4TWa0PaDylgqDOKMdgImqEIW2vRvx3uv7wuZDgSMddFQ/exec';
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwPYVf647XPjYMmcSo1irpacpwOo97LLHMm4DbGMBnwYrl_swgqB0Vr0tS0BeRBeaf3rw/exec';
         let inspectionUser = { username: '', role: 'Inspector' };
         let selectedAirline = '', selectedFlightType = '', flightNumberValue = '', flightTimestamp = '';
         let currentCheckpointIndex = 0, checkpoints = [], capturedPhotos = {};
@@ -554,11 +554,11 @@
                 document.getElementById('userRole').textContent = inspectionUser.role;
             } catch (error) {
                 alert('Sesión inválida. Por favor inicie sesión nuevamente.');
-                window.location.href = 'L07.html';
+                window.location.href = 'login-P10.html';
             }
         } else {
             alert('Por favor inicie sesión primero.');
-            window.location.href = 'L07.html';
+            window.location.href = 'login-P10.html';
         }
 
         const BRIEFING_TOPICS = [
@@ -1110,11 +1110,11 @@
             setTimeout(() => returnToCheckpoint(), 400);
         }
 
-        function goToHistory() { stopCamera(); window.location.href = 'H07.html'; }
+        function goToHistory() { stopCamera(); window.location.href = 'history-Photo10.html'; }
 
         function logout() {
             if (confirm('¿Está seguro de que desea cerrar sesión?')) {
-                stopCamera(); sessionStorage.removeItem('user'); window.location.href = 'L07.html';
+                stopCamera(); sessionStorage.removeItem('user'); window.location.href = 'login-P10.html';
             }
         }
 
