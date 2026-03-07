@@ -538,7 +538,7 @@
     </div>
 
     <script>
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwPYVf647XPjYMmcSo1irpacpwOo97LLHMm4DbGMBnwYrl_swgqB0Vr0tS0BeRBeaf3rw/exec';
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyIyjc9yfcY25YKe_qan-ocdMkaV8eDUDqe-vseyBSCcGm3G-3ZT957_skuzjJkmpdD0g/exec';
         let inspectionUser = { username: '', role: 'Inspector' };
         let selectedAirline = '', selectedFlightType = '', flightNumberValue = '', flightTimestamp = '';
         let currentCheckpointIndex = 0, checkpoints = [], capturedPhotos = {};
@@ -554,11 +554,11 @@
                 document.getElementById('userRole').textContent = inspectionUser.role;
             } catch (error) {
                 alert('Sesión inválida. Por favor inicie sesión nuevamente.');
-                window.location.href = 'login-P10.html';
+                window.location.href = 'L07.html';
             }
         } else {
             alert('Por favor inicie sesión primero.');
-            window.location.href = 'login-P10.html';
+            window.location.href = 'L07.html';
         }
 
         const BRIEFING_TOPICS = [
@@ -980,7 +980,7 @@
             }
             document.getElementById('step-incident').classList.remove('active');
             showCompletionScreen();
-            fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'updateStatus', airline: selectedAirline, flightNumber: flightNumberValue, flightType: selectedFlightType, status: 'Completado', timestamp: flightTimestamp, incident: incidentData }) }).catch(e => console.error('Error:', e));
+            fetch(SCRIPT_URL, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'updateStatus', airline: selectedAirline, flightNumber: flightNumberValue, flightType: selectedFlightType, status: 'Completado', flightTimestamp: flightTimestamp, incident: incidentData }) }).catch(e => console.error('Error:', e));
         }
 
         function showCompletionScreen() {
@@ -1110,11 +1110,11 @@
             setTimeout(() => returnToCheckpoint(), 400);
         }
 
-        function goToHistory() { stopCamera(); window.location.href = 'history-Photo10.html'; }
+        function goToHistory() { stopCamera(); window.location.href = 'H07.html'; }
 
         function logout() {
             if (confirm('¿Está seguro de que desea cerrar sesión?')) {
-                stopCamera(); sessionStorage.removeItem('user'); window.location.href = 'login-P10.html';
+                stopCamera(); sessionStorage.removeItem('user'); window.location.href = 'L07.html';
             }
         }
 
