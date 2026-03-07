@@ -661,7 +661,9 @@
 
                 if (data && data.success) {
                     allReports = (data.reports || []).map(r => {
-                        r.status = (r.progress >= 100) ? 'Completado' : 'En Proceso';
+                        if (!r.status || r.status.trim() === '') {
+                            r.status = (r.progress >= 100) ? 'Completado' : 'En Proceso';
+                        }
                         return r;
                     });
                     console.log('[History] allReports after normalize:', allReports.length);
