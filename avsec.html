@@ -1,0 +1,1487 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<title>AVSEC PRO — Seguridad SJO</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Exo+2:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<style>
+/* ── RESET & ROOT ─────────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --void:#020B14; --deep:#030F1C; --dark:#071828; --panel:#0A2035;
+  --cyan:#00E5FF; --cyan2:#00B8D4; --cyan3:#0097A7;
+  --neon:#39FF14; --amber:#FFB300; --red:#FF1744; --violet:#E040FB;
+  --t1:#E0F7FA; --t2:#80DEEA; --t3:#4DD0E1; --dim:#37474F;
+  --mono:'Share Tech Mono',monospace;
+  --head:'Orbitron',sans-serif;
+  --body:'Exo 2',sans-serif;
+  --glow-cyan:0 0 10px #00E5FF60,0 0 30px #00E5FF30,0 0 60px #00E5FF15;
+  --glow-neon:0 0 10px #39FF1460,0 0 30px #39FF1430;
+  --glow-amber:0 0 10px #FFB30060,0 0 30px #FFB30030;
+  --glow-red:0 0 10px #FF174460,0 0 30px #FF174430;
+}
+html,body{background:var(--void);color:var(--t1);font-family:var(--body);overflow-x:hidden;min-height:100vh}
+button{cursor:pointer;border:none;font-family:var(--body);background:transparent;color:inherit}
+input,select,textarea{font-family:var(--body);font-size:14px}
+::-webkit-scrollbar{width:3px}::-webkit-scrollbar-track{background:var(--deep)}::-webkit-scrollbar-thumb{background:var(--cyan3);border-radius:2px}
+
+/* ── ANIMATIONS ─────────────────────────────────────── */
+@keyframes rotate-slow{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes rotate-ccw{from{transform:rotate(0deg)}to{transform:rotate(-360deg)}}
+@keyframes holo-shimmer{0%{background-position:-200% center}100%{background-position:200% center}}
+@keyframes slide-up{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
+@keyframes zoom-in{from{opacity:0;transform:scale(0.93)}to{opacity:1;transform:scale(1)}}
+@keyframes slide-left{from{opacity:0;transform:translateX(-18px)}to{opacity:1;transform:translateX(0)}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes grid-fade{0%,100%{opacity:.03}50%{opacity:.07}}
+@keyframes data-scroll{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+@keyframes particle-float{
+  0%{transform:translateY(100vh) translateX(0);opacity:0}
+  10%{opacity:.6}90%{opacity:.3}
+  100%{transform:translateY(-20px) translateX(var(--dx,30px));opacity:0}
+}
+@keyframes scan-h{0%{top:0;opacity:.8}100%{top:100%;opacity:0}}
+@keyframes pulse-ring{0%{transform:scale(.8);opacity:1}100%{transform:scale(2.2);opacity:0}}
+@keyframes neon-flicker{
+  0%,19%,21%,23%,25%,54%,56%,100%{text-shadow:0 0 8px var(--cyan),0 0 20px var(--cyan),0 0 40px var(--cyan)}
+  20%,24%,55%{text-shadow:none}
+}
+@keyframes glow-pulse{
+  0%,100%{box-shadow:var(--glow-neon)}
+  50%{box-shadow:0 0 18px #39FF14aa,0 0 50px #39FF1450}
+}
+@keyframes progress-fill{from{width:0}to{width:var(--pw,0%)}}
+
+/* ── UTILITY CLASSES ────────────────────────────────── */
+.su{animation:slide-up .35s ease both}
+.zi{animation:zoom-in .3s ease both}
+.sl{animation:slide-left .3s ease both}
+
+.holo-text{
+  background:linear-gradient(90deg,var(--cyan),#fff,var(--cyan2),var(--cyan));
+  background-size:200% auto;
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  background-clip:text;
+  animation:holo-shimmer 4s linear infinite
+}
+
+.grid-bg{
+  position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:
+    linear-gradient(rgba(0,229,255,.04) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(0,229,255,.04) 1px,transparent 1px);
+  background-size:48px 48px;
+  animation:grid-fade 6s ease-in-out infinite
+}
+
+.hex-btn{
+  position:relative;font-family:var(--head);font-size:12px;font-weight:600;
+  letter-spacing:.12em;text-transform:uppercase;color:var(--cyan);
+  background:transparent;border:1px solid var(--cyan);padding:9px 20px;
+  clip-path:polygon(7px 0%,calc(100% - 7px) 0%,100% 7px,100% calc(100% - 7px),calc(100% - 7px) 100%,7px 100%,0% calc(100% - 7px),0% 7px);
+  transition:all .2s;overflow:hidden
+}
+.hex-btn::before{content:'';position:absolute;inset:0;background:var(--cyan);opacity:0;transition:opacity .2s}
+.hex-btn:hover{color:var(--void);box-shadow:var(--glow-cyan)}
+.hex-btn:hover::before{opacity:1}
+.hex-btn span{position:relative;z-index:1}
+
+.hex-solid{
+  font-family:var(--head);font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  background:var(--cyan);color:var(--void);border:none;padding:14px 24px;
+  clip-path:polygon(9px 0%,calc(100% - 9px) 0%,100% 9px,100% calc(100% - 9px),calc(100% - 9px) 100%,9px 100%,0% calc(100% - 9px),0% 9px);
+  transition:all .2s;box-shadow:var(--glow-cyan);cursor:pointer
+}
+.hex-solid:hover{background:#fff;transform:translateY(-2px)}
+.hex-solid:disabled{background:var(--dim);box-shadow:none;opacity:.5;cursor:default;transform:none}
+
+.chip{font-family:var(--mono);font-size:10px;letter-spacing:.05em;padding:3px 9px;border-radius:2px;display:inline-flex;align-items:center;gap:5px}
+.chip-cyan{background:#00E5FF15;color:var(--cyan);border:1px solid #00E5FF40}
+.chip-green{background:#39FF1415;color:var(--neon);border:1px solid #39FF1440}
+.chip-amber{background:#FFB30015;color:var(--amber);border:1px solid #FFB30040}
+.chip-red{background:#FF174415;color:var(--red);border:1px solid #FF174440}
+.chip-dim{background:#37474F30;color:#78909C;border:1px solid #37474F60}
+
+/* screen management */
+.screen{display:none;min-height:100vh;position:relative;overflow:hidden}
+.screen.active{display:flex;flex-direction:column}
+
+/* cyber frame corners */
+.cyf{position:relative}
+.cyf::before,.cyf::after{content:'';position:absolute;width:13px;height:13px;z-index:2}
+.cyf::before{top:-1px;left:-1px;border-top:2px solid var(--cyan);border-left:2px solid var(--cyan)}
+.cyf::after{bottom:-1px;right:-1px;border-bottom:2px solid var(--cyan);border-right:2px solid var(--cyan)}
+
+/* hex ring */
+.hex-ring{position:relative;display:flex;align-items:center;justify-content:center}
+.hex-ring .r1,.hex-ring .r2{position:absolute;inset:0;border-radius:50%;border:2px solid transparent}
+.hex-ring .r1{border-top-color:var(--cyan);border-right-color:var(--cyan);animation:rotate-slow 3s linear infinite;opacity:.7}
+.hex-ring .r2{inset:6px;border-bottom-color:var(--cyan);border-left-color:var(--cyan);animation:rotate-ccw 2s linear infinite;opacity:.45}
+.hex-ring .ri{position:relative;z-index:1}
+
+/* progress bar */
+.prog-wrap{height:4px;background:rgba(0,229,255,.1);border-radius:2px;overflow:hidden}
+.prog-bar{height:100%;border-radius:2px;transition:width .5s ease;background:linear-gradient(90deg,var(--cyan),var(--neon));box-shadow:0 0 8px var(--neon)}
+
+/* particles container */
+#particles{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+.ptcl{position:absolute;bottom:0;border-radius:50%;animation:particle-float linear infinite}
+
+/* ticker */
+.ticker-wrap{border-top:1px solid rgba(0,229,255,.1);background:rgba(2,11,20,.75);padding:6px 0;overflow:hidden;position:relative}
+.ticker-inner{display:inline-block;white-space:nowrap;animation:data-scroll 25s linear infinite;font-family:var(--mono);font-size:8px;color:var(--dim);letter-spacing:.08em}
+
+/* modal overlay */
+#cam-modal{display:none;position:fixed;inset:0;background:rgba(2,11,20,.97);z-index:900;flex-direction:column;animation:zoom-in .25s ease}
+#cam-modal.open{display:flex}
+
+/* zone card hover */
+.zone-card{transition:all .18s;cursor:pointer}
+.zone-card:hover{transform:translateY(-2px)}
+
+/* flight card hover */
+.flight-card{transition:all .18s;cursor:pointer}
+.flight-card:hover{transform:translateY(-1px)}
+
+/* Admin tab nav */
+.tab-btn{
+  padding:6px 14px;font-size:12px;font-family:var(--head);font-weight:600;
+  letter-spacing:.08em;color:var(--dim);background:transparent;border:none;
+  border-bottom:2px solid transparent;transition:all .15s;cursor:pointer
+}
+.tab-btn.active{color:var(--cyan);border-bottom-color:var(--cyan)}
+
+/* admin panels */
+.admin-tab{display:none}
+.admin-tab.active{display:block}
+</style>
+</head>
+<body>
+
+<!-- PARTICLES -->
+<div id="particles" class="grid-bg"></div>
+
+<!-- ═══════════════════════════════════════════════
+     SCREEN: ROLE SELECT
+════════════════════════════════════════════════ -->
+<div id="s-select" class="screen active" style="align-items:center;justify-content:center;padding:32px;gap:32px">
+  <div style="position:absolute;top:30%;left:20%;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(0,229,255,.06) 0%,transparent 70%);pointer-events:none"></div>
+  <div style="position:absolute;bottom:20%;right:15%;width:250px;height:250px;border-radius:50%;background:radial-gradient(circle,rgba(224,64,251,.05) 0%,transparent 70%);pointer-events:none"></div>
+
+  <div style="text-align:center;animation:slide-up .5s ease;position:relative;z-index:1">
+    <div class="hex-ring" style="width:110px;height:110px;margin:0 auto 22px">
+      <div class="r1"></div><div class="r2"></div>
+      <div class="ri" style="font-size:44px;animation:float 4s ease-in-out infinite">✈</div>
+    </div>
+    <div class="holo-text" style="font-family:var(--head);font-size:46px;font-weight:900;letter-spacing:.12em;line-height:1">AVSEC PRO</div>
+    <div style="font-family:var(--head);font-size:12px;color:var(--cyan2);letter-spacing:.28em;margin-top:8px">GESTIÓN DE SEGURIDAD AERONÁUTICA</div>
+    <div style="font-family:var(--mono);font-size:10px;color:var(--dim);margin-top:6px">AEROPUERTO INTERNACIONAL JUAN SANTAMARÍA · SJO · MROC</div>
+  </div>
+
+  <div style="width:100%;max-width:360px;display:flex;flex-direction:column;gap:12px;position:relative;z-index:1">
+    <div style="font-family:var(--mono);font-size:9px;color:var(--dim);text-align:center;letter-spacing:.1em;margin-bottom:4px">SELECCIONE MODO OPERACIONAL</div>
+
+    <div class="cyf flight-card" onclick="goOfficer()"
+      style="padding:20px 22px;background:rgba(0,229,255,.04);backdrop-filter:blur(12px);border:1px solid rgba(0,229,255,.18);border-radius:8px;display:flex;align-items:center;gap:16px;animation:slide-up .4s .1s ease both">
+      <div class="hex-ring" style="width:58px;height:58px;flex-shrink:0"><div class="r1"></div><div class="r2"></div><div class="ri" style="font-size:22px">🔍</div></div>
+      <div>
+        <div style="font-family:var(--head);font-size:15px;font-weight:700;letter-spacing:.08em;color:var(--cyan);margin-bottom:5px">OFICIAL DE SEGURIDAD</div>
+        <div style="font-family:var(--body);font-size:12px;color:var(--t3);line-height:1.5">Inspecciones de aeronave. Paso a paso con evidencia fotográfica obligatoria.</div>
+      </div>
+    </div>
+
+    <div class="cyf flight-card" onclick="goAdmin()"
+      style="padding:20px 22px;background:rgba(224,64,251,.03);backdrop-filter:blur(12px);border:1px solid rgba(224,64,251,.18);border-radius:8px;display:flex;align-items:center;gap:16px;animation:slide-up .4s .18s ease both">
+      <div class="hex-ring" style="width:58px;height:58px;flex-shrink:0"><div class="r1" style="border-top-color:var(--violet);border-right-color:var(--violet)"></div><div class="r2" style="border-bottom-color:var(--violet);border-left-color:var(--violet)"></div><div class="ri" style="font-size:22px">📊</div></div>
+      <div>
+        <div style="font-family:var(--head);font-size:15px;font-weight:700;letter-spacing:.08em;color:var(--violet);margin-bottom:5px">ADMIN / SUPERVISOR</div>
+        <div style="font-family:var(--body);font-size:12px;color:var(--t3);line-height:1.5">Panel de operaciones. Vuelos, reportes, transmisión en vivo, equipo.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="ticker-wrap" style="position:absolute;bottom:0;left:0;right:0">
+    <div class="ticker-inner">CUMPLE ANEXO 17 OACI · CERTIFICADO DGAC · SJO MROC · SISTEMA DE GESTIÓN DE SEGURIDAD AEROPORTUARIA v3.1 · CUMPLE ANEXO 17 OACI · CERTIFICADO DGAC · SJO MROC · SISTEMA DE GESTIÓN DE SEGURIDAD AEROPORTUARIA v3.1 · </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     SCREEN: OFFICER HOME
+════════════════════════════════════════════════ -->
+<div id="s-ohome" class="screen" style="align-items:center;justify-content:center;padding:28px;gap:28px">
+  <div style="position:absolute;top:20%;left:50%;transform:translateX(-50%);width:300px;height:300px;border-radius:50%;background:radial-gradient(circle,rgba(0,229,255,.07) 0%,transparent 70%);pointer-events:none"></div>
+  <div style="text-align:center;animation:slide-up .45s ease;position:relative;z-index:1">
+    <div class="hex-ring" style="width:100px;height:100px;margin:0 auto 20px"><div class="r1"></div><div class="r2"></div><div class="ri" style="font-size:40px">✈</div></div>
+    <div class="holo-text" style="font-family:var(--head);font-size:40px;font-weight:900;letter-spacing:.1em;line-height:1">AVSEC</div>
+    <div style="font-family:var(--head);font-size:13px;color:var(--cyan2);letter-spacing:.2em;margin-top:6px">OFICIAL DE SEGURIDAD</div>
+    <div style="font-family:var(--mono);font-size:10px;color:var(--dim);margin-top:4px">SJO · MROC · MODO CAMPO</div>
+  </div>
+  <div style="width:100%;max-width:320px;display:flex;flex-direction:column;gap:12px;position:relative;z-index:1">
+    <button class="hex-solid su" style="width:100%;padding:18px;font-size:14px" onclick="goFlight()">⬡ INICIAR INSPECCIÓN</button>
+    <button class="hex-btn" style="width:100%;padding:13px;font-size:11px" onclick="goSelect()"><span>← VOLVER AL INICIO</span></button>
+  </div>
+  <div class="ticker-wrap" style="position:absolute;bottom:0;left:0;right:0">
+    <div class="ticker-inner">OPERACIONES DE SEGURIDAD SJO · MROC · ANEXO 17 OACI · CERTIFICADO DGAC · OPERACIONES DE SEGURIDAD SJO · MROC · ANEXO 17 OACI · CERTIFICADO DGAC · </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     SCREEN: SELECT FLIGHT
+════════════════════════════════════════════════ -->
+<div id="s-flight" class="screen" style="flex-direction:column;padding:20px 18px">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;position:relative;z-index:1">
+    <button class="hex-btn" onclick="goOfficer()" style="padding:8px 16px;font-size:10px"><span>← ATRÁS</span></button>
+    <div style="font-family:var(--mono);font-size:9px;color:var(--dim)" id="flight-time"></div>
+  </div>
+  <div style="position:relative;z-index:1;margin-bottom:22px">
+    <div style="font-family:var(--head);font-size:22px;font-weight:700;letter-spacing:.08em;color:var(--cyan);animation:neon-flicker 5s ease infinite">SELECCIONAR AERONAVE</div>
+    <div style="font-family:var(--mono);font-size:10px;color:var(--t3);margin-top:4px">COLA DE SALIDAS ACTIVAS · SJO</div>
+  </div>
+  <div id="flight-list" style="display:flex;flex-direction:column;gap:10px;position:relative;z-index:1;overflow-y:auto"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     SCREEN: BADGE SCAN (pre-operation)
+════════════════════════════════════════════════ -->
+<div id="s-badges" class="screen" style="flex-direction:column">
+  <div style="background:rgba(7,24,40,.92);backdrop-filter:blur(20px);border-bottom:1px solid rgba(0,229,255,.15);padding:14px 18px;flex-shrink:0;position:relative;z-index:2">
+    <button class="hex-btn" onclick="goFlight()" style="padding:7px 12px;font-size:10px;margin-bottom:14px"><span>← CAMBIAR VUELO</span></button>
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div id="badge-fid" style="font-family:var(--mono);font-size:12px;color:var(--cyan);margin-bottom:2px"></div>
+        <div id="badge-airline" style="font-family:var(--head);font-size:16px;font-weight:700;letter-spacing:.03em"></div>
+      </div>
+      <div style="text-align:right">
+        <div id="badge-gate" style="font-family:var(--head);font-size:20px;color:var(--amber);letter-spacing:.05em"></div>
+        <div id="badge-route" style="font-family:var(--mono);font-size:11px;color:var(--t2);margin-top:2px"></div>
+      </div>
+    </div>
+    <div style="margin-top:14px;padding:10px 14px;background:rgba(0,229,255,.05);border-radius:6px;border:1px solid rgba(0,229,255,.15)">
+      <div style="font-family:var(--head);font-size:11px;color:var(--cyan);letter-spacing:.1em;margin-bottom:4px">📛 ESCANEO DE CREDENCIALES PRE-OPERACIÓN</div>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--t3);line-height:1.65">Escanee la credencial de cada persona involucrada en esta operación antes de iniciar. Se requiere al menos 1 credencial para continuar.</div>
+    </div>
+  </div>
+
+  <div id="badge-body" style="flex:1;padding:16px;overflow-y:auto;position:relative;z-index:1"></div>
+
+  <div style="padding:14px 16px;flex-shrink:0;background:rgba(7,24,40,.95);backdrop-filter:blur(20px);border-top:1px solid rgba(0,229,255,.15);position:relative;z-index:2;display:flex;flex-direction:column;gap:10px">
+    <button class="hex-btn" style="width:100%;padding:13px;font-size:11px" onclick="addBadgePre()"><span>📛 ESCANEAR OTRA CREDENCIAL</span></button>
+    <button class="hex-solid" id="badge-proceed-btn" style="width:100%;padding:17px;font-size:13px" disabled onclick="proceedToInspect()">⬡ INICIAR INSPECCIÓN</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     SCREEN: INSPECT (zone grid)
+════════════════════════════════════════════════ -->
+<div id="s-inspect" class="screen" style="flex-direction:column">
+  <!-- header -->
+  <div style="background:rgba(7,24,40,.92);backdrop-filter:blur(20px);border-bottom:1px solid rgba(0,229,255,.15);padding:14px 18px;flex-shrink:0;position:relative;z-index:2">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+      <button class="hex-btn" onclick="goFlight()" style="padding:6px 12px;font-size:10px"><span>← CAMBIAR</span></button>
+      <div id="timer-display" style="font-family:var(--mono);font-size:22px;letter-spacing:.08em;color:var(--cyan)">00:00</div>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between">
+      <div>
+        <div id="insp-fid" style="font-family:var(--mono);font-size:12px;color:var(--cyan);margin-bottom:2px"></div>
+        <div id="insp-airline" style="font-family:var(--head);font-size:16px;font-weight:700;letter-spacing:.03em"></div>
+      </div>
+      <div style="text-align:right">
+        <div id="insp-gate" style="font-family:var(--head);font-size:20px;color:var(--amber);letter-spacing:.05em"></div>
+        <div id="insp-route" style="font-family:var(--mono);font-size:11px;color:var(--t2);margin-top:2px"></div>
+      </div>
+    </div>
+    <!-- badge strip -->
+    <div style="display:flex;align-items:center;gap:8px;margin-top:12px;padding:8px 10px;background:rgba(0,229,255,.04);border-radius:6px;border:1px solid rgba(0,229,255,.1)">
+      <div id="insp-badge-strip" style="display:flex;gap:5px;flex-wrap:wrap;flex:1"></div>
+      <button onclick="lateArrival()" style="flex-shrink:0;width:28px;height:28px;border-radius:50%;background:rgba(0,229,255,.12);border:1px solid rgba(0,229,255,.4);color:var(--cyan);font-size:15px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .18s" title="Llegada tardía — agregar credencial" onmouseover="this.style.background='rgba(0,229,255,.28)'" onmouseout="this.style.background='rgba(0,229,255,.12)'">+</button>
+    </div>
+    <div style="margin-top:10px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:5px">
+        <span id="prog-label" style="font-family:var(--mono);font-size:10px;color:var(--t3)">0 / 12 ZONES</span>
+        <span id="prog-issues" style="font-family:var(--mono);font-size:10px;color:var(--t3)">NO ISSUES</span>
+      </div>
+      <div class="prog-wrap"><div class="prog-bar" id="prog-bar" style="width:0%"></div></div>
+    </div>
+  </div>
+  <!-- zone grid -->
+  <div id="zone-grid" style="flex:1;padding:14px;overflow-y:auto;position:relative;z-index:1;display:grid;grid-template-columns:1fr 1fr;gap:10px;align-content:start"></div>
+  <!-- submit -->
+  <div id="inspect-submit" style="display:none;padding:14px;flex-shrink:0;background:rgba(7,24,40,.95);backdrop-filter:blur(20px);border-top:1px solid rgba(0,229,255,.15);position:relative;z-index:2">
+    <button class="hex-solid" id="inspect-submit-btn" style="width:100%;padding:18px;font-size:14px" onclick="finishInspection()">✓ ENVIAR — AERONAVE LIBERADA</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     SCREEN: ZONE DETAIL
+════════════════════════════════════════════════ -->
+<div id="s-zone" class="screen" style="flex-direction:column">
+  <div style="background:rgba(7,24,40,.92);backdrop-filter:blur(20px);border-bottom:1px solid rgba(0,229,255,.15);padding:14px 18px;flex-shrink:0;position:relative;z-index:2">
+    <button class="hex-btn" onclick="backToInspect()" style="padding:7px 12px;font-size:10px;margin-bottom:14px"><span>← ZONAS</span></button>
+    <div style="display:flex;align-items:center;gap:14px">
+      <div id="zone-icon" style="font-size:36px"></div>
+      <div>
+        <div id="zone-label" style="font-family:var(--head);font-size:19px;font-weight:700;letter-spacing:.06em;color:var(--cyan)"></div>
+        <div id="zone-sub" style="font-family:var(--mono);font-size:10px;color:var(--t3);margin-top:2px"></div>
+        <div id="zone-crit-badge" style="display:none;font-family:var(--mono);font-size:9px;color:var(--amber);margin-top:4px;animation:blink 2s infinite;letter-spacing:.06em">⚠ PUNTO CRÍTICO</div>
+      </div>
+    </div>
+    <!-- step indicator -->
+    <div style="display:flex;align-items:center;margin-top:16px">
+      <div id="step1-dot" style="width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid var(--cyan);font-family:var(--mono);font-size:9px;color:var(--cyan);flex-shrink:0">01</div>
+      <span id="step1-lbl" style="font-family:var(--mono);font-size:9px;color:var(--t2);letter-spacing:.06em;margin-left:6px">HALLAZGO</span>
+      <div style="flex:1;height:1px;background:rgba(0,229,255,.2);margin:0 10px"></div>
+      <div id="step2-dot" style="width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:2px solid var(--dim);font-family:var(--mono);font-size:9px;color:var(--dim);flex-shrink:0">02</div>
+      <span id="step2-lbl" style="font-family:var(--mono);font-size:9px;color:var(--dim);letter-spacing:.06em;margin-left:6px">FOTO</span>
+    </div>
+  </div>
+
+  <div id="zone-body" style="flex:1;padding:18px 16px;display:flex;flex-direction:column;gap:12px;overflow-y:auto;position:relative;z-index:1"></div>
+
+  <div style="padding:14px 16px;flex-shrink:0;background:rgba(7,24,40,.95);backdrop-filter:blur(20px);border-top:1px solid rgba(0,229,255,.15);position:relative;z-index:2">
+    <button class="hex-solid" id="zone-next-btn" style="width:100%;padding:17px;font-size:13px" onclick="zoneNext()">SELECCIONE UN HALLAZGO</button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     SCREEN: DONE
+════════════════════════════════════════════════ -->
+<div id="s-done" class="screen" style="align-items:center;justify-content:center;padding:28px;gap:20px;flex-direction:column">
+  <div style="text-align:center;position:relative;z-index:1" class="su">
+    <div class="hex-ring" id="done-ring" style="width:90px;height:90px;margin:0 auto 16px"><div class="r1"></div><div class="r2"></div><div class="ri" id="done-icon" style="font-size:36px;animation:float 3s ease-in-out infinite">✅</div></div>
+    <div id="done-title" style="font-family:var(--head);font-size:32px;font-weight:900;letter-spacing:.08em;line-height:1.1;color:var(--neon);text-shadow:var(--glow-neon)">AERONAVE<br>LIBERADA</div>
+    <div id="done-sub" style="font-family:var(--mono);font-size:11px;color:var(--t2);margin-top:10px;line-height:1.8"></div>
+  </div>
+  <div class="cyf" id="done-stats" style="width:100%;max-width:300px;padding:20px;background:rgba(10,32,53,.7);backdrop-filter:blur(12px);border:1px solid rgba(0,229,255,.2);border-radius:8px;position:relative;z-index:1"></div>
+  <div id="done-findings" style="width:100%;max-width:300px;display:none;padding:14px 16px;background:rgba(255,179,0,.06);border-radius:8px;border:1px solid rgba(255,179,0,.2);position:relative;z-index:1"></div>
+  <div style="width:100%;max-width:300px;display:flex;flex-direction:column;gap:10px;position:relative;z-index:1">
+    <button class="hex-solid" style="width:100%;padding:16px;font-size:13px" onclick="resetOfficer()">⬡ NUEVA INSPECCIÓN</button>
+    <button class="hex-btn" style="width:100%;padding:12px;font-size:11px" onclick="goSelect()"><span>← VOLVER AL INICIO</span></button>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     SCREEN: ADMIN DASHBOARD
+════════════════════════════════════════════════ -->
+<div id="s-admin" class="screen" style="flex-direction:column">
+  <!-- top nav -->
+  <div style="background:rgba(3,15,28,.92);backdrop-filter:blur(20px);border-bottom:1px solid rgba(0,229,255,.15);padding:0 20px;display:flex;align-items:center;height:56px;gap:16px;flex-shrink:0;position:sticky;top:0;z-index:50">
+    <div style="display:flex;align-items:center;gap:10px;margin-right:8px">
+      <div class="hex-ring" style="width:34px;height:34px;flex-shrink:0"><div class="r1" style="border-width:1.5px"></div><div class="r2" style="inset:4px;border-width:1px"></div><div class="ri" style="font-size:13px">✈</div></div>
+      <div>
+        <div class="holo-text" style="font-family:var(--head);font-size:17px;font-weight:900;letter-spacing:.12em;line-height:1">AVSEC<span style="-webkit-text-fill-color:var(--violet);color:var(--violet)">PRO</span></div>
+        <div style="font-family:var(--mono);font-size:8px;color:var(--dim);letter-spacing:.06em">ADMIN · SJO · <span id="admin-clock"></span></div>
+      </div>
+    </div>
+    <div style="display:flex;gap:2px">
+      <button class="tab-btn active" data-tab="overview" onclick="adminTab(this,'overview')">Resumen</button>
+      <button class="tab-btn" data-tab="flights" onclick="adminTab(this,'flights')">Vuelos</button>
+      <button class="tab-btn" data-tab="reports" onclick="adminTab(this,'reports')">Reportes</button>
+      <button class="tab-btn" data-tab="live" onclick="adminTab(this,'live')">Feed en Vivo</button>
+    </div>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:10px">
+      <div id="admin-alert-badge" style="display:none;align-items:center;gap:6px;padding:5px 12px;background:rgba(255,23,68,.1);border-radius:3px;border:1px solid rgba(255,23,68,.3)">
+        <div style="width:6px;height:6px;border-radius:50%;background:var(--red);box-shadow:0 0 6px var(--red);animation:blink 1s infinite"></div>
+        <span id="admin-open-count" style="font-family:var(--mono);font-size:10px;color:var(--red);letter-spacing:.06em">0 OPEN</span>
+      </div>
+      <button class="hex-btn" onclick="goSelect()" style="padding:6px 12px;font-size:10px"><span>← INICIO</span></button>
+    </div>
+  </div>
+
+  <!-- tab content -->
+  <div style="flex:1;overflow-y:auto;position:relative;z-index:1">
+    <!-- OVERVIEW -->
+    <div id="tab-overview" class="admin-tab active" style="padding:20px;display:flex;flex-direction:column;gap:16px">
+      <div id="admin-alert-banner" style="display:none"></div>
+      <div id="admin-stats" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px"></div>
+      <div style="display:grid;grid-template-columns:1fr 240px;gap:12px">
+        <div id="admin-flights-panel" style="border-radius:8px;overflow:hidden;background:rgba(10,32,53,.5);backdrop-filter:blur(12px);border:1px solid rgba(0,229,255,.1)"></div>
+        <div id="admin-officers-panel" style="border-radius:8px;overflow:hidden;background:rgba(10,32,53,.5);backdrop-filter:blur(12px);border:1px solid rgba(0,229,255,.1)"></div>
+      </div>
+    </div>
+    <!-- FLIGHTS -->
+    <div id="tab-flights" class="admin-tab" style="padding:20px">
+      <div style="font-family:var(--head);font-size:21px;color:var(--cyan);letter-spacing:.08em;margin-bottom:4px">TODOS LOS VUELOS</div>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--dim);margin-bottom:16px">MANIFIESTO DE SALIDAS HOY · SJO · 6 AERONAVES</div>
+      <div id="flights-table" style="border-radius:8px;overflow:hidden;background:rgba(10,32,53,.5);backdrop-filter:blur(12px);border:1px solid rgba(0,229,255,.1)"></div>
+    </div>
+    <!-- REPORTS -->
+    <div id="tab-reports" class="admin-tab" style="padding:20px">
+      <div style="font-family:var(--head);font-size:21px;color:var(--cyan);letter-spacing:.08em;margin-bottom:4px">REPORTES DE INCIDENTES</div>
+      <div id="reports-summary" style="font-family:var(--mono);font-size:10px;color:var(--dim);margin-bottom:16px"></div>
+      <div id="reports-list" style="display:flex;flex-direction:column;gap:10px"></div>
+    </div>
+    <!-- LIVE -->
+    <div id="tab-live" class="admin-tab" style="padding:20px;display:flex;flex-direction:column;gap:14px;height:calc(100vh - 56px)">
+      <div>
+        <div style="font-family:var(--head);font-size:21px;color:var(--cyan);letter-spacing:.08em;margin-bottom:4px">CANAL OPERACIONAL EN VIVO</div>
+        <div style="display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:10px;color:var(--t3)">
+          <div style="width:7px;height:7px;border-radius:50%;background:var(--neon);box-shadow:0 0 6px var(--neon);animation:blink 2s infinite"></div>
+          TIEMPO REAL · COMANDO SOC · REEMPLAZA WHATSAPP
+        </div>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;border-radius:8px;border:1px solid rgba(0,229,255,.12);background:rgba(7,24,40,.7);backdrop-filter:blur(16px)">
+        <div id="live-feed" style="flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:8px"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     CAMERA MODAL
+════════════════════════════════════════════════ -->
+<div id="cam-modal">
+  <div style="padding:16px 20px;border-bottom:1px solid rgba(0,229,255,.15);display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+    <div>
+      <div style="font-family:var(--head);font-size:13px;color:var(--cyan);letter-spacing:.1em;margin-bottom:2px">EVIDENCIA FOTOGRÁFICA REQUERIDA</div>
+      <div id="cam-zone-name" style="font-family:var(--mono);font-size:10px;color:var(--t3)">ZONA · OBLIGATORIO</div>
+    </div>
+    <button onclick="closeCam()" style="color:var(--t3);font-size:18px;padding:4px 8px;background:transparent;border:none;cursor:pointer">✕</button>
+  </div>
+  <div style="flex:1;padding:20px;display:flex;flex-direction:column;gap:14px;overflow-y:auto">
+    <canvas id="cam-canvas" style="display:none"></canvas>
+    <div id="cam-body"></div>
+    <div style="padding:10px 14px;background:rgba(0,229,255,.04);border-radius:8px;border:1px solid rgba(0,229,255,.1)">
+      <div style="font-family:var(--mono);font-size:10px;color:var(--cyan);margin-bottom:4px">⚠ REQUERIDO</div>
+      <div style="font-size:12px;color:var(--t2);line-height:1.5">La evidencia fotográfica es obligatoria en todas las zonas de revisión. La imagen quedará adjunta al reporte.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══ DATA ════════════════════════════════════════════════
+const ZONES = [
+  {id:"cockpit", icon:"🛩", label:"Cabina",          sub:"Cabina de vuelo e instrumentos",  crit:true},
+  {id:"overhead",icon:"📦",label:"Compartimentos Superiores",    sub:"Todas las filas, ambos lados",       crit:false},
+  {id:"seats",   icon:"💺",label:"Bolsillos de Asientos",     sub:"Bolsillos frontales y laterales",       crit:false},
+  {id:"under",   icon:"🔦",label:"Bajo los Asientos",      sub:"Todas las filas, nivel del suelo",      crit:false},
+  {id:"rows",    icon:"↔", label:"Pasillos y Suelo", sub:"Entre y debajo de todas las filas",   crit:false},
+  {id:"lav",     icon:"🚻",label:"Lavabos",       sub:"Detrás de paneles y basureros", crit:true},
+  {id:"galley",  icon:"🍽",label:"Galera",           sub:"Compartimentos y almacenamiento",     crit:false},
+  {id:"trash",   icon:"🗑",label:"Basureros",       sub:"Todos los receptáculos de cabina",      crit:false},
+  {id:"emerg",   icon:"🆘",label:"Equipo de Emergencia", sub:"Chalecos, máscaras y salidas",  crit:true},
+  {id:"unauth",  icon:"⛔",label:"Equipo No Autorizado",sub:"Dispositivos u objetos desconocidos",  crit:true},
+  {id:"cargo",   icon:"📋",label:"Manifiesto de Carga",   sub:"Contar y verificar todos los paquetes", crit:true},
+  {id:"exits",   icon:"🚪",label:"Salidas y Sellos",    sub:"Puertas, sellos y pestillos",     crit:true},
+];
+const FINDINGS = [
+  {id:"clear",  emoji:"✅",label:"Sin Novedad",       color:"green"},
+  {id:"susp",   emoji:"⚠️",label:"Objeto Sospechoso", color:"amber"},
+  {id:"missing",emoji:"❌",label:"Artículo Faltante",    color:"red"},
+  {id:"unauth", emoji:"🚫",label:"No Autorizado",    color:"red"},
+  {id:"damaged",emoji:"🔧",label:"Dañado",         color:"amber"},
+  {id:"cargo",  emoji:"📋",label:"Discrepancia de Carga",  color:"red"},
+];
+const FLIGHTS = [
+  {id:"AA2341",airline:"American Airlines",gate:"B12",dep:"14:30",dest:"MIA",ac:"Boeing 737-800",tail:"N834AA",  st:"pending"},
+  {id:"UA891", airline:"United Airlines",  gate:"A05",dep:"15:15",dest:"EWR",ac:"Boeing 777-200",tail:"N2332U",  st:"active"},
+  {id:"CM201", airline:"Copa Airlines",    gate:"C01",dep:"16:00",dest:"PTY",ac:"Boeing 737 MAX", tail:"HP-1745",st:"cleared"},
+  {id:"LA502", airline:"LATAM Airlines",   gate:"A11",dep:"16:45",dest:"BOG",ac:"Airbus A320",    tail:"CC-BAA", st:"pending"},
+  {id:"AV382", airline:"Avianca",          gate:"B07",dep:"17:20",dest:"MED",ac:"Airbus A319",    tail:"N589AV", st:"alert"},
+  {id:"IB6830",airline:"Iberia",           gate:"D02",dep:"23:55",dest:"MAD",ac:"Airbus A340",    tail:"EC-LFM", st:"pending"},
+];
+const OFFICERS = ["C. Ramírez","M. Solano","D. Vargas","J. Mora","R. Jiménez","P. Castro","A. Núñez"];
+const FC = {green:"var(--neon)",amber:"var(--amber)",red:"var(--red)"};
+const FB = {green:"rgba(57,255,20,.08)",amber:"rgba(255,179,0,.08)",red:"rgba(255,23,68,.08)"};
+const CHIP_CLS = {green:"chip-green",amber:"chip-amber",red:"chip-red"};
+
+// ═══ STATE ════════════════════════════════════════════════
+let state = {
+  currentFlight: null,
+  zones: {},          // zoneId -> {finding, note, photo, time}
+  activeZone: null,
+  zoneStep: "finding",// "finding" | "photo"
+  zoneFinding: null,
+  zoneNote: "",
+  zonePhoto: null,
+  opBadges: [],       // [{photo, time, late}] — scanned pre-op (or late arrivals)
+  elapsed: 0,
+  timerInt: null,
+  camStream: null,
+  camMode: "zone",    // "zone" | "badge-pre" | "badge-late"
+};
+let reports = [
+  {id:"RPT-0891",flight:"UA891", zone:"Lavabo",        finding:"susp",   officer:"C. Ramírez",time:"13:42",note:"Bolso no identificado detrás del panel del espejo. Se solicitó ETD.",resolved:false,photo:null},
+  {id:"RPT-0890",flight:"CM201", zone:"Cabina",         finding:"clear",  officer:"M. Solano", time:"13:15",note:"Revisión completa de cabina. Todo el equipo verificado.",resolved:true, photo:null},
+  {id:"RPT-0889",flight:"AV382", zone:"Manifiesto de Carga",  finding:"cargo",  officer:"D. Vargas", time:"12:58",note:"2 paquetes sin registrar. Vuelo puesto en ESPERA.",  resolved:false,photo:null},
+  {id:"RPT-0888",flight:"AV382", zone:"Compartimentos Superiores",   finding:"unauth", officer:"D. Vargas", time:"12:51",note:"Mochila sin etiqueta de abordaje. Removida y en cuarentena.",   resolved:true, photo:null},
+  {id:"RPT-0887",flight:"AA2341",zone:"Equipo de Emergencia",finding:"missing",officer:"J. Mora",   time:"11:30",note:"Chaleco salvavidas faltante en asiento 22C. Aerolínea notificada.",       resolved:true, photo:null},
+];
+let liveFeed = [
+  {type:"ok",  msg:"CM201 liberado. Abordaje autorizado.",      officer:"M. Solano",  time:"13:15"},
+  {type:"warn",msg:"Revisión secundaria CP-2 — pasajero UA891.",    officer:"C. Ramírez", time:"13:42"},
+  {type:"crit",msg:"AV382 BODEGA RETENIDA — 2 paquetes faltantes.",   officer:"D. Vargas",  time:"12:58"},
+  {type:"info",msg:"Patrulla de perímetro completa — sin novedades.",    officer:"A. Núñez",   time:"12:30"},
+];
+
+// ═══ HELPERS ══════════════════════════════════════════════
+const t12 = () => new Date().toLocaleTimeString("en-US",{hour:"2-digit",minute:"2-digit"});
+const fmt  = s  => `${String(Math.floor(s/60)).padStart(2,"0")}:${String(s%60).padStart(2,"0")}`;
+const $ = id => document.getElementById(id);
+const el = (tag,props={},html="") => {
+  const e = document.createElement(tag);
+  Object.assign(e.style, props.style||{});
+  if(props.className) e.className = props.className;
+  if(props.onclick) e.onclick = props.onclick;
+  if(props.id) e.id = props.id;
+  if(html) e.innerHTML = html;
+  return e;
+};
+const chipHTML = (st) => {
+  const m={pending:"<span class='chip chip-dim'>PENDIENTE</span>",active:"<span class='chip chip-cyan'>EN PROGRESO</span>",cleared:"<span class='chip chip-green'>LIBERADO</span>",alert:"<span class='chip chip-red'>ALERTA</span>"};
+  return m[st]||m.pending;
+};
+const fdChipHTML = (fd) => {
+  const f=FINDINGS.find(x=>x.id===fd); if(!f) return "";
+  return `<span class='chip ${CHIP_CLS[f.color]}'>${f.emoji} ${f.label}</span>`;
+};
+
+// ═══ SCREEN NAVIGATION ═══════════════════════════════════
+function showScreen(id) {
+  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+  $(id).classList.add("active");
+}
+function goSelect()  { showScreen("s-select"); }
+function goOfficer() { showScreen("s-ohome"); }
+function goAdmin()   { buildAdmin(); showScreen("s-admin"); startAdminClock(); startLiveFeed(); }
+
+// ═══ PARTICLES ═══════════════════════════════════════════
+(function spawnParticles(){
+  const cont = $("particles");
+  for(let i=0;i<18;i++){
+    const p = document.createElement("div");
+    p.className = "ptcl";
+    const size = 1+Math.random()*2;
+    const color = Math.random()>.5?"#00E5FF":"#E040FB";
+    const dur = 6+Math.random()*9;
+    const delay = Math.random()*8;
+    const dx = (Math.random()-.5)*80;
+    p.style.cssText = `left:${Math.random()*100}%;width:${size}px;height:${size}px;background:${color};box-shadow:0 0 4px ${color};--dx:${dx}px;animation-duration:${dur}s;animation-delay:${delay}s`;
+    cont.appendChild(p);
+  }
+})();
+
+// ═══ FLIGHT SELECT ════════════════════════════════════════
+function goFlight() {
+  stopTimer();
+  showScreen("s-flight");
+  $("flight-time").textContent = t12();
+  const list = $("flight-list");
+  list.innerHTML = "";
+  FLIGHTS.filter(f=>f.st!=="cleared").forEach((f,i)=>{
+    const isAlert = f.st==="alert";
+    const card = document.createElement("div");
+    card.className = "cyf flight-card su";
+    card.style.cssText = `padding:16px 18px;background:${isAlert?"rgba(255,23,68,.07)":"rgba(10,32,53,.65)"};backdrop-filter:blur(10px);border:1px solid ${isAlert?"rgba(255,23,68,.3)":"rgba(0,229,255,.15)"};border-radius:8px;display:flex;align-items:center;gap:14px;animation-delay:${i*.06}s`;
+    card.innerHTML = `
+      <div class="hex-ring" style="width:52px;height:52px;flex-shrink:0">
+        <div class="r1" style="${isAlert?"border-top-color:var(--red);border-right-color:var(--red)":""}"></div>
+        <div class="r2" style="${isAlert?"border-bottom-color:var(--red);border-left-color:var(--red)":""}"></div>
+        <div class="ri" style="font-size:20px">✈</div>
+      </div>
+      <div style="flex:1;min-width:0">
+        <div style="font-family:var(--mono);font-size:13px;font-weight:600;color:${isAlert?"var(--red)":"var(--cyan)"};margin-bottom:2px">${f.id}</div>
+        <div style="font-family:var(--head);font-size:15px;font-weight:700;letter-spacing:.02em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${f.airline}</div>
+        <div style="font-family:var(--mono);font-size:10px;color:var(--t3)">${f.ac} · ${f.tail}</div>
+      </div>
+      <div style="text-align:right;flex-shrink:0">
+        <div style="font-family:var(--head);font-size:22px;color:var(--amber);letter-spacing:.05em;line-height:1">G${f.gate}</div>
+        <div style="font-family:var(--mono);font-size:11px;color:var(--t2);margin-top:3px">${f.dep}→${f.dest}</div>
+        ${isAlert?`<div style="font-family:var(--mono);font-size:9px;color:var(--red);font-weight:700;margin-top:4px;animation:blink 1s infinite">⚠ ALERTA</div>`:""}
+      </div>`;
+    card.onclick = () => startInspection(f);
+    list.appendChild(card);
+  });
+}
+
+// ═══ INSPECTION ════════════════════════════════════════════
+function startInspection(f) {
+  state.currentFlight = f;
+  state.zones = {};
+  state.elapsed = 0;
+  state.opBadges = [];
+  // go to badge scan first
+  $("badge-fid").textContent = `${f.id} · ${f.tail}`;
+  $("badge-airline").textContent = f.airline;
+  $("badge-gate").textContent = `PUERTA ${f.gate}`;
+  $("badge-route").textContent = `${f.dep} → ${f.dest}`;
+  showScreen("s-badges");
+  renderBadgeScreen();
+}
+
+function renderBadgeScreen() {
+  const body = $("badge-body");
+  body.innerHTML = "";
+  const btn = $("badge-proceed-btn");
+
+  if(state.opBadges.length === 0) {
+    body.innerHTML = `
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:20px;padding:30px;text-align:center;min-height:240px">
+        <div class="hex-ring" style="width:80px;height:80px"><div class="r1"></div><div class="r2"></div><div class="ri" style="font-size:30px">📛</div></div>
+        <div>
+          <div style="font-family:var(--head);font-size:16px;letter-spacing:.06em;margin-bottom:8px">SIN CREDENCIALES ESCANEADAS</div>
+          <div style="font-family:var(--mono);font-size:11px;color:var(--t3);line-height:1.7">Escanee la credencial de cada persona<br>involucrada en la operación para continuar.</div>
+        </div>
+        <button class="hex-solid" style="padding:16px 32px;font-size:13px" onclick="addBadgePre()">📛 ESCANEAR PRIMERA CREDENCIAL</button>
+      </div>`;
+    btn.disabled = true;
+    btn.style.background = "var(--dim)";
+    btn.style.boxShadow = "none";
+    btn.style.color = "var(--t2)";
+  } else {
+    state.opBadges.forEach((b,i)=>{
+      const o = b.ocr;
+      const hasOCR = o && !o.error;
+      const card = document.createElement("div");
+      card.style.cssText = `border-radius:10px;overflow:hidden;border:1px solid ${b.late?"rgba(255,179,0,.4)":"rgba(0,229,255,.3)"};background:rgba(10,32,53,.6);backdrop-filter:blur(10px);margin-bottom:10px;animation:slide-up .3s ease`;
+      card.innerHTML = `
+        <div style="display:flex;gap:0">
+          <!-- photo column -->
+          <div style="position:relative;width:90px;flex-shrink:0">
+            <img src="${b.photo}" style="width:90px;height:100%;min-height:90px;object-fit:cover;display:block"/>
+            <div style="position:absolute;inset:0;background:linear-gradient(90deg,transparent 60%,rgba(10,32,53,.8))"></div>
+            ${b.late?`<div style="position:absolute;top:6px;left:6px;font-family:var(--mono);font-size:8px;background:rgba(255,179,0,.9);color:#000;padding:2px 6px;border-radius:2px;font-weight:700">TARDE</div>`:""}
+          </div>
+          <!-- info column -->
+          <div style="flex:1;padding:10px 12px;min-width:0">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+              <span style="font-family:var(--mono);font-size:9px;color:${b.late?"var(--amber)":"var(--cyan)"};letter-spacing:.06em">CRED. ${i+1} · ${b.time}</span>
+              <button onclick="removeOpBadge(${i})" style="background:rgba(255,23,68,.2);border:1px solid rgba(255,23,68,.4);color:var(--red);width:18px;height:18px;border-radius:50%;font-size:9px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">✕</button>
+            </div>
+            ${hasOCR ? `
+              ${o.nombre?`<div style="font-family:var(--head);font-size:13px;font-weight:700;letter-spacing:.03em;color:var(--t1);margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${o.nombre}</div>`:""}
+              ${o.cargo?`<div style="font-family:var(--mono);font-size:10px;color:var(--cyan);margin-bottom:2px">${o.cargo}</div>`:""}
+              ${o.empresa?`<div style="font-family:var(--mono);font-size:9px;color:var(--t3)">${o.empresa}</div>`:""}
+              <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:5px">
+                ${o.cedula?`<span style="font-family:var(--mono);font-size:8px;padding:2px 6px;background:rgba(0,229,255,.1);border:1px solid rgba(0,229,255,.2);border-radius:2px;color:var(--t2)">CI: ${o.cedula}</span>`:""}
+                ${o.nivel_acceso?`<span style="font-family:var(--mono);font-size:8px;padding:2px 6px;background:rgba(57,255,20,.08);border:1px solid rgba(57,255,20,.2);border-radius:2px;color:var(--neon)">${o.nivel_acceso}</span>`:""}
+                ${o.vigencia?`<span style="font-family:var(--mono);font-size:8px;padding:2px 6px;background:rgba(255,179,0,.08);border:1px solid rgba(255,179,0,.2);border-radius:2px;color:var(--amber)">${o.vigencia}</span>`:""}
+              </div>` : `
+              <div style="font-family:var(--mono);font-size:10px;color:var(--dim);line-height:1.6">
+                ${o?.error ? `<span style="color:var(--amber)">⚠ ${o.error}</span>` : "Sin datos OCR"}
+              </div>`}
+          </div>
+        </div>`;
+      body.appendChild(card);
+    });
+    body.insertAdjacentHTML("beforeend",`<div style="font-family:var(--mono);font-size:9px;color:var(--dim);text-align:center;letter-spacing:.06em;margin-top:4px">${state.opBadges.length} CREDENCIAL${state.opBadges.length>1?"ES":""} REGISTRADAS · OPERACIÓN LISTA</div>`);
+    btn.disabled = false;
+    btn.style.background = "var(--cyan)";
+    btn.style.boxShadow = "var(--glow-cyan)";
+    btn.style.color = "var(--void)";
+  }
+}
+
+function addBadgePre() {
+  state.camMode = "badge-pre";
+  openCam();
+}
+
+function removeOpBadge(idx) {
+  state.opBadges.splice(idx, 1);
+  renderBadgeScreen();
+}
+
+function proceedToInspect() {
+  if(state.opBadges.length === 0) return;
+  showScreen("s-inspect");
+  renderInspectHeader();
+  renderBadgeStrip();
+  renderZoneGrid();
+  startTimer();
+}
+
+function renderBadgeStrip() {
+  const strip = $("insp-badge-strip");
+  if(!strip) return;
+  strip.innerHTML = state.opBadges.map((b,i)=>`
+    <div title="Credencial ${i+1}${b.late?" (llegada tardía)":""}" style="position:relative;width:26px;height:26px;border-radius:4px;overflow:hidden;border:1px solid ${b.late?"rgba(255,179,0,.6)":"rgba(0,229,255,.5)"};flex-shrink:0;cursor:default">
+      <img src="${b.photo}" style="width:100%;height:100%;object-fit:cover"/>
+      ${b.late?`<div style="position:absolute;inset:0;background:rgba(255,179,0,.25)"></div>`:""}
+    </div>`).join("")+
+    `<div style="font-family:var(--mono);font-size:9px;color:var(--t3);margin-left:4px;align-self:center">${state.opBadges.length} persona${state.opBadges.length>1?"s":""}</div>`;
+}
+
+function lateArrival() {
+  state.camMode = "badge-late";
+  openCam();
+}
+
+function renderInspectHeader() {
+  const f = state.currentFlight;
+  $("insp-fid").textContent = `${f.id} · ${f.tail}`;
+  $("insp-airline").textContent = f.airline;
+  $("insp-gate").textContent = `PUERTA ${f.gate}`;
+  $("insp-route").textContent = `${f.dep} → ${f.dest}`;
+  updateProgress();
+}
+
+function updateProgress() {
+  const total = ZONES.length;
+  const done = Object.keys(state.zones).length;
+  const issues = Object.values(state.zones).filter(v=>v.finding!=="clear").length;
+  const pct = Math.round(done/total*100);
+  $("prog-label").textContent = `${done} / ${total} ZONAS REVISADAS`;
+  $("prog-issues").textContent = issues>0?`${issues} HALLAZGO${issues>1?"S":""}`:"SIN NOVEDADES";
+  $("prog-issues").style.color = issues>0?"var(--amber)":"var(--t3)";
+  $("prog-bar").style.width = pct+"%";
+  $("prog-bar").style.background = issues>0?"linear-gradient(90deg,var(--cyan),var(--amber))":"linear-gradient(90deg,var(--cyan),var(--neon))";
+  // show submit if all done
+  const submitEl = $("inspect-submit");
+  submitEl.style.display = done===total?"block":"none";
+  if(done===total){
+    const btn = $("inspect-submit-btn");
+    btn.textContent = issues>0?`⚠ ENVIAR — ${issues} HALLAZGO${issues>1?"S":""}`:"✓ ENVIAR — AERONAVE LIBERADA";
+    btn.style.background = issues>0?"var(--amber)":"var(--neon)";
+    btn.style.color = issues>0?"#1a1000":"#001a00";
+    btn.style.boxShadow = issues>0?"var(--glow-amber)":"var(--glow-neon)";
+  }
+}
+
+function renderZoneGrid() {
+  const grid = $("zone-grid");
+  grid.innerHTML = "";
+  ZONES.forEach((z,i)=>{
+    const res = state.zones[z.id];
+    const fd  = res ? FINDINGS.find(f=>f.id===res.finding) : null;
+    const col = res ? FC[fd?.color] : z.crit?"var(--amber)":"var(--cyan)";
+    const bg  = res ? FB[fd?.color]||"rgba(10,32,53,.5)" : "rgba(10,32,53,.5)";
+    const bor = res ? (FC[fd?.color]||"rgba(0,229,255,.12)")+"50" : z.crit?"rgba(255,179,0,.2)":"rgba(0,229,255,.12)";
+
+    const card = document.createElement("div");
+    card.className = "zone-card su";
+    card.style.cssText = `padding:14px 13px;border-radius:8px;background:${bg};backdrop-filter:blur(8px);border:1px solid ${bor};position:relative;overflow:hidden;animation-delay:${i*.025}s;box-shadow:${res?`0 0 12px ${FC[fd?.color]}15`:"none"}`;
+    card.innerHTML = `
+      ${z.crit&&!res?`<div style="position:absolute;top:7px;right:9px;font-family:var(--mono);font-size:8px;color:var(--amber);letter-spacing:.06em;font-weight:700;animation:blink 2s infinite">CRÍT</div>`:""}
+      ${res?.photo?`<div style="position:absolute;top:7px;right:${z.crit?"38px":"9px"}"><div style="width:22px;height:22px;border-radius:3px;overflow:hidden;border:1px solid rgba(0,229,255,.4)"><img src="${res.photo}" style="width:100%;height:100%;object-fit:cover"/></div></div>`:""}
+      <div style="font-size:28px;margin-bottom:7px">${z.icon}</div>
+      <div style="font-family:var(--head);font-size:11px;font-weight:700;letter-spacing:.04em;color:${res?FC[fd?.color]:"var(--t1)"};margin-bottom:5px;line-height:1.25">${z.label}</div>
+      <div style="font-family:var(--mono);font-size:9px;color:${res?FC[fd?.color]:"var(--dim)"}">
+        ${res?`${fd?.emoji} ${fd?.label}`:"📷 + REVISAR"}
+      </div>`;
+    card.onclick = () => openZone(z);
+    grid.appendChild(card);
+  });
+}
+
+// ═══ TIMER ════════════════════════════════════════════════
+function startTimer() {
+  stopTimer();
+  state.timerInt = setInterval(()=>{
+    state.elapsed++;
+    const d = $("timer-display");
+    if(d){
+      d.textContent = fmt(state.elapsed);
+      d.style.color = state.elapsed>1200?"var(--amber)":"var(--cyan)";
+    }
+  },1000);
+}
+function stopTimer() {
+  clearInterval(state.timerInt);
+  state.timerInt = null;
+}
+function finishInspection() {
+  stopTimer();
+  buildDoneScreen();
+  showScreen("s-done");
+}
+
+// ═══ ZONE DETAIL ════════════════════════════════════════════
+function openZone(z) {
+  state.activeZone = z;
+  state.zoneStep = "finding";
+  state.zoneFinding = null;
+  state.zoneNote = "";
+  state.zonePhoto = null;
+  showScreen("s-zone");
+  renderZoneHeader();
+  renderZoneBody();
+}
+
+function backToInspect() {
+  showScreen("s-inspect");
+  renderZoneGrid();
+  updateProgress();
+}
+
+function renderZoneHeader() {
+  const z = state.activeZone;
+  $("zone-icon").textContent = z.icon;
+  $("zone-label").textContent = z.label.toUpperCase();
+  $("zone-sub").textContent = z.sub;
+  $("zone-crit-badge").style.display = z.crit?"block":"none";
+  updateStepIndicator();
+}
+
+function updateStepIndicator() {
+  const s1dot=$("step1-dot"),s1lbl=$("step1-lbl");
+  const s2dot=$("step2-dot"),s2lbl=$("step2-lbl");
+  const fdDone=!!state.zoneFinding, phDone=!!state.zonePhoto;
+  if(fdDone){s1dot.style.background="var(--cyan)";s1dot.style.borderColor="var(--cyan)";s1dot.style.color="var(--void)";s1dot.textContent="✓";s1lbl.style.color="var(--cyan)";}
+  else if(state.zoneStep==="finding"){s1dot.style.background="transparent";s1dot.style.borderColor="var(--cyan)";s1dot.style.color="var(--cyan)";s1dot.textContent="01";s1lbl.style.color="var(--t2)";}
+  else{s1dot.style.background="transparent";s1dot.style.borderColor="var(--dim)";s1dot.style.color="var(--dim)";s1dot.textContent="01";s1lbl.style.color="var(--dim)";}
+  if(phDone){s2dot.style.background="var(--cyan)";s2dot.style.borderColor="var(--cyan)";s2dot.style.color="var(--void)";s2dot.textContent="✓";s2lbl.style.color="var(--cyan)";}
+  else if(state.zoneStep==="photo"){s2dot.style.background="transparent";s2dot.style.borderColor="var(--cyan)";s2dot.style.color="var(--cyan)";s2dot.textContent="02";s2lbl.style.color="var(--t2)";}
+  else{s2dot.style.background="transparent";s2dot.style.borderColor="var(--dim)";s2dot.style.color="var(--dim)";s2dot.textContent="02";s2lbl.style.color="var(--dim)";}
+}
+
+function renderZoneBody() {
+  const body = $("zone-body");
+  const btn  = $("zone-next-btn");
+  body.innerHTML = "";
+  body.className = "zi";
+  void body.offsetWidth;
+
+  if(state.zoneStep==="finding") {
+    body.insertAdjacentHTML("beforeend",`<div style="font-family:var(--head);font-size:13px;color:var(--cyan);letter-spacing:.1em;margin-bottom:14px">PASO 01 — REGISTRAR HALLAZGO</div>`);
+    FINDINGS.forEach(f=>{
+      const sel=state.zoneFinding===f.id, col=FC[f.color], bg=FB[f.color];
+      const b=document.createElement("button");
+      b.style.cssText=`width:100%;padding:14px 16px;display:flex;align-items:center;gap:14px;text-align:left;border-radius:6px;background:${sel?bg:"rgba(10,32,53,.5)"};border:2px solid ${sel?col+"80":"rgba(0,229,255,.1)"};box-shadow:${sel?`0 0 12px ${col}30`:"none"};transition:all .18s;margin-bottom:8px;color:var(--t1)`;
+      b.innerHTML=`<span style="font-size:22px">${f.emoji}</span><span style="font-family:var(--head);font-size:12px;font-weight:700;letter-spacing:.05em;color:${sel?col:"var(--t1)"}">${f.label}</span>${sel?`<div style="margin-left:auto;width:10px;height:10px;border-radius:50%;background:${col};box-shadow:0 0 8px ${col}"></div>`:""}`;
+      b.onclick=()=>{state.zoneFinding=f.id;renderZoneBody();};
+      body.appendChild(b);
+    });
+    if(state.zoneFinding&&state.zoneFinding!=="clear"){
+      const nw=document.createElement("div");
+      nw.innerHTML=`<div style="font-family:var(--mono);font-size:10px;color:var(--t3);margin-bottom:6px;letter-spacing:.06em">AGREGAR NOTA (OPCIONAL)</div>`;
+      const ta=document.createElement("textarea");
+      ta.rows=3;ta.placeholder="Describa lo encontrado...";ta.value=state.zoneNote;
+      ta.style.cssText="background:rgba(7,24,40,.9);border:1px solid rgba(0,229,255,.2);color:var(--t1);border-radius:6px;padding:10px 13px;width:100%;resize:none;outline:none;font-family:'Exo 2',sans-serif;font-size:13px;line-height:1.5";
+      ta.oninput=e=>{state.zoneNote=e.target.value;};
+      nw.appendChild(ta);body.appendChild(nw);
+    }
+    btn.onclick=zoneNext;
+    if(!state.zoneFinding){btn.textContent="SELECCIONE UN HALLAZGO";btn.disabled=true;btn.style.background="var(--dim)";btn.style.boxShadow="none";}
+    else{btn.textContent="SIGUIENTE: CAPTURAR FOTO →";btn.disabled=false;btn.style.background="var(--cyan)";btn.style.boxShadow="var(--glow-cyan)";btn.style.color="var(--void)";}
+
+  } else {
+    body.insertAdjacentHTML("beforeend",`<div style="font-family:var(--head);font-size:13px;color:var(--cyan);letter-spacing:.1em;margin-bottom:14px">PASO 02 — CAPTURAR EVIDENCIA FOTOGRÁFICA</div>`);
+    if(state.zoneFinding){
+      const fd=FINDINGS.find(f=>f.id===state.zoneFinding),col=FC[fd.color];
+      body.insertAdjacentHTML("beforeend",`<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:rgba(0,229,255,.05);border-radius:6px;border:1px solid rgba(0,229,255,.15);margin-bottom:12px"><span style="font-size:18px">${fd.emoji}</span><div style="font-family:var(--mono);font-size:10px;color:var(--t2)">Hallazgo registrado: <span style="color:${col}">${fd.label}</span>${state.zoneNote?`<br><span style="color:var(--dim)">${state.zoneNote.slice(0,55)}${state.zoneNote.length>55?"…":""}</span>`:""}</div></div>`);
+    }
+    if(!state.zonePhoto){
+      const cta=document.createElement("div");
+      cta.className="cyf";
+      cta.style.cssText="padding:24px 20px;background:rgba(10,32,53,.5);backdrop-filter:blur(8px);border:1px solid rgba(0,229,255,.15);border-radius:8px;display:flex;flex-direction:column;align-items:center;gap:16px;text-align:center";
+      cta.innerHTML=`<div class="hex-ring" style="width:72px;height:72px"><div class="r1"></div><div class="r2"></div><div class="ri" style="font-size:26px">📷</div></div><div><div style="font-family:var(--head);font-size:14px;letter-spacing:.06em;margin-bottom:6px">FOTO REQUERIDA</div><div style="font-family:var(--mono);font-size:11px;color:var(--t3);line-height:1.6">Tome una foto clara del área de<br><span style="color:var(--cyan)">${state.activeZone.label}</span> para completar este punto de revisión.</div></div>`;
+      body.appendChild(cta);
+      btn.textContent="📷 OPEN CAMERA";btn.disabled=false;btn.style.background="var(--cyan)";btn.style.boxShadow="var(--glow-cyan)";btn.style.color="var(--void)";
+      btn.onclick=()=>{state.camMode="zone";openCam();};
+    } else {
+      const prev=document.createElement("div");
+      prev.innerHTML=`<div style="position:relative;border-radius:8px;overflow:hidden;border:1px solid var(--cyan);box-shadow:var(--glow-cyan);margin-bottom:12px"><img src="${state.zonePhoto}" style="width:100%;display:block;max-height:220px;object-fit:cover"/><div style="position:absolute;inset:0;background:linear-gradient(transparent 55%,rgba(2,11,20,.85))"></div><div style="position:absolute;bottom:10px;left:12px;font-family:var(--mono);font-size:9px;color:var(--cyan)">◉ EVIDENCIA CAPTURADA · ${state.activeZone.label.toUpperCase()} · ${t12()}</div></div><button class="hex-btn" style="width:100%;padding:10px;font-size:10px" onclick="retakePhoto()"><span>↺ REPETIR FOTO</span></button>`;
+      body.appendChild(prev);
+      btn.textContent="✓ CONFIRMAR Y ENVIAR";btn.disabled=false;btn.style.background="var(--cyan)";btn.style.boxShadow="var(--glow-cyan)";btn.style.color="var(--void)";
+      btn.onclick=zoneNext;
+    }
+  }
+  updateStepIndicator();
+}
+
+function zoneNext() {
+  if(state.zoneStep==="finding") {
+    if(!state.zoneFinding) return;
+    state.zoneStep="photo";
+    renderZoneBody();
+  } else {
+    if(!state.zonePhoto){ state.camMode="zone"; openCam(); return; }
+    state.zones[state.activeZone.id]={finding:state.zoneFinding,note:state.zoneNote,photo:state.zonePhoto,time:t12()};
+    if(state.zoneFinding!=="clear"){
+      reports.unshift({id:`RPT-${Date.now().toString().slice(-4)}`,flight:state.currentFlight.id,zone:state.activeZone.label,finding:state.zoneFinding,officer:"On-Duty Officer",time:t12(),note:state.zoneNote||"No note provided.",resolved:false,photo:state.zonePhoto});
+    }
+    backToInspect();
+  }
+}
+
+function retakePhoto() { state.zonePhoto=null; renderZoneBody(); }
+
+// ═══ CAMERA ═══════════════════════════════════════════════
+function openCam() {
+  const mode = state.camMode;
+  if(mode==="badge-pre"){
+    $("cam-zone-name").textContent = `CREDENCIAL ${state.opBadges.length+1} — ESCANEO PRE-OPERACIÓN`;
+  } else if(mode==="badge-late"){
+    $("cam-zone-name").textContent = `LLEGADA TARDÍA — CREDENCIAL ${state.opBadges.length+1}`;
+  } else {
+    $("cam-zone-name").textContent = `${(state.activeZone?.label||"ZONE").toUpperCase()} · FOTO DE ZONA`;
+  }
+  $("cam-modal").classList.add("open");
+  startCamera();
+}
+function closeCam() {
+  stopCamStream();
+  $("cam-modal").classList.remove("open");
+}
+function stopCamStream() {
+  if(state.camStream){ state.camStream.getTracks().forEach(t=>t.stop()); state.camStream=null; }
+}
+
+function startCamera() {
+  const body = $("cam-body");
+  body.innerHTML = '<div style="font-family:var(--mono);font-size:11px;color:var(--cyan);text-align:center;padding:20px">Requesting camera access...</div>';
+  navigator.mediaDevices?.getUserMedia({video:{facingMode:"environment"},audio:false})
+    .then(stream=>{ state.camStream=stream; renderLiveCamera(stream); })
+    .catch(()=>renderSimCamera());
+}
+
+function renderLiveCamera(stream) {
+  const body = $("cam-body");
+  body.innerHTML = "";
+  const wrap = document.createElement("div");
+  wrap.style.cssText = "position:relative;border-radius:10px;overflow:hidden;border:1px solid rgba(0,229,255,.3);background:#000;margin-bottom:12px";
+  const video = document.createElement("video");
+  video.autoplay=true; video.playsInline=true; video.muted=true;
+  video.srcObject=stream;
+  video.style.cssText = "width:100%;display:block;min-height:220px;object-fit:cover";
+  // corner guides
+  const corners = [{top:"10px",left:"10px",borderTop:"2px solid var(--cyan)",borderLeft:"2px solid var(--cyan)"},
+    {top:"10px",right:"10px",borderTop:"2px solid var(--cyan)",borderRight:"2px solid var(--cyan)"},
+    {bottom:"10px",left:"10px",borderBottom:"2px solid var(--cyan)",borderLeft:"2px solid var(--cyan)"},
+    {bottom:"10px",right:"10px",borderBottom:"2px solid var(--cyan)",borderRight:"2px solid var(--cyan)"}];
+  const liveBadge = document.createElement("div");
+  liveBadge.style.cssText = "position:absolute;top:10px;left:10px;font-family:var(--mono);font-size:9px;color:var(--cyan);padding:2px 8px;background:rgba(2,11,20,.7);border-radius:2px";
+  liveBadge.textContent = "⬤ LIVE";
+  wrap.appendChild(video);
+  wrap.appendChild(liveBadge);
+  corners.forEach(c=>{ const d=document.createElement("div"); d.style.cssText=`position:absolute;width:18px;height:18px;${Object.entries(c).map(([k,v])=>k+":"+v).join(";")}`; wrap.appendChild(d); });
+  const btn = document.createElement("button");
+  btn.className="hex-solid"; btn.style.cssText="width:100%;padding:14px;font-size:13px";
+  btn.textContent="📷 CAPTURAR EVIDENCIA";
+  btn.onclick = ()=>{ shootPhoto(video); };
+  body.appendChild(wrap);
+  body.appendChild(btn);
+}
+
+function shootPhoto(video) {
+  const canvas = $("cam-canvas");
+  canvas.width = video.videoWidth||640; canvas.height = video.videoHeight||480;
+  canvas.getContext("2d").drawImage(video,0,0);
+  const dataUrl = canvas.toDataURL("image/jpeg",.85);
+  stopCamStream();
+  renderCaptured(dataUrl);
+}
+
+function renderSimCamera() {
+  const body = $("cam-body");
+  body.innerHTML = "";
+  const wrap = document.createElement("div");
+  wrap.style.cssText = "position:relative;background:var(--panel);border-radius:10px;border:1px solid rgba(0,229,255,.25);min-height:180px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;margin-bottom:12px;padding:20px;text-align:center";
+  wrap.innerHTML = `<div style="font-family:var(--mono);font-size:11px;color:var(--t2);line-height:1.7">📷 Cámara no disponible en este navegador<br><span style="color:var(--cyan)">Toque abajo para simular la captura</span><br><span style="font-size:10px;color:var(--dim)">En el dispositivo, se abrirá la cámara real</span></div><div style="font-family:var(--mono);font-size:9px;color:var(--dim)">ZONE: ${(state.activeZone?.label||"").toUpperCase()} · ${t12()}</div>`;
+  const btn = document.createElement("button");
+  btn.className="hex-solid"; btn.style.cssText="width:100%;padding:14px;font-size:13px";
+  btn.textContent="📷 SIMULAR CAPTURA";
+  btn.onclick = ()=>{
+    btn.textContent="CAPTURANDO..."; btn.disabled=true;
+    const canvas=$("cam-canvas");
+    canvas.width=640; canvas.height=480;
+    const ctx=canvas.getContext("2d");
+    const grad=ctx.createLinearGradient(0,0,640,480);
+    grad.addColorStop(0,"#0a2035"); grad.addColorStop(.5,"#071828"); grad.addColorStop(1,"#0d2840");
+    ctx.fillStyle=grad; ctx.fillRect(0,0,640,480);
+    ctx.fillStyle="rgba(0,229,255,.08)";
+    for(let i=0;i<480;i+=20) ctx.fillRect(0,i,640,1);
+    ctx.fillStyle="rgba(0,229,255,.55)"; ctx.font="13px 'Share Tech Mono'";
+    ctx.fillText(`ZONE: ${(state.activeZone?.label||"").toUpperCase()}`,20,30);
+    ctx.fillText(`TIME: ${t12()}`,20,50); ctx.fillText("SJO · MROC",20,70);
+    ctx.strokeStyle="rgba(0,229,255,.3)"; ctx.lineWidth=1; ctx.strokeRect(100,90,440,300);
+    ctx.fillStyle="rgba(0,229,255,.12)"; ctx.fillRect(100,90,440,300);
+    ctx.fillStyle="rgba(0,229,255,.65)"; ctx.font="12px 'Share Tech Mono'";
+    ctx.fillText("[EVIDENCIA FOTOGRÁFICA CAPTURADA]",155,248);
+    setTimeout(()=>renderCaptured(canvas.toDataURL("image/jpeg",.85)),800);
+  };
+  body.appendChild(wrap); body.appendChild(btn);
+}
+
+let _pendingPhoto = null;
+let _pendingOCR   = null; // extracted badge data from Claude Vision
+
+function renderCaptured(dataUrl) {
+  _pendingPhoto = dataUrl;
+  _pendingOCR   = null;
+  const isBadge = state.camMode === "badge-pre" || state.camMode === "badge-late";
+
+  const body = $("cam-body");
+  body.innerHTML = "";
+
+  // Photo preview
+  const photoWrap = document.createElement("div");
+  photoWrap.style.cssText = "position:relative;border-radius:10px;overflow:hidden;border:1px solid var(--cyan);box-shadow:var(--glow-cyan);margin-bottom:12px";
+  photoWrap.innerHTML = `
+    <img src="${dataUrl}" style="width:100%;display:block;max-height:200px;object-fit:cover"/>
+    <div style="position:absolute;inset:0;background:linear-gradient(transparent 55%,rgba(2,11,20,.85))"></div>
+    <div style="position:absolute;bottom:10px;left:12px;font-family:var(--mono);font-size:10px;color:var(--cyan)">◉ ${isBadge?"CREDENCIAL":"ZONA"} · ${t12()}</div>`;
+  body.appendChild(photoWrap);
+
+  // OCR panel (only for badge mode)
+  if(isBadge) {
+    const ocrPanel = document.createElement("div");
+    ocrPanel.id = "ocr-panel";
+    ocrPanel.style.cssText = "padding:14px;background:rgba(0,229,255,.04);border:1px solid rgba(0,229,255,.15);border-radius:8px;margin-bottom:12px";
+    ocrPanel.innerHTML = `
+      <div style="font-family:var(--head);font-size:11px;color:var(--cyan);letter-spacing:.1em;margin-bottom:10px;display:flex;align-items:center;gap:8px">
+        🔍 <span>EXTRAYENDO DATOS DEL CARNÉ</span>
+        <div id="ocr-spinner" style="width:14px;height:14px;border-radius:50%;border:2px solid rgba(0,229,255,.2);border-top-color:var(--cyan);animation:rotate-slow .8s linear infinite;flex-shrink:0"></div>
+      </div>
+      <div id="ocr-result" style="font-family:var(--mono);font-size:10px;color:var(--t3);line-height:1.8">Analizando imagen con IA...</div>`;
+    body.appendChild(ocrPanel);
+    runOCR(dataUrl);
+  }
+
+  // Action buttons
+  const btns = document.createElement("div");
+  btns.style.cssText = "display:flex;gap:10px";
+  btns.innerHTML = `
+    <button class="hex-btn" style="flex:1;padding:11px 0;font-size:10px" onclick="startCamera()"><span>↺ REPETIR</span></button>
+    <button class="hex-solid" id="confirm-photo-btn" style="flex:2;font-size:12px" onclick="confirmPhoto()" ${isBadge?"disabled":""}>✓ USAR FOTO</button>`;
+  body.appendChild(btns);
+}
+
+// ═══ IMAGE PREPROCESSING — boost contrast for Tesseract ════
+function preprocessForOCR(srcDataUrl) {
+  return new Promise(resolve => {
+    const img = new Image();
+    img.onload = () => {
+      const w = img.naturalWidth, h = img.naturalHeight;
+      const cv = document.createElement("canvas");
+      cv.width = w * 2; cv.height = h * 2;          // 2× upscale
+      const ctx = cv.getContext("2d");
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = "high";
+      ctx.drawImage(img, 0, 0, cv.width, cv.height);
+
+      // Grayscale + contrast boost
+      const id = ctx.getImageData(0, 0, cv.width, cv.height);
+      const d = id.data;
+      for (let i = 0; i < d.length; i += 4) {
+        const gray = 0.299*d[i] + 0.587*d[i+1] + 0.114*d[i+2];
+        // stretch contrast: darks darker, lights lighter
+        const c = Math.min(255, Math.max(0, (gray - 128) * 1.6 + 128));
+        d[i] = d[i+1] = d[i+2] = c;
+      }
+      ctx.putImageData(id, 0, 0);
+      resolve(cv.toDataURL("image/png"));
+    };
+    img.src = srcDataUrl;
+  });
+}
+
+// ═══ SMART FIELD PARSER ════════════════════════════════════
+function parseOCRText(raw) {
+  const lines = raw.split("\n").map(l => l.trim()).filter(l => l.length > 1);
+  const text  = lines.join(" ");
+  const parsed = {};
+
+  // ── Cédula / ID number ──────────────────────────────────
+  const cedMatch = text.match(/(?:c[eé]dula|c\.i\.|id|cédula)\s*[:\-]?\s*([\d\-]{6,15})/i)
+                || text.match(/\b(\d{1,2}-\d{3,4}-\d{3,4})\b/)   // CR format: 1-1234-1234
+                || text.match(/\b(\d{8,12})\b/);
+  if (cedMatch) parsed.cedula = cedMatch[1].trim();
+
+  // ── N° Credencial ───────────────────────────────────────
+  const credMatch = text.match(/(?:n[oú°]?\.?\s*cred(?:encial)?|badge\s*#?|n[oú°]?\.?\s*gafete)\s*[:\-]?\s*([A-Z0-9\-]{3,15})/i);
+  if (credMatch) parsed.numero_credencial = credMatch[1].trim();
+
+  // ── Vigencia / Vencimiento ──────────────────────────────
+  const vigMatch = text.match(/(?:vig(?:encia|ente)?|vence?(?:imiento)?|v[aá]lido\s*hasta|exp(?:ires?|iry)?)\s*[:\-]?\s*([\d\/\-]{6,12}|\d{2}\/\d{4})/i)
+                || text.match(/\b(\d{2}[\/\-]\d{2}[\/\-]\d{2,4})\b/);
+  if (vigMatch) parsed.vigencia = vigMatch[1].trim();
+
+  // ── Nivel de acceso ─────────────────────────────────────
+  const accMatch = text.match(/(?:acceso|zona|nivel|area|áre[ao])\s*[:\-]?\s*([A-Z0-9\s\/\-]{2,30}?)(?=\n|,|$|\s{2})/i)
+                || text.match(/\b(ROJA?|AZUL|VERDE|AMARILLA?|NARANJA|RED|BLUE|GREEN|YELLOW|ORANGE|AIRSIDE|LANDSIDE|ALL\s*ZONES?)\b/i);
+  if (accMatch) parsed.nivel_acceso = accMatch[1].trim();
+
+  // ── Empresa / Compañía ──────────────────────────────────
+  const empMatch = text.match(/(?:empresa|company|compañ[ií]a|organizaci[oó]n|aerol[ií]nea)\s*[:\-]?\s*(.+?)(?=\n|$)/i);
+  if (empMatch) parsed.empresa = empMatch[1].trim().slice(0,50);
+  else {
+    // Heuristic: lines containing known airport/airline keywords
+    const empLine = lines.find(l => /airlines?|airways|airport|aeropuerto|s\.a\.|s\.r\.l\.|ltda|inc\.|corp/i.test(l) && l.length < 60);
+    if (empLine) parsed.empresa = empLine.slice(0,50);
+  }
+
+  // ── Cargo / Puesto ──────────────────────────────────────
+  const cargoMatch = text.match(/(?:cargo|puesto|posici[oó]n|title|job\s*title)\s*[:\-]?\s*(.+?)(?=\n|$)/i);
+  if (cargoMatch) parsed.cargo = cargoMatch[1].trim().slice(0,50);
+  else {
+    const cargoLine = lines.find(l => /oficial|agente|supervisor|inspector|director|gerente|t[eé]cnico|oficial|security|guard|officer|manager|analyst/i.test(l) && l.length < 50);
+    if (cargoLine) parsed.cargo = cargoLine.slice(0,50);
+  }
+
+  // ── Nombre ──────────────────────────────────────────────
+  const nameMatch = text.match(/(?:nombre|name)\s*[:\-]?\s*([A-ZÁÉÍÓÚÑa-záéíóúñ][A-ZÁÉÍÓÚÑa-záéíóúñ\s\.]{5,50})/i);
+  if (nameMatch) {
+    parsed.nombre = nameMatch[1].trim();
+  } else {
+    // Heuristic: longest ALL-CAPS line (names on ID cards are usually uppercase)
+    const capsLines = lines
+      .filter(l => /^[A-ZÁÉÍÓÚÑ\s\.,-]{6,}$/.test(l) && l.length < 50 && l.length > 5)
+      .filter(l => !/(aeropuerto|seguridad|aviación|costa rica|republic|autoridad|avsec)/i.test(l))
+      .sort((a,b) => b.length - a.length);
+    if (capsLines.length) parsed.nombre = capsLines[0].trim();
+  }
+
+  // ── Raw text fallback (always include cleaned) ──────────
+  const cleanRaw = lines
+    .filter(l => l.length > 2)
+    .slice(0, 20)
+    .join(" | ")
+    .slice(0, 300);
+  parsed._raw = cleanRaw || raw.slice(0,200);
+
+  return Object.keys(parsed).filter(k=>k!=='_raw').length > 0 ? parsed : { _raw: cleanRaw };
+}
+
+// ═══ TESSERACT OCR ══════════════════════════════════════════
+let _tesseractWorker = null;
+
+async function getTesseractWorker() {
+  if (_tesseractWorker) return _tesseractWorker;
+  const worker = await Tesseract.createWorker("spa+eng", 1, {
+    logger: m => {
+      if (m.status === "recognizing text") {
+        const pct = Math.round((m.progress||0)*100);
+        const progEl = $("ocr-progress");
+        if (progEl) progEl.textContent = `Reconociendo texto... ${pct}%`;
+      }
+    }
+  });
+  _tesseractWorker = worker;
+  return worker;
+}
+
+async function runOCR(dataUrl) {
+  const resultEl  = $("ocr-result");
+  const spinnerEl = $("ocr-spinner");
+  const confirmBtn = $("confirm-photo-btn");
+
+  try {
+    // Show progress text
+    if (resultEl) resultEl.innerHTML = `
+      <span style="color:var(--cyan)" id="ocr-progress">Preparando motor OCR...</span>
+      <span style="color:var(--dim);font-size:9px;display:block;margin-top:4px">Tesseract.js · código abierto · sin servidor</span>`;
+
+    // Preprocess image
+    const enhanced = await preprocessForOCR(dataUrl);
+
+    if (resultEl) {
+      const progEl = $("ocr-progress");
+      if (progEl) progEl.textContent = "Analizando imagen...";
+    }
+
+    // Run Tesseract
+    const worker = await getTesseractWorker();
+    const { data } = await worker.recognize(enhanced);
+    const rawText = data.text || "";
+
+    // Parse into structured fields
+    const parsed = parseOCRText(rawText);
+    _pendingOCR = parsed;
+
+    if (spinnerEl) spinnerEl.style.display = "none";
+
+    const fieldLabels = {
+      nombre:"Nombre", cedula:"Cédula", empresa:"Empresa", cargo:"Cargo",
+      departamento:"Depto.", nivel_acceso:"Acceso", vigencia:"Vigencia",
+      numero_credencial:"N° Cred."
+    };
+
+    const namedFields = Object.entries(parsed).filter(([k]) => fieldLabels[k]);
+
+    if (namedFields.length === 0) {
+      // Show raw text if no fields parsed
+      if (resultEl) resultEl.innerHTML = `
+        <div style="color:var(--amber);margin-bottom:6px;font-size:9px">⚠ No se reconocieron campos estructurados</div>
+        <div style="color:var(--dim);font-size:9px;line-height:1.6;word-break:break-word">${parsed._raw || "Sin texto legible"}</div>`;
+    } else {
+      const rows = namedFields.map(([k,v]) => `
+        <div style="display:flex;gap:8px;padding:4px 0;border-bottom:1px solid rgba(0,229,255,.07)">
+          <span style="color:var(--dim);min-width:64px;flex-shrink:0;font-size:9px">${fieldLabels[k]}</span>
+          <span style="color:var(--t1);font-weight:600;font-size:10px">${v}</span>
+        </div>`).join("");
+      if (resultEl) resultEl.innerHTML = rows;
+    }
+
+    // Enable confirm button
+    if (confirmBtn) {
+      confirmBtn.disabled = false;
+      if (namedFields.length > 0) {
+        confirmBtn.style.background = "var(--neon)";
+        confirmBtn.style.boxShadow = "var(--glow-neon)";
+        confirmBtn.style.color = "#001a00";
+        confirmBtn.textContent = "✓ CONFIRMAR CREDENCIAL";
+      }
+    }
+
+  } catch(err) {
+    _pendingOCR = null;
+    if (spinnerEl) spinnerEl.style.display = "none";
+    if (resultEl) resultEl.innerHTML = `<span style="color:var(--amber)">⚠ OCR falló: ${err.message?.slice(0,80)||"error"}</span>`;
+    if (confirmBtn) confirmBtn.disabled = false;
+    console.error("Tesseract error:", err);
+  }
+}
+
+function confirmPhoto() {
+  if(_pendingPhoto) {
+    const photo = _pendingPhoto;
+    const ocr   = _pendingOCR;
+    _pendingPhoto = null;
+    _pendingOCR   = null;
+    usePhoto(photo, ocr);
+  }
+}
+
+function usePhoto(dataUrl, ocr) {
+  const mode = state.camMode;
+  closeCam();
+  if(mode==="badge-pre") {
+    state.opBadges.push({photo:dataUrl, time:t12(), late:false, ocr: ocr||null});
+    renderBadgeScreen();
+  } else if(mode==="badge-late") {
+    state.opBadges.push({photo:dataUrl, time:t12(), late:true, ocr: ocr||null});
+    renderBadgeStrip();
+    // toast
+    const name = ocr?.nombre ? ` · ${ocr.nombre.split(" ")[0]}` : "";
+    const toast = document.createElement("div");
+    toast.style.cssText = "position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:rgba(0,229,255,.15);border:1px solid rgba(0,229,255,.4);border-radius:6px;padding:10px 18px;font-family:var(--mono);font-size:11px;color:var(--cyan);z-index:200;animation:slide-up .3s ease;white-space:nowrap;backdrop-filter:blur(10px)";
+    toast.textContent = `📛 Llegada tardía registrada · Credencial ${state.opBadges.length}${name}`;
+    document.body.appendChild(toast);
+    setTimeout(()=>toast.remove(), 3000);
+  } else {
+    state.zonePhoto = dataUrl;
+    renderZoneBody();
+  }
+}
+
+// ═══ DONE SCREEN ══════════════════════════════════════════
+function buildDoneScreen() {
+  const f = state.currentFlight;
+  const issues = Object.values(state.zones).filter(v=>v.finding!=="clear").length;
+  const cleared = Object.values(state.zones).filter(v=>v.finding==="clear").length;
+  // icon/title
+  const isGood = issues===0;
+  $("done-icon").textContent = isGood?"✅":"⚠️";
+  $("done-title").innerHTML = isGood?"AERONAVE<br>LIBERADA":"INSPECCIÓN<br>COMPLETADA";
+  $("done-title").style.color = isGood?"var(--neon)":"var(--amber)";
+  $("done-title").style.textShadow = isGood?"var(--glow-neon)":"var(--glow-amber)";
+  $("done-sub").innerHTML = `${f.id} · ${f.airline}<br>PUERTA ${f.gate} · ${f.dep} → ${f.dest}`;
+  // stats
+  const stats=[
+    {l:"Zonas revisadas",v:ZONES.length,c:"var(--cyan)"},
+    {l:"Sin novedad",v:cleared,c:"var(--neon)"},
+    ...(issues>0?[{l:"Hallazgos",v:issues,c:"var(--amber)"}]:[]),
+    {l:"Tiempo transcurrido",v:fmt(state.elapsed),c:"var(--t2)"},
+  ];
+  $("done-stats").innerHTML = stats.map((s,i)=>`
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:9px 0;${i<stats.length-1?"border-bottom:1px solid rgba(0,229,255,.08)":""}">
+      <span style="font-size:13px;color:var(--t2)">${s.l}</span>
+      <span style="font-family:var(--mono);font-size:15px;font-weight:600;color:${s.c}">${s.v}</span>
+    </div>`).join("");
+  // findings
+  const findingsEl = $("done-findings");
+  if(issues>0) {
+    findingsEl.style.display="block";
+    findingsEl.innerHTML = `<div style="font-family:var(--mono);font-size:9px;color:var(--amber);letter-spacing:.1em;margin-bottom:10px">HALLAZGOS REGISTRADOS</div>`+
+      Object.entries(state.zones).filter(([,v])=>v.finding!=="clear").map(([zid,v])=>{
+        const z=ZONES.find(x=>x.id===zid); const fd=FINDINGS.find(x=>x.id===v.finding);
+        return `<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+          ${v.photo?`<div style="width:36px;height:36px;border-radius:4px;overflow:hidden;border:1px solid var(--amber);flex-shrink:0"><img src="${v.photo}" style="width:100%;height:100%;object-fit:cover"/></div>`:""}
+          <div><div style="font-family:var(--head);font-size:12px;letter-spacing:.03em">${z?.label}</div><div style="font-family:var(--mono);font-size:10px;color:${FC[fd?.color||"amber"]}">${fd?.emoji} ${fd?.label}</div></div>
+        </div>`;
+      }).join("");
+  } else { findingsEl.style.display="none"; }
+}
+
+function resetOfficer() { state.currentFlight=null; state.zones={}; state.elapsed=0; state.opBadges=[]; goOfficer(); }
+
+// ═══ ADMIN ════════════════════════════════════════════════
+function adminTab(btn, tab) {
+  document.querySelectorAll(".tab-btn").forEach(b=>b.classList.remove("active"));
+  btn.classList.add("active");
+  document.querySelectorAll(".admin-tab").forEach(t=>t.classList.remove("active"));
+  $(`tab-${tab}`).classList.add("active");
+}
+
+function startAdminClock() {
+  const tick = ()=>{ const c=$("admin-clock"); if(c) c.textContent=t12(); };
+  tick(); setInterval(tick,1000);
+}
+
+function startLiveFeed() {
+  const pool=[
+    {type:"info",msg:"Escaneo de credencial OK — puerta de plataforma 7B.",officer:"J. Mora"},
+    {type:"ok",  msg:"Barrido K-9 completo — carga despejada.", officer:"R. Jiménez"},
+    {type:"info",msg:"Grupo CCTV Bravo — todo en línea.", officer:"SYSTEM"},
+  ];
+  setInterval(()=>{
+    const m=pool[Math.floor(Math.random()*pool.length)];
+    liveFeed.push({...m,time:t12()});
+    if(liveFeed.length>30) liveFeed.shift();
+    renderLiveFeed();
+  },10000);
+}
+
+const LOG_STYLE = {
+  ok:  {col:"var(--neon)",  label:"DESPEJADO"},
+  warn:{col:"var(--amber)", label:"ALERTA"},
+  crit:{col:"var(--red)",   label:"CRÍTICO"},
+  info:{col:"var(--cyan2)", label:"INFO"},
+};
+
+function buildAdmin() {
+  const alertF = FLIGHTS.filter(f=>f.st==="alert");
+  const openRpts = reports.filter(r=>!r.resolved);
+  const cleared  = FLIGHTS.filter(f=>f.st==="cleared").length;
+  const pending  = FLIGHTS.filter(f=>f.st==="pending").length;
+
+  // alert badge in topbar
+  const badge = $("admin-alert-badge");
+  if(openRpts.length>0){ badge.style.display="flex"; $("admin-open-count").textContent=openRpts.length+" OPEN"; }
+  else badge.style.display="none";
+
+  // OVERVIEW: alert banner
+  const banner = $("admin-alert-banner");
+  if(alertF.length>0){
+    banner.style.display="flex"; banner.style.cssText="display:flex;align-items:center;gap:14px;padding:14px 18px;border-radius:8px;background:rgba(255,23,68,.07);border:1px solid rgba(255,23,68,.25);box-shadow:0 0 20px rgba(255,23,68,.1)";
+    banner.innerHTML=`<div style="font-size:26px;animation:pulse-ring 2s ease-out infinite;flex-shrink:0">🚨</div>
+      <div style="flex:1"><div style="font-family:var(--head);font-size:14px;color:var(--red);letter-spacing:.06em;margin-bottom:3px">ALERTA ACTIVA — ${alertF[0].id} · ${alertF[0].airline}</div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--t2)">Discrepancia de carga · Puerta ${alertF[0].gate} · Vuelo RETENIDO · Se requiere acción del supervisor</div></div>
+      <button class="hex-btn" style="padding:7px 12px;font-size:9px;border-color:var(--red);color:var(--red);flex-shrink:0" onclick="adminTab(document.querySelector('[data-tab=reports]'),'reports')"><span>VER →</span></button>`;
+  } else banner.style.display="none";
+
+  // stats
+  const statsData=[
+    {e:"✈",v:FLIGHTS.length, l:"VUELOS TOTALES",c:"var(--cyan)"},
+    {e:"✓",v:cleared,         l:"LIBERADO",       c:"var(--neon)"},
+    {e:"⌛",v:pending,        l:"PENDIENTE",       c:"var(--amber)"},
+    {e:"⚠",v:openRpts.length, l:"REPORTES ABIERTOS", c:"var(--red)"},
+  ];
+  $("admin-stats").innerHTML = statsData.map((s,i)=>`
+    <div class="su" style="padding:18px 16px;border-radius:8px;background:rgba(10,32,53,.6);backdrop-filter:blur(12px);border:1px solid ${s.c}20;box-shadow:0 0 20px ${s.c}08;animation-delay:${i*.06}s">
+      <div style="font-family:var(--mono);font-size:20px;color:${s.c};margin-bottom:8px;text-shadow:0 0 10px ${s.c}">${s.e}</div>
+      <div style="font-family:var(--head);font-size:34px;font-weight:900;color:${s.c};letter-spacing:.04em;line-height:1;margin-bottom:4px;text-shadow:0 0 15px ${s.c}60">${s.v}</div>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--t3);letter-spacing:.06em">${s.l}</div>
+    </div>`).join("");
+
+  // flights panel
+  const fp = $("admin-flights-panel");
+  fp.innerHTML = `<div style="padding:12px 18px;border-bottom:1px solid rgba(0,229,255,.1);display:flex;align-items:center;justify-content:space-between">
+    <div style="font-family:var(--head);font-size:13px;color:var(--cyan);letter-spacing:.08em">COLA DE VUELOS</div>
+    <button class="hex-btn" style="padding:5px 10px;font-size:9px" onclick="adminTab(document.querySelector('[data-tab=flights]'),'flights')"><span>ALL →</span></button></div>`+
+  FLIGHTS.map((f,i)=>`
+    <div style="padding:12px 18px;border-bottom:${i<FLIGHTS.length-1?"1px solid rgba(0,229,255,.06)":"none"};display:flex;align-items:center;gap:12px;background:${f.st==="alert"?"rgba(255,23,68,.05)":"transparent"}">
+      <div style="width:30px;height:30px;border-radius:6px;background:${f.st==="alert"?"rgba(255,23,68,.15)":"rgba(0,229,255,.08)"};display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0">✈</div>
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:2px">
+          <span style="font-family:var(--mono);font-size:11px;font-weight:700;color:${f.st==="alert"?"var(--red)":"var(--cyan)"}">${f.id}</span>
+          <span style="font-family:var(--head);font-size:12px;letter-spacing:.02em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${f.airline}</span>
+        </div>
+        <div style="font-family:var(--mono);font-size:9px;color:var(--dim)">G${f.gate} · ${f.dep}→${f.dest}</div>
+      </div>
+      ${chipHTML(f.st)}
+    </div>`).join("");
+
+  // officers panel
+  $("admin-officers-panel").innerHTML = `<div style="padding:12px 16px;border-bottom:1px solid rgba(0,229,255,.1);font-family:var(--head);font-size:13px;color:var(--cyan);letter-spacing:.08em">EN SERVICIO</div>`+
+  OFFICERS.map((o,i)=>`
+    <div style="padding:10px 16px;border-bottom:${i<OFFICERS.length-1?"1px solid rgba(0,229,255,.06)":"none"};display:flex;align-items:center;gap:10px">
+      <div style="width:7px;height:7px;border-radius:50%;background:${i<5?"var(--neon)":"var(--dim)"};box-shadow:${i<5?"0 0 5px var(--neon)":"none"};flex-shrink:0;${i<5?"animation:glow-pulse 3s infinite":""}"></div>
+      <span style="font-size:12px;flex:1">${o}</span>
+      <span style="font-family:var(--mono);font-size:9px;color:${i<5?"var(--neon)":"var(--dim)"}">${i<5?"ACTIVO":"LIBRE"}</span>
+    </div>`).join("");
+
+  // FLIGHTS table
+  $("flights-table").innerHTML = `
+    <div style="display:grid;grid-template-columns:100px 1fr 100px 55px 100px 115px;padding:10px 18px;border-bottom:1px solid rgba(0,229,255,.15);background:rgba(0,229,255,.05);gap:12px">
+      ${["VUELO","AEROLÍNEA / AERONAVE","MATRÍCULA","PUERTA","HORARIO","ESTADO"].map(h=>`<div style="font-family:var(--mono);font-size:9px;color:var(--t3);letter-spacing:.06em">${h}</div>`).join("")}
+    </div>`+
+  FLIGHTS.map((f,i)=>`
+    <div style="display:grid;grid-template-columns:100px 1fr 100px 55px 100px 115px;padding:14px 18px;border-bottom:${i<FLIGHTS.length-1?"1px solid rgba(0,229,255,.06)":"none"};align-items:center;gap:12px;background:${f.st==="alert"?"rgba(255,23,68,.05)":"transparent"}">
+      <div style="font-family:var(--mono);font-size:12px;font-weight:700;color:${f.st==="alert"?"var(--red)":"var(--cyan)"}">${f.id}</div>
+      <div>
+        <div style="font-family:var(--head);font-size:12px;letter-spacing:.03em;margin-bottom:2px">${f.airline}</div>
+        <div style="font-family:var(--mono);font-size:9px;color:var(--dim)">${f.ac}</div>
+      </div>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--t3)">${f.tail}</div>
+      <div style="font-family:var(--head);font-size:15px;color:var(--amber);letter-spacing:.04em">${f.gate}</div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--t2)">${f.dep}→${f.dest}</div>
+      ${chipHTML(f.st)}
+    </div>`).join("");
+
+  renderReports();
+  renderLiveFeed();
+}
+
+function renderReports() {
+  const openRpts = reports.filter(r=>!r.resolved);
+  $("reports-summary").innerHTML = `<span style="color:var(--red)">${openRpts.length} ABIERTOS</span> · ${reports.filter(r=>r.resolved).length} RESUELTOS`;
+  $("reports-list").innerHTML = reports.map((r,i)=>{
+    const f=FINDINGS.find(x=>x.id===r.finding);
+    const bc = r.resolved?"rgba(10,32,53,.4)": f?.color==="red"?"rgba(255,23,68,.06)": f?.color==="amber"?"rgba(255,179,0,.06)":"rgba(10,32,53,.5)";
+    const bor= r.resolved?"rgba(0,229,255,.08)": f?.color==="red"?"rgba(255,23,68,.22)": f?.color==="amber"?"rgba(255,179,0,.22)":"rgba(0,229,255,.1)";
+    return `<div class="su" style="padding:16px 18px;border-radius:8px;background:${bc};backdrop-filter:blur(8px);border:1px solid ${bor};animation-delay:${i*.04}s">
+      <div style="display:flex;align-items:flex-start;gap:12px">
+        ${r.photo?`<div style="width:56px;height:56px;border-radius:6px;overflow:hidden;border:1px solid ${FC[f?.color||"amber"]}50;flex-shrink:0"><img src="${r.photo}" style="width:100%;height:100%;object-fit:cover"/></div>`:""}
+        <div style="flex:1;min-width:0">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px">
+            <span style="font-family:var(--mono);font-size:10px;color:var(--dim)">${r.id}</span>
+            <span style="font-family:var(--mono);font-size:12px;font-weight:700;color:var(--cyan)">${r.flight}</span>
+            ${fdChipHTML(r.finding)}
+            ${r.resolved?`<span class="chip chip-dim">✓ RESUELTO</span>`:""}
+          </div>
+          <div style="font-family:var(--head);font-size:13px;letter-spacing:.04em;margin-bottom:5px">${r.zone}</div>
+          <div style="font-size:12px;color:var(--t2);line-height:1.5;margin-bottom:6px">${r.note}</div>
+          <div style="font-family:var(--mono);font-size:9px;color:var(--dim)">👤 ${r.officer} · 🕐 ${r.time}${r.photo?` · <span style="color:var(--cyan3)">📷 FOTO ADJUNTA</span>`:""}</div>
+        </div>
+        <button class="hex-btn" style="padding:7px 12px;font-size:9px;flex-shrink:0;border-color:${r.resolved?"var(--dim)":"var(--neon)"};color:${r.resolved?"var(--dim)":"var(--neon)"}" onclick="toggleReport('${r.id}')">
+          <span>${r.resolved?"REABRIR":"✓ RESOLVER"}</span>
+        </button>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+function toggleReport(id) {
+  const r = reports.find(x=>x.id===id);
+  if(r) r.resolved=!r.resolved;
+  renderReports();
+  // update badge
+  const openRpts = reports.filter(r=>!r.resolved);
+  const badge = $("admin-alert-badge");
+  if(openRpts.length>0){ badge.style.display="flex"; $("admin-open-count").textContent=openRpts.length+" OPEN"; }
+  else badge.style.display="none";
+}
+
+function renderLiveFeed() {
+  const feed = $("live-feed");
+  if(!feed) return;
+  const ls = LOG_STYLE;
+  feed.innerHTML = liveFeed.map(item=>{
+    const s=ls[item.type]||ls.info;
+    return `<div style="display:flex;gap:12px;align-items:flex-start;padding:10px 14px;border-radius:6px;border-left:3px solid ${s.col};background:${s.col}09;animation:slide-left .25s ease">
+      <div style="width:7px;height:7px;border-radius:50%;background:${s.col};box-shadow:0 0 5px ${s.col};margin-top:5px;flex-shrink:0"></div>
+      <div style="flex:1">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px">
+          <span style="font-family:var(--mono);font-size:9px;font-weight:700;color:${s.col};letter-spacing:.08em">${s.label}</span>
+          <span style="font-family:var(--mono);font-size:9px;color:var(--dim)">${item.officer}</span>
+          <span style="margin-left:auto;font-family:var(--mono);font-size:9px;color:var(--dim)">${item.time}</span>
+        </div>
+        <div style="font-size:13px;color:var(--t1);line-height:1.45">${item.msg}</div>
+      </div>
+    </div>`;
+  }).join("");
+  feed.scrollTop = feed.scrollHeight;
+}
+
+// ═══ INIT ══════════════════════════════════════════════════
+$("flight-time").textContent = t12();
+</script>
+</body>
+</html>
