@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
-<title>AVSEC PRO — Seguridad SJO - OCR 2</title>
+<title>AVSEC PRO — Seguridad SJO - OCR 3</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Exo+2:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet"/>
 <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
@@ -1111,18 +1111,26 @@ function parseOCRText(raw) {
   if (expMatch) parsed.vigencia = expMatch[1].trim();
 
   // ── 3. N° Credencial ────────────────────────────────────
-  // Last standalone short number (4-6 digits) that is NOT part of the ID or date
-  // On the SJO badge it appears as a standalone line (e.g. "55279")
-  const idVal   = parsed.cedula  || "";
-  const expVal  = parsed.vigencia|| "";
-  // Candidate lines: short pure-number lines, not matching already found values
+  // Standalone short number (4-8 digits) = N° credencial
+  // On SJO badge it's a lone line like "55279", appears after the Exp line
+  const idVal  = parsed.cedula  || "";
+  const expVal = parsed.vigencia|| "";
+  const idDigits  = idVal.replace(/\D/g,"");
+  const expDigits = expVal.replace(/\D/g,"");
   const credCandidates = lines.filter(l => {
-    const clean = l.replace(/\s/g,"");
-    return /^\d{4,8}$/.test(clean)
-        && !idVal.includes(clean)
-        && !expVal.includes(clean);
+    const clean = l.replace(/[\s\.\-]/g,"");
+    if (!/^\d{4,8}$/.test(clean)) return false;
+    // Must not be a subset/superset of the ID or date digits
+    if (idDigits  && (idDigits.includes(clean)  || clean.includes(idDigits)))  return false;
+    if (expDigits && (expDigits.includes(clean) || clean.includes(expDigits))) return false;
+    return true;
   });
   if (credCandidates.length) parsed.numero_credencial = credCandidates[credCandidates.length-1].trim();
+  // Keyword fallback ("N° Cred: 55279", "Gafete: 55279", etc.)
+  if (!parsed.numero_credencial) {
+    const credKw = fullText.match(/(?:n[oú°]?\.?\s*cred(?:encial)?|gafete\s*n[oú°]?|badge\s*#?)\s*[:\-]?\s*([A-Z0-9]{3,10})/i);
+    if (credKw) parsed.numero_credencial = credKw[1].trim();
+  }
 
   // ── 4. Empresa ──────────────────────────────────────────
   // Line that is NOT the name, NOT ID/Exp/cred number, and looks like a company
@@ -1258,31 +1266,31 @@ async function runOCR(dataUrl) {
       // Show raw text if no structured fields found
       if (resultEl) resultEl.innerHTML = `
         <div style="color:var(--amber);margin-bottom:6px;font-size:9px;letter-spacing:.06em">⚠ SIN CAMPOS ESTRUCTURADOS — TEXTO BRUTO:</div>
-        <div style="color:var(--t2);font-size:9px;line-height:1.7;word-break:break-word;max-height:80px;overflow-y:auto">${(parsed._raw||"Sin texto legible").replace(/\|/g,"·")}</div>`;
+        <div style="color:var(--t2);font-size:9px;line-height:1.7;word-break:break-word;max-height:80px;overflow-y:auto">${(parsed._raw||"Sin texto legible").replace(/\|/g,"·")}</div>
+        ${renderManualCredInput()}`;
     } else {
       const rows = namedFields.map(([k,v]) => `
         <div style="display:flex;gap:8px;padding:4px 0;border-bottom:1px solid rgba(0,229,255,.07)">
           <span style="color:var(--dim);min-width:76px;flex-shrink:0;font-size:9px;letter-spacing:.04em">${fieldLabels[k]}</span>
           <span style="color:var(--t1);font-weight:600;font-size:11px">${v}</span>
         </div>`).join("");
-      // Always append a collapsible raw text line for verification
       const rawSnippet = parsed._raw ? `
         <details style="margin-top:6px">
           <summary style="font-family:var(--mono);font-size:8px;color:var(--dim);cursor:pointer;letter-spacing:.04em">▸ TEXTO BRUTO (verificación)</summary>
           <div style="font-size:8px;color:var(--dim);line-height:1.6;margin-top:4px;word-break:break-word">${parsed._raw.replace(/\|/g,"·")}</div>
         </details>` : "";
-      if (resultEl) resultEl.innerHTML = rows + rawSnippet;
+      // If numero_credencial missing, show manual input inline
+      const credInput = !parsed.numero_credencial ? renderManualCredInput() : "";
+      if (resultEl) resultEl.innerHTML = rows + rawSnippet + credInput;
     }
 
-    // Enable confirm button
+    // ── ALWAYS enable the confirm button after OCR finishes ──
     if (confirmBtn) {
       confirmBtn.disabled = false;
-      if (namedFields.length > 0) {
-        confirmBtn.style.background = "var(--neon)";
-        confirmBtn.style.boxShadow = "var(--glow-neon)";
-        confirmBtn.style.color = "#001a00";
-        confirmBtn.textContent = "✓ CONFIRMAR CREDENCIAL";
-      }
+      confirmBtn.style.background = namedFields.length > 0 ? "var(--neon)" : "var(--cyan)";
+      confirmBtn.style.boxShadow  = namedFields.length > 0 ? "var(--glow-neon)" : "var(--glow-cyan)";
+      confirmBtn.style.color      = namedFields.length > 0 ? "#001a00" : "var(--void)";
+      confirmBtn.textContent      = namedFields.length > 0 ? "✓ CONFIRMAR CREDENCIAL" : "✓ USAR FOTO (sin OCR)";
     }
 
   } catch(err) {
@@ -1294,7 +1302,28 @@ async function runOCR(dataUrl) {
   }
 }
 
-function confirmPhoto() {
+// Manual credential number input — shown when OCR can't find it
+function renderManualCredInput() {
+  return `
+    <div style="margin-top:10px;padding:8px 10px;background:rgba(224,64,251,.06);border:1px solid rgba(224,64,251,.2);border-radius:6px">
+      <div style="font-family:var(--mono);font-size:8px;color:var(--violet);letter-spacing:.06em;margin-bottom:6px">✎ INGRESAR N° CREDENCIAL MANUALMENTE</div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input id="manual-cred-input" type="text" inputmode="numeric" placeholder="ej. 55279"
+          style="flex:1;background:rgba(7,24,40,.9);border:1px solid rgba(224,64,251,.3);color:var(--t1);border-radius:4px;padding:7px 10px;font-family:var(--mono);font-size:13px;outline:none;min-width:0"
+          oninput="patchCredencial(this.value)"/>
+        <span style="font-family:var(--mono);font-size:9px;color:var(--dim)">N°</span>
+      </div>
+    </div>`;
+}
+
+function patchCredencial(val) {
+  const v = val.trim();
+  if (!_pendingOCR) _pendingOCR = {};
+  if (v) _pendingOCR.numero_credencial = v;
+  else delete _pendingOCR.numero_credencial;
+}
+
+
   if(_pendingPhoto) {
     const photo = _pendingPhoto;
     const ocr   = _pendingOCR;
