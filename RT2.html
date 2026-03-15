@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reporte de Silla de Ruedas</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Syne:wght@400;600;700;800&display=swap');
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        :root {
+            --pink:   #ec4899; --purple: #a855f7; --green:  #10b981;
+            --yellow: #f59e0b; --red:    #ef4444; --bg:     #0a0e27;
+            --surface: rgba(15, 23, 42, 0.85); --border: rgba(236, 72, 153, 0.25);
+            --text:   #e2e8f0; --muted:  #64748b;
+        }
+        body { font-family: 'Syne', sans-serif; background: var(--bg); min-height: 100vh; min-height: 100dvh; color: var(--text); overflow-x: hidden; }
+        #canvas-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
+        .app-shell { position: relative; z-index: 2; min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; }
+        .app-header { background: rgba(10, 14, 39, 0.90); backdrop-filter: blur(22px); -webkit-backdrop-filter: blur(22px); border-bottom: 1px solid var(--border); padding: 12px 20px 0; position: sticky; top: 0; z-index: 10; flex-shrink: 0; }
+        .header-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+        .header-brand { display: flex; align-items: center; gap: 9px; }
+        .brand-icon { width: 32px; height: 32px; border-radius: 9px; background: linear-gradient(135deg, var(--pink), var(--purple)); display: flex; align-items: center; justify-content: center; font-size: 16px; }
+        .brand-text { font-size: 15px; font-weight: 800; background: linear-gradient(135deg, var(--pink), var(--purple)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .brand-sub  { font-size: 9px; color: var(--muted); font-family: 'JetBrains Mono', monospace; letter-spacing: 2px; text-transform: uppercase; }
+        .header-actions { display: flex; align-items: center; gap: 8px; }
+        .user-chip { display: flex; align-items: center; gap: 6px; background: rgba(236,72,153,0.08); border: 1px solid var(--border); border-radius: 20px; padding: 4px 10px 4px 4px; }
+        .user-chip .av { width: 22px; height: 22px; border-radius: 50%; background: linear-gradient(135deg, var(--pink), var(--purple)); display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 700; color: #fff; flex-shrink: 0; }
+        .user-chip .un { font-size: 11px; font-weight: 600; max-width: 80px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .btn-hist { background: rgba(168,85,247,0.15); border: 1px solid rgba(168,85,247,0.35); color: #c4b5fd; border-radius: 8px; padding: 5px 12px; font-size: 11px; font-weight: 600; cursor: pointer; font-family: 'Syne', sans-serif; white-space: nowrap; transition: background 0.2s; }
+        .btn-hist:hover  { background: rgba(168,85,247,0.28); }
+        .btn-logout { background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); color: #fca5a5; border-radius: 8px; padding: 5px 10px; font-size: 11px; font-weight: 600; cursor: pointer; font-family: 'Syne', sans-serif; white-space: nowrap; transition: background 0.2s; }
+        .btn-logout:hover { background: rgba(239,68,68,0.25); }
+        .progress-wrap { height: 4px; background: rgba(236,72,153,0.12); overflow: hidden; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, var(--pink), var(--purple)); transition: width 0.4s ease; width: 0%; }
+        .step-counter  { text-align: center; color: var(--muted); font-size: 11px; font-family: 'JetBrains Mono', monospace; padding: 7px 0 9px; }
+        .resume-banner { background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.4); border-radius: 12px; padding: 10px 16px; margin: 12px 16px 0; display: none; align-items: center; gap: 10px; font-size: 13px; }
+        .resume-banner.show { display: flex; animation: fadeIn .3s ease; }
+        .resume-badge { background: var(--green); color: #fff; border-radius: 6px; padding: 2px 8px; font-size: 10px; font-weight: 700; font-family: 'JetBrains Mono', monospace; flex-shrink: 0; }
+        .app-content { flex: 1; overflow-y: auto; overflow-x: hidden; -webkit-overflow-scrolling: touch; padding: 20px 16px 40px; max-width: 500px; margin: 0 auto; width: 100%; }
+        .app-content::-webkit-scrollbar { width: 3px; }
+        .card { background: var(--surface); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--border); border-radius: 20px; padding: 26px 22px; box-shadow: 0 20px 50px rgba(0,0,0,0.45), 0 0 80px rgba(236,72,153,0.05); margin-bottom: 14px; }
+        .question-card { display: none; animation: fadeUp .35s ease; }
+        .question-card.active { display: block; }
+        @keyframes fadeUp   { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:translateY(0); } }
+        @keyframes fadeIn   { from { opacity:0; } to { opacity:1; } }
+        .question-title    { font-size: 22px; font-weight: 800; color: #fff; margin-bottom: 8px; }
+        .question-subtitle { font-size: 13px; color: var(--muted); margin-bottom: 22px; }
+        .form-group { margin-bottom: 18px; }
+        .form-group label { display: block; color: #cbd5e1; font-size: 13px; font-weight: 600; margin-bottom: 7px; letter-spacing: 0.3px; }
+        .input-field { width: 100%; padding: 13px 16px; background: rgba(30,41,59,0.6); border: 1px solid rgba(236,72,153,0.22); border-radius: 12px; color: #fff; font-size: 15px; outline: none; transition: all 0.25s; font-family: 'Syne', sans-serif; }
+        .input-field:focus { border-color: var(--pink); background: rgba(30,41,59,0.88); box-shadow: 0 0 0 3px rgba(236,72,153,0.1); }
+        .input-field::placeholder { color: #475569; }
+        select.input-field { cursor: pointer; }
+        select.input-field option { background: #1e293b; color: #fff; }
+        textarea.input-field { resize: vertical; min-height: 90px; }
+        .checkbox-area { display: flex; flex-direction: column; align-items: center; padding: 10px 0 20px; }
+        .big-check { position: relative; width: 90px; height: 90px; cursor: pointer; margin-bottom: 14px; }
+        .big-check input { position: absolute; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+        .checkmark { width: 90px; height: 90px; background: rgba(30,41,59,0.6); border: 2px solid rgba(236,72,153,0.3); border-radius: 18px; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease; }
+        .big-check:hover .checkmark { border-color: var(--pink); background: rgba(236,72,153,0.1); transform: scale(1.05); }
+        .big-check input:checked ~ .checkmark { background: linear-gradient(135deg, var(--pink), var(--purple)); border-color: transparent; animation: pop .25s ease; }
+        @keyframes pop { 0%,100%{transform:scale(1)} 50%{transform:scale(1.1)} }
+        .checkmark svg { width: 44px; height: 44px; stroke: #fff; stroke-width: 3; stroke-dasharray: 52; stroke-dashoffset: 52; transition: stroke-dashoffset 0.3s ease; }
+        .big-check input:checked ~ .checkmark svg { stroke-dashoffset: 0; }
+        .check-label { font-size: 15px; color: #cbd5e1; font-weight: 600; }
+        .already-done { background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3); border-radius: 12px; padding: 12px 14px; margin-bottom: 16px; display: none; align-items: center; gap: 10px; font-size: 13px; color: #6ee7b7; }
+        .already-done.show { display: flex; }
+        .photo-upload-zone { width: 100%; padding: 36px 20px; background: rgba(30,41,59,0.5); border: 2px dashed rgba(236,72,153,0.3); border-radius: 14px; cursor: pointer; text-align: center; transition: all 0.25s; display: block; }
+        .photo-upload-zone:hover { border-color: var(--pink); background: rgba(236,72,153,0.08); }
+        .photo-upload-zone input { display: none; }
+        .photo-upload-zone .up-icon { font-size: 38px; margin-bottom: 8px; }
+        .photo-upload-zone .up-text { font-size: 13px; font-weight: 600; color: #94a3b8; }
+        .photo-upload-zone .up-sub  { font-size: 11px; color: var(--muted); margin-top: 4px; }
+        .photo-preview { margin-top: 12px; border-radius: 12px; overflow: hidden; display: none; }
+        .photo-preview img { width: 100%; height: auto; display: block; }
+        .btn-primary { width: 100%; padding: 15px; background: linear-gradient(135deg, var(--pink), var(--purple)); border: none; border-radius: 12px; color: #fff; font-size: 15px; font-weight: 700; cursor: pointer; font-family: 'Syne', sans-serif; transition: all 0.25s; margin-top: 4px; }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(236,72,153,0.4); }
+        .btn-primary:active { opacity: 0.82; transform: none; }
+        .btn-primary:disabled { opacity: 0.5; pointer-events: none; }
+        .btn-secondary { width: 100%; padding: 13px; background: rgba(71,85,105,0.25); color: #cbd5e1; border: 1px solid rgba(71,85,105,0.4); border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: 'Syne', sans-serif; margin-top: 8px; transition: background 0.2s; }
+        .btn-secondary:hover { background: rgba(71,85,105,0.4); }
+
+        /* QR Screen */
+        .qr-container { background: white; border-radius: 20px; padding: 20px; margin: 16px auto; max-width: 270px; box-shadow: 0 12px 40px rgba(0,0,0,0.4), 0 0 60px rgba(236,72,153,0.15); }
+        .qr-container img { width: 100%; height: auto; display: block; border-radius: 10px; }
+        .qr-pulse { animation: qrPulse 2s ease-in-out infinite; }
+        @keyframes qrPulse { 0%,100%{box-shadow: 0 12px 40px rgba(0,0,0,0.4), 0 0 30px rgba(236,72,153,0.15);} 50%{box-shadow: 0 12px 40px rgba(0,0,0,0.4), 0 0 60px rgba(236,72,153,0.4);} }
+        .qr-badge { display: inline-flex; align-items: center; gap: 6px; background: rgba(16,185,129,0.15); border: 1px solid rgba(16,185,129,0.4); border-radius: 20px; padding: 5px 14px; font-size: 12px; color: #6ee7b7; font-weight: 600; margin-bottom: 16px; }
+
+        .completion-screen { display: none; }
+        .completion-screen.active { display: block; animation: fadeUp .4s ease; }
+        .completion-icon { font-size: 64px; text-align: center; margin-bottom: 16px; animation: bounce .7s ease; }
+        @keyframes bounce { 0%,100%{transform:translateY(0)} 40%{transform:translateY(-18px)} 60%{transform:translateY(-9px)} }
+        .completion-title { font-size: 28px; font-weight: 800; color: #fff; text-align: center; margin-bottom: 8px; }
+        .completion-sub   { font-size: 14px; color: var(--muted); text-align: center; margin-bottom: 22px; }
+        .summary-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 18px; margin-bottom: 12px; backdrop-filter: blur(12px); }
+        .summary-title { font-size: 13px; font-weight: 700; color: #fff; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 1px; }
+        .summary-row { display: flex; justify-content: space-between; align-items: flex-start; padding: 8px 0; border-bottom: 1px solid rgba(236,72,153,0.1); gap: 10px; }
+        .summary-row:last-child { border-bottom: none; }
+        .summary-label { font-size: 12px; color: var(--muted); flex-shrink: 0; }
+        .summary-value { font-size: 13px; font-weight: 600; text-align: right; }
+        .time-row { background: rgba(30,41,59,0.4); border: 1px solid rgba(236,72,153,0.1); border-radius: 10px; padding: 10px 12px; margin-bottom: 7px; }
+        .time-row:last-child { margin-bottom: 0; }
+        .time-row-label { font-size: 12px; color: var(--muted); margin-bottom: 3px; font-family: 'JetBrains Mono', monospace; }
+        .time-row-value { font-size: 14px; font-weight: 700; color: #fff; }
+        .time-row-diff  { font-size: 11px; color: var(--green); margin-top: 2px; font-family: 'JetBrains Mono', monospace; }
+        .toast { position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%) translateY(80px); background: rgba(16,185,129,0.92); backdrop-filter: blur(10px); color: #fff; padding: 10px 22px; border-radius: 24px; font-size: 13px; font-weight: 600; z-index: 999; opacity: 0; transition: all 0.3s ease; font-family: 'JetBrains Mono', monospace; white-space: nowrap; }
+        .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+        .toast.error { background: rgba(239,68,68,0.92); }
+        .sending-overlay { position: fixed; inset: 0; background: rgba(10,14,39,0.88); backdrop-filter: blur(8px); z-index: 500; display: none; flex-direction: column; align-items: center; justify-content: center; gap: 16px; }
+        .sending-overlay.show { display: flex; }
+        .send-spinner { width: 44px; height: 44px; border: 3px solid rgba(236,72,153,0.2); border-top-color: var(--pink); border-radius: 50%; animation: spin .8s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .send-label { color: #cbd5e1; font-size: 14px; font-family: 'JetBrains Mono', monospace; }
+        @media (max-width: 480px) { .app-content { padding: 14px 12px 32px; } .card { padding: 20px 16px; } }
+    </style>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-1PYNBFGPML"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-1PYNBFGPML');
+    </script>
+</head>
+<body>
+    <div id="canvas-container"></div>
+    <div class="sending-overlay" id="sendingOverlay">
+        <div class="send-spinner"></div>
+        <div class="send-label" id="sendLabel">Guardando…</div>
+    </div>
+    <div class="app-shell">
+        <header class="app-header">
+            <div class="header-row">
+                <div class="header-brand">
+                    <div class="brand-icon">♿</div>
+                    <div>
+                        <div class="brand-text">Reporte de Silla</div>
+                        <div class="brand-sub">Wheelchair Services</div>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <div class="user-chip">
+                        <div class="av" id="avatarInitial">?</div>
+                        <div class="un" id="usernameDisplay">…</div>
+                    </div>
+                    <button class="btn-hist" onclick="goToHistory()">📋 Historial</button>
+                    <button class="btn-logout" onclick="logout()">Salir</button>
+                </div>
+            </div>
+            <div class="progress-wrap"><div class="progress-fill" id="progressBar"></div></div>
+            <div class="step-counter" id="stepCounter">Información de Vuelo</div>
+        </header>
+        <div class="resume-banner" id="resumeBanner">
+            <span class="resume-badge">▶ RETOMANDO</span>
+            <span id="resumeBannerText">Cargando datos del reporte…</span>
+        </div>
+        <div class="app-content">
+
+            <!-- STEP 0 -->
+            <div class="question-card active" id="step0">
+                <div class="card">
+                    <h2 class="question-title">✈️ Información de Vuelo</h2>
+                    <p class="question-subtitle">Seleccione tipo de servicio, aerolínea y número de vuelo</p>
+                    <div class="form-group">
+                        <label>Tipo de Servicio</label>
+                        <select id="airlineType" class="input-field">
+                            <option value="">-- Seleccione tipo --</option>
+                            <option value="asistencia-sala">Asistencia a Sala</option>
+                            <option value="Desabordaje">Desabordaje</option>
+                            <option value="Abordaje">Abordaje</option>
+                            <option value="otro">Otro</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Aerolínea</label>
+                        <select id="airlineSelect" class="input-field">
+                            <option value="">-- Seleccione aerolínea --</option>
+                            <option value="B6">Jetblue</option><option value="AS">Alaska</option>
+                            <option value="DL">Delta</option><option value="WN">Southwest</option>
+                            <option value="AA">American</option><option value="WS">Westjet</option>
+                            <option value="AC">Air Canada</option><option value="PD">Porter</option>
+                            <option value="UA">United</option><option value="WK">Edelweiss</option>
+                            <option value="E9">Iberojet</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label># de Vuelo</label>
+                        <input type="text" id="flightNumber" class="input-field" placeholder="Ej: 1234">
+                    </div>
+                    <button class="btn-primary" onclick="submitFlightInfo()">Continuar →</button>
+                </div>
+            </div>
+
+            <!-- STEP 1 -->
+            <div class="question-card" id="step1">
+                <div class="card">
+                    <h2 class="question-title">🦽 Silla Asignada</h2>
+                    <p class="question-subtitle">Confirme cuando se haya asignado la silla de ruedas al pasajero</p>
+                    <div class="already-done" id="done1"><span>✅</span><span>Ya registrado — <span id="doneTime1" style="font-family:'JetBrains Mono',monospace;color:#fbbf24;"></span></span></div>
+                    <div class="checkbox-area">
+                        <label class="big-check">
+                            <input type="checkbox" id="cb1" onchange="handleCheckbox(1, 'Silla Asignada')">
+                            <span class="checkmark"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                        </label>
+                        <span class="check-label">Marcar como completado</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STEP 2 -->
+            <div class="question-card" id="step2">
+                <div class="card">
+                    <h2 class="question-title">👤 Inicio de Servicio</h2>
+                    <p class="question-subtitle">Confirme cuando haya recogido al pasajero</p>
+                    <div class="already-done" id="done2"><span>✅</span><span>Ya registrado — <span id="doneTime2" style="font-family:'JetBrains Mono',monospace;color:#fbbf24;"></span></span></div>
+                    <div class="checkbox-area">
+                        <label class="big-check">
+                            <input type="checkbox" id="cb2" onchange="handleCheckbox(2, 'Inicio de Servicio')">
+                            <span class="checkmark"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                        </label>
+                        <span class="check-label">Marcar como completado</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STEP 3 -->
+            <div class="question-card" id="step3">
+                <div class="card">
+                    <h2 class="question-title">✅ Finalización de Servicio</h2>
+                    <p class="question-subtitle">Confirme cuando haya dejado al pasajero en su destino</p>
+                    <div class="already-done" id="done3"><span>✅</span><span>Ya registrado — <span id="doneTime3" style="font-family:'JetBrains Mono',monospace;color:#fbbf24;"></span></span></div>
+                    <div class="checkbox-area">
+                        <label class="big-check">
+                            <input type="checkbox" id="cb3" onchange="handleCheckbox(3, 'Finalización de Servicio')">
+                            <span class="checkmark"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                        </label>
+                        <span class="check-label">Marcar como completado</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- STEP 3b: QR FEEDBACK -->
+            <div class="question-card" id="step3b">
+                <div class="card" style="text-align:center;">
+                    <div style="font-size:50px;margin-bottom:10px;">🎉</div>
+                    <h2 class="question-title" style="text-align:center;">¡Servicio Completado!</h2>
+                    <p class="question-subtitle" style="text-align:center;margin-bottom:16px;">Muestre este código QR al pasajero para que comparta su experiencia</p>
+
+                    <div class="qr-badge">
+                        <span>📱</span> Feedback del pasajero
+                    </div>
+
+                    <div class="qr-container qr-pulse">
+                        <img src="data:image/jpeg;base64,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" alt="QR Code - Feedback">
+                    </div>
+
+                    <p style="font-size:13px;color:#94a3b8;margin-bottom:4px;margin-top:8px;">El pasajero escanea el QR con su teléfono</p>
+                    <p style="font-size:11px;color:#64748b;margin-bottom:28px;">Takes less than 60 seconds · Solo 60 segundos</p>
+
+                    <button class="btn-primary" onclick="proceedAfterQR()">
+                        Continuar Reporte →
+                    </button>
+                    <button class="btn-secondary" onclick="proceedAfterQR()">
+                        Omitir (pasajero no disponible)
+                    </button>
+                </div>
+            </div>
+
+            <!-- STEP 4 -->
+            <div class="question-card" id="step4">
+                <div class="card">
+                    <h2 class="question-title">📝 Reporte de Incidente</h2>
+                    <p class="question-subtitle">¿Hubo algún incidente durante el servicio? (Opcional)</p>
+                    <div class="form-group">
+                        <label>Descripción del Incidente</label>
+                        <textarea id="incidentDescription" class="input-field" placeholder="Describa el incidente (deje en blanco si no hubo ninguno)"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label>Foto de Evidencia (Opcional)</label>
+                        <label class="photo-upload-zone">
+                            <div class="up-icon">📷</div>
+                            <div class="up-text">Agregar Foto</div>
+                            <div class="up-sub">Click para seleccionar imagen</div>
+                            <input type="file" id="incidentPhoto" accept="image/*" onchange="previewPhoto(this)">
+                        </label>
+                        <div class="photo-preview" id="photoPreview">
+                            <img id="previewImage" src="" alt="Vista previa">
+                        </div>
+                    </div>
+                    <button class="btn-primary" onclick="submitIncident()">Continuar →</button>
+                </div>
+            </div>
+
+            <!-- STEP 5 -->
+            <div class="question-card" id="step5">
+                <div class="card">
+                    <h2 class="question-title">🔄 Retorno de Silla</h2>
+                    <p class="question-subtitle">Confirme cuando la silla de ruedas haya sido devuelta</p>
+                    <div class="checkbox-area">
+                        <label class="big-check">
+                            <input type="checkbox" id="cb5" onchange="handleCheckbox(5, 'Retorno de Silla')">
+                            <span class="checkmark"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                        </label>
+                        <span class="check-label">Marcar como completado</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- COMPLETION -->
+            <div class="completion-screen" id="completionScreen">
+                <div class="completion-icon">🎉</div>
+                <h2 class="completion-title">¡Reporte Completado!</h2>
+                <p class="completion-sub">El servicio de silla de ruedas se ha registrado exitosamente</p>
+                <div class="summary-card">
+                    <div class="summary-title">✈️ Vuelo</div>
+                    <div class="summary-row"><span class="summary-label">Reporte #</span><span class="summary-value" id="sumReporte">–</span></div>
+                    <div class="summary-row"><span class="summary-label">Vuelo</span><span class="summary-value" id="sumVuelo">–</span></div>
+                    <div class="summary-row"><span class="summary-label">Aerolínea</span><span class="summary-value" id="sumAerolinea">–</span></div>
+                    <div class="summary-row"><span class="summary-label">Tipo de Servicio</span><span class="summary-value" id="sumTipo">–</span></div>
+                    <div class="summary-row"><span class="summary-label">Inspector</span><span class="summary-value" id="sumInspector">–</span></div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-title">⏱️ Tiempos del Servicio</div>
+                    <div id="timeSummary"></div>
+                </div>
+                <div class="summary-card" id="incidentCard" style="display:none;">
+                    <div class="summary-title" style="color:#fca5a5;">⚠️ Incidente Registrado</div>
+                    <div id="incidentSummary"></div>
+                </div>
+                <button class="btn-primary" onclick="newReport()" style="margin-bottom:10px;">🔄 Nuevo Reporte</button>
+                <button class="btn-secondary" onclick="goToHistory()">📋 Ver Historial</button>
+                <button class="btn-secondary" onclick="logout()">🚪 Cerrar Sesión</button>
+            </div>
+
+        </div>
+    </div>
+    <div class="toast" id="toast"></div>
+
+    <script>
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxUBk_-yW99Fw-yExqrTtXZulen78EbWfHhs6iSG7GYZom-d7Aa16wLQy8QrgHp9c7Z/exec';
+        const TOTAL_STEPS = 5;
+        const STEP_NAMES  = ['Información de Vuelo','Silla Asignada','Inicio de Servicio','Finalización de Servicio','Reporte de Incidente','Retorno de Silla'];
+        const AIRLINE_NAMES = { B6:'Jetblue', AS:'Alaska', DL:'Delta', WN:'Southwest', AA:'American', WS:'Westjet', AC:'Air Canada', PD:'Porter', UA:'United', WK:'Edelweiss', E9:'Iberojet' };
+
+        let currentUser=null, currentStep=0, isResume=false, resumeRowId=null;
+        let reportId='', flightNumberValue='', serviceType='', airlineCode='';
+        let timestamps={}, incidentText='', incidentPhotoB64='';
+
+        (function checkAuth() {
+            const raw = sessionStorage.getItem('user');
+            if (!raw) { window.location.href = 'sillas.html'; return; }
+            try {
+                currentUser = JSON.parse(raw);
+                document.getElementById('usernameDisplay').textContent = currentUser.username;
+                document.getElementById('avatarInitial').textContent = (currentUser.username||'?').slice(0,2).toUpperCase();
+            } catch(e) { window.location.href = 'LT.html'; }
+        })();
+
+        // THREE.JS BACKGROUND
+        const cntr = document.getElementById('canvas-container');
+        const sc = new THREE.Scene();
+        const cm = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+        const rd = new THREE.WebGLRenderer({ alpha:true, antialias:true });
+        rd.setSize(window.innerWidth, window.innerHeight);
+        cntr.appendChild(rd.domElement);
+        const geo = new THREE.BufferGeometry();
+        const N=2500, pos=new Float32Array(N*3);
+        for(let i=0;i<N*3;i++) pos[i]=(Math.random()-.5)*100;
+        geo.setAttribute('position', new THREE.BufferAttribute(pos,3));
+        const mat = new THREE.PointsMaterial({size:.07,color:0xec4899,transparent:true,opacity:.65,blending:THREE.AdditiveBlending});
+        const pts = new THREE.Points(geo, mat);
+        sc.add(pts); cm.position.z=30;
+        (function a(){requestAnimationFrame(a); pts.rotation.y+=.0008; rd.render(sc,cm);})();
+        window.addEventListener('resize',()=>{cm.aspect=window.innerWidth/window.innerHeight; cm.updateProjectionMatrix(); rd.setSize(window.innerWidth,window.innerHeight);});
+
+        // RESUME
+        (function tryResume() {
+            const raw = sessionStorage.getItem('resumeSillaReport');
+            if (!raw) return;
+            sessionStorage.removeItem('resumeSillaReport');
+            let r; try { r = JSON.parse(raw); } catch(e) { return; }
+            isResume=true; resumeRowId=r.id||null;
+            airlineCode=r.aerolinea||''; serviceType=r.tipoServicio||'';
+            flightNumberValue=(r.aerolinea||'')+' '+(r.vuelo||'');
+            reportId=r.numeroReporte||('WCH-'+Date.now());
+            trySetVal('airlineSelect', r.aerolinea||'');
+            trySetVal('flightNumber', r.vuelo||'');
+            const svcMap={'asistencia-sala':'asistencia-sala','Abordaje':'Abordaje','Desabordaje':'Desabordaje','otro':'otro'};
+            const svcVal=r.tipoServicio||(r.asistenciaSala?'asistencia-sala':r.abordaje?'Abordaje':r.desabordaje?'Desabordaje':'otro');
+            trySetVal('airlineType', svcMap[svcVal]||'');
+            if(r.horaAsignacion) timestamps[1]=buildISOFromSheetRow(r.fechaAsignacion,r.horaAsignacion);
+            if(r.horaInicioServicio) timestamps[2]=buildISOFromSheetRow(r.fechaInicioServicio,r.horaInicioServicio);
+            if(r.horaFinServicio) timestamps[3]=buildISOFromSheetRow(r.fechaFinServicio,r.horaFinServicio);
+            [1,2,3].forEach(s=>{
+                if(timestamps[s]){
+                    const el=document.getElementById('done'+s), tEl=document.getElementById('doneTime'+s);
+                    if(el) el.classList.add('show');
+                    if(tEl) tEl.textContent=formatTimeOnly(timestamps[s]);
+                }
+            });
+            let resumeStep=0;
+            if(r.fechaCreacion) resumeStep=1;
+            if(r.fechaAsignacion) resumeStep=2;
+            if(r.fechaInicioServicio) resumeStep=3;
+            if(r.fechaFinServicio) resumeStep=4;
+            const banner=document.getElementById('resumeBanner'), txt=document.getElementById('resumeBannerText');
+            banner.classList.add('show');
+            txt.textContent=`${AIRLINE_NAMES[r.aerolinea]||r.aerolinea||'–'} · Vuelo ${r.vuelo||'–'} — continúa desde paso ${resumeStep+1}`;
+            showStep(resumeStep); updateProgress(resumeStep);
+        })();
+
+        function buildISOFromSheetRow(dateStr,timeStr){
+            if(!dateStr||!timeStr) return '';
+            try{
+                const parts=String(dateStr).split('/');
+                if(parts.length===3){
+                    const d=new Date(parseInt(parts[2]),parseInt(parts[1])-1,parseInt(parts[0]));
+                    const tp=String(timeStr).split(':');
+                    d.setHours(parseInt(tp[0]||0),parseInt(tp[1]||0),parseInt(tp[2]||0));
+                    return d.toISOString();
+                }
+            }catch(e){}
+            return '';
+        }
+        function trySetVal(id,val){ const el=document.getElementById(id); if(el&&val) el.value=val; }
+
+        function showStep(n){ document.querySelectorAll('.question-card').forEach(c=>c.classList.remove('active')); const el=document.getElementById('step'+n); if(el){el.classList.add('active'); currentStep=n;} }
+        function updateProgress(step){ const pct=(step/TOTAL_STEPS)*100; document.getElementById('progressBar').style.width=pct+'%'; document.getElementById('stepCounter').textContent=STEP_NAMES[step]||'Completado'; }
+        function goNextStep(from){ const next=from+1; if(next<=TOTAL_STEPS){ document.getElementById('step'+from).classList.remove('active'); setTimeout(()=>{showStep(next); updateProgress(next); scrollToTop();},280); } else { showCompletionScreen(); } }
+        function scrollToTop(){ const c=document.querySelector('.app-content'); if(c) c.scrollTo({top:0,behavior:'smooth'}); }
+
+        // QR proceed
+        function proceedAfterQR(){
+            document.getElementById('step3b').classList.remove('active');
+            setTimeout(()=>{ showStep(4); updateProgress(4); scrollToTop(); }, 280);
+        }
+
+        function submitFlightInfo(){
+            const type=document.getElementById('airlineType').value;
+            const airline=document.getElementById('airlineSelect').value;
+            const flight=document.getElementById('flightNumber').value.trim();
+            if(!type){showToast('Seleccione el tipo de servicio',true);return;}
+            if(!airline){showToast('Seleccione una aerolínea',true);return;}
+            if(!flight){showToast('Ingrese el número de vuelo',true);return;}
+            serviceType=type; airlineCode=airline; flightNumberValue=airline+' '+flight;
+            if(!reportId) reportId='WCH-'+Date.now();
+            const ts=new Date().toISOString(); timestamps[0]=ts;
+            showSending('Guardando información de vuelo…');
+            sendToSheet(0,'Vuelo: '+flightNumberValue,ts,()=>{ hideSending(); showToast('✓ Vuelo registrado'); goNextStep(0); });
+        }
+
+        function handleCheckbox(step,label){
+            const cb=document.getElementById('cb'+step);
+            if(!cb||!cb.checked) return;
+            cb.disabled=true;
+            const ts=new Date().toISOString(); timestamps[step]=ts;
+            const doneEl=document.getElementById('done'+step), tEl=document.getElementById('doneTime'+step);
+            if(doneEl) doneEl.classList.add('show');
+            if(tEl) tEl.textContent=formatTimeOnly(ts);
+            showSending('Guardando '+label+'…');
+            sendToSheet(step,label,ts,()=>{
+                hideSending();
+                showToast('✓ '+label+' registrado');
+                if(step===5){
+                    showCompletionScreen();
+                } else if(step===3){
+                    // Show QR feedback screen
+                    document.getElementById('step3').classList.remove('active');
+                    setTimeout(()=>{
+                        document.getElementById('step3b').classList.add('active');
+                        updateProgress(3);
+                        scrollToTop();
+                    },280);
+                } else {
+                    goNextStep(step);
+                }
+            });
+        }
+
+        function submitIncident(){
+            const desc=document.getElementById('incidentDescription').value.trim();
+            incidentText=desc||'Sin incidentes reportados';
+            const ts=new Date().toISOString(); timestamps[4]=ts;
+            showSending('Guardando reporte de incidente…');
+            sendToSheet(4,'Incidente: '+incidentText,ts,()=>{ hideSending(); showToast(desc?'⚠ Incidente registrado':'✓ Sin incidentes'); goNextStep(4); });
+        }
+
+        function previewPhoto(input){
+            if(input.files&&input.files[0]){
+                const reader=new FileReader();
+                reader.onload=e=>{ document.getElementById('previewImage').src=e.target.result; document.getElementById('photoPreview').style.display='block'; incidentPhotoB64=e.target.result; };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function sendToSheet(step,item,timestamp,onDone){
+            const cbName='sillaCb'+Date.now()+'_'+step;
+            window[cbName]=function(response){
+                delete window[cbName];
+                const scr=document.getElementById('silla-script');
+                if(scr) scr.remove();
+                if(response&&response.success){ if(onDone) onDone(response); }
+                else{ hideSending(); const msg=response?response.message:'Error de conexión'; showToast('Error: '+msg,true); if(onDone) onDone({success:false}); }
+            };
+            let url=SCRIPT_URL+'?user='+encodeURIComponent(currentUser.username)+'&role='+encodeURIComponent(currentUser.role)+'&step='+step+'&item='+encodeURIComponent(item)+'&timestamp='+encodeURIComponent(timestamp)+'&callback='+cbName;
+            if(step===0){ url+='&serviceType='+encodeURIComponent(serviceType)+'&reportId='+encodeURIComponent(reportId); if(isResume&&resumeRowId) url+='&resumeRowId='+encodeURIComponent(resumeRowId); }
+            const scr=document.createElement('script'); scr.id='silla-script'; scr.src=url;
+            scr.onerror=()=>{ delete window[cbName]; scr.remove(); hideSending(); showToast('Error de conexión',true); if(onDone) onDone({success:false}); };
+            document.body.appendChild(scr);
+            setTimeout(()=>{ if(window[cbName]){ delete window[cbName]; hideSending(); showToast('Tiempo de espera agotado',true); if(onDone) onDone({success:false}); } },15000);
+        }
+
+        function showCompletionScreen(){
+            document.querySelectorAll('.question-card').forEach(c=>c.classList.remove('active')); updateProgress(TOTAL_STEPS);
+            document.getElementById('sumReporte').textContent=reportId;
+            document.getElementById('sumVuelo').textContent=document.getElementById('flightNumber')?.value||flightNumberValue;
+            document.getElementById('sumAerolinea').textContent=AIRLINE_NAMES[airlineCode]||airlineCode;
+            document.getElementById('sumTipo').textContent=serviceType;
+            document.getElementById('sumInspector').textContent=currentUser.username;
+            const timeLabels={1:'🦽 Silla Asignada',2:'👤 Inicio Servicio',3:'✅ Fin Servicio',4:'📝 Incidente',5:'🔄 Retorno'};
+            let html='';
+            for(let s=1;s<=5;s++){
+                if(!timestamps[s]) continue;
+                const dt=new Date(timestamps[s]);
+                let diff='';
+                if(s>1&&timestamps[s-1]){ const ms=dt-new Date(timestamps[s>4?3:s-1]); if(ms>=0) diff='+'+Math.round(ms/60000)+' min'; }
+                html+=`<div class="time-row"><div class="time-row-label">${timeLabels[s]}</div><div class="time-row-value">${formatTimestamp(timestamps[s])}</div>${diff?`<div class="time-row-diff">${diff} desde paso anterior</div>`:''}</div>`;
+            }
+            document.getElementById('timeSummary').innerHTML=html||'<div style="color:var(--muted);font-size:12px;padding:8px 0;">Sin tiempos registrados</div>';
+            if(incidentText&&incidentText!=='Sin incidentes reportados'){
+                document.getElementById('incidentCard').style.display='block';
+                document.getElementById('incidentSummary').innerHTML=`<div class="summary-row"><span class="summary-label">Descripción</span><span class="summary-value">${incidentText}</span></div>${incidentPhotoB64?'<div class="summary-row"><span class="summary-label">Foto</span><span class="summary-value" style="color:var(--green);">✓ Adjunta</span></div>':''}`; }
+            setTimeout(()=>{ document.getElementById('completionScreen').classList.add('active'); scrollToTop(); },300);
+        }
+
+        function newReport(){
+            currentStep=0; isResume=false; resumeRowId=null; reportId=''; flightNumberValue=''; serviceType=''; airlineCode=''; timestamps={}; incidentText=''; incidentPhotoB64='';
+            document.getElementById('airlineType').value=''; document.getElementById('airlineSelect').value=''; document.getElementById('flightNumber').value='';
+            document.getElementById('incidentDescription').value=''; document.getElementById('incidentPhoto').value='';
+            document.getElementById('photoPreview').style.display='none'; document.getElementById('completionScreen').classList.remove('active');
+            document.getElementById('incidentCard').style.display='none'; document.getElementById('resumeBanner').classList.remove('show');
+            document.querySelectorAll('input[type="checkbox"]').forEach(cb=>{cb.checked=false;cb.disabled=false;});
+            document.querySelectorAll('.already-done').forEach(el=>el.classList.remove('show'));
+            updateProgress(0); showStep(0); scrollToTop();
+        }
+
+        function formatTimestamp(iso){
+            try{ const d=new Date(iso); return d.toLocaleDateString('es-CR',{day:'2-digit',month:'2-digit',year:'numeric'})+' '+d.toLocaleTimeString('es-CR',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}); }catch{return iso;}
+        }
+        function formatTimeOnly(iso){
+            try{ const d=new Date(iso); return d.toLocaleTimeString('es-CR',{hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false}); }catch{return iso;}
+        }
+        function showSending(msg){ document.getElementById('sendLabel').textContent=msg||'Guardando…'; document.getElementById('sendingOverlay').classList.add('show'); }
+        function hideSending(){ document.getElementById('sendingOverlay').classList.remove('show'); }
+        function showToast(msg,isErr=false){ const t=document.getElementById('toast'); t.textContent=msg; t.className='toast'+(isErr?' error':''); t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2800); }
+        function goToHistory(){ window.location.href='HT.html'; }
+        function logout(){ if(confirm('¿Cerrar sesión?')){ sessionStorage.clear(); window.location.href='LT.html'; } }
+
+        console.log('♿ RT.html cargado | usuario:', currentUser?.username);
+    </script>
+</body>
+</html>
