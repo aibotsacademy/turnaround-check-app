@@ -1,0 +1,2302 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AERO·X — Flight Intelligence Platform</title>
+
+<!-- Leaflet Maps -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+
+<!-- Chart.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300&family=DM+Mono:wght@400;500&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --bg: #F0F4F8;
+  --bg2: #E8EEF4;
+  --surface: #FFFFFF;
+  --surface2: #F7FAFC;
+  --border: #D1DCE8;
+  --border2: #B8CAD9;
+  --text: #0F2133;
+  --text2: #3D5A72;
+  --text3: #7A9BB5;
+  --text4: #A8C0D1;
+
+  --sky: #1565C0;
+  --sky-light: #E3F2FD;
+  --sky-mid: #90CAF9;
+  --amber: #E65100;
+  --amber-light: #FFF3E0;
+  --green: #1B5E20;
+  --green-light: #E8F5E9;
+  --green-mid: #66BB6A;
+  --red: #B71C1C;
+  --red-light: #FFEBEE;
+  --purple: #4A148C;
+  --purple-light: #F3E5F5;
+  --teal: #006064;
+  --teal-light: #E0F7FA;
+
+  --shadow-sm: 0 1px 3px rgba(15,33,51,0.08), 0 1px 2px rgba(15,33,51,0.04);
+  --shadow-md: 0 4px 12px rgba(15,33,51,0.10), 0 2px 4px rgba(15,33,51,0.06);
+  --shadow-lg: 0 12px 32px rgba(15,33,51,0.12), 0 4px 8px rgba(15,33,51,0.06);
+  --radius: 12px;
+  --radius-sm: 7px;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  line-height: 1.5;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ── TOP BAR ── */
+#topbar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 56px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  align-items: center;
+  padding: 0 18px;
+  z-index: 2000;
+  gap: 0;
+}
+
+.logo {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 1.25rem;
+  color: var(--sky);
+  letter-spacing: -0.02em;
+  margin-right: 24px;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.logo-dot { color: var(--amber); }
+.logo-tag {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.6rem;
+  font-weight: 400;
+  color: var(--text3);
+  letter-spacing: 0.08em;
+  background: var(--bg2);
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+}
+
+.nav-pills {
+  display: flex;
+  gap: 2px;
+  flex: 1;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.nav-pills::-webkit-scrollbar { display: none; }
+
+.pill {
+  padding: 6px 14px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text2);
+  cursor: pointer;
+  border-radius: 6px;
+  white-space: nowrap;
+  transition: all 0.15s;
+  border: 1px solid transparent;
+}
+.pill:hover { background: var(--bg2); color: var(--text); }
+.pill.active { background: var(--sky-light); color: var(--sky); border-color: #BBDEFB; font-weight: 600; }
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-left: 16px;
+}
+
+.live-badge {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  background: var(--green-light);
+  border: 1px solid #C8E6C9;
+  border-radius: 20px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--green);
+  letter-spacing: 0.04em;
+}
+.live-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--green-mid);
+  animation: blink 2s infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+.tb-btn {
+  width: 34px; height: 34px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text2);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1rem;
+  transition: all 0.15s;
+  box-shadow: var(--shadow-sm);
+}
+.tb-btn:hover { background: var(--bg2); border-color: var(--border2); color: var(--text); }
+
+/* ── SIDEBAR ── */
+#sidebar {
+  position: fixed;
+  left: 0; top: 56px; bottom: 28px;
+  width: 210px;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  z-index: 1900;
+  padding: 10px 8px;
+}
+
+.sb-section {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.58rem;
+  color: var(--text4);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 10px 8px 4px;
+}
+
+.sb-item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--text2);
+  cursor: pointer;
+  transition: all 0.12s;
+  margin-bottom: 1px;
+}
+.sb-item:hover { background: var(--bg2); color: var(--text); }
+.sb-item.active { background: var(--sky-light); color: var(--sky); font-weight: 600; }
+.sb-item .ic { font-size: 0.9rem; width: 20px; text-align: center; }
+.sb-badge {
+  margin-left: auto;
+  background: var(--amber);
+  color: white;
+  border-radius: 10px;
+  padding: 1px 6px;
+  font-size: 0.6rem;
+  font-weight: 700;
+}
+.sb-badge-blue {
+  margin-left: auto;
+  background: var(--sky);
+  color: white;
+  border-radius: 10px;
+  padding: 1px 6px;
+  font-size: 0.6rem;
+  font-weight: 700;
+}
+
+/* ── MAIN ── */
+#main {
+  margin-left: 210px;
+  margin-top: 56px;
+  padding: 18px;
+  min-height: calc(100vh - 56px - 28px);
+}
+
+/* ── PAGES ── */
+.page { display: none; animation: pgIn 0.25s ease; }
+.page.active { display: block; }
+@keyframes pgIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:none} }
+
+/* ── PAGE HEADER ── */
+.ph {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 18px;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.ph-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+.ph-sub {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.65rem;
+  color: var(--text3);
+  margin-top: 3px;
+  letter-spacing: 0.05em;
+}
+.ph-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+
+/* ── CARDS ── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px;
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow 0.2s, border-color 0.2s;
+}
+.card:hover { box-shadow: var(--shadow-md); }
+.card-title {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.62rem;
+  color: var(--text3);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.card-val {
+  font-family: 'Syne', sans-serif;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1;
+}
+.card-unit { font-size: 0.72rem; color: var(--text3); margin-top: 3px; }
+.card-delta { font-size: 0.7rem; margin-top: 5px; display:flex; align-items:center; gap:3px; }
+.up { color: var(--green); }
+.dn { color: var(--red); }
+
+/* ── GRIDS ── */
+.g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.g3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+.g4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 14px; }
+.ga { display: grid; grid-template-columns: repeat(auto-fill,minmax(260px,1fr)); gap: 14px; }
+
+/* ── BTNS ── */
+.btn {
+  padding: 8px 16px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  border: none;
+  transition: all 0.15s;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.btn-primary { background: var(--sky); color: white; box-shadow: 0 2px 8px rgba(21,101,192,0.25); }
+.btn-primary:hover { background: #1976D2; box-shadow: 0 4px 14px rgba(21,101,192,0.35); transform: translateY(-1px); }
+.btn-outline { background: white; border: 1.5px solid var(--border2); color: var(--text2); }
+.btn-outline:hover { border-color: var(--sky); color: var(--sky); background: var(--sky-light); }
+.btn-amber { background: var(--amber); color: white; }
+.btn-amber:hover { background: #BF360C; }
+.btn-green { background: #2E7D32; color: white; }
+.btn-green:hover { background: #1B5E20; }
+.btn-ghost { background: var(--bg2); border: 1px solid var(--border); color: var(--text2); }
+.btn-ghost:hover { background: var(--border); }
+.btn-sm { padding: 5px 11px; font-size: 0.68rem; }
+.btn-danger { background: var(--red); color: white; }
+
+/* ── FORMS ── */
+.frow { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+.fg { flex: 1; min-width: 120px; }
+.flabel { font-size: 0.65rem; font-weight: 600; color: var(--text3); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 5px; display: block; }
+.finput {
+  width: 100%;
+  background: var(--surface2);
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.8rem;
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.finput:focus { border-color: var(--sky); box-shadow: 0 0 0 3px rgba(21,101,192,0.1); background: white; }
+.finput::placeholder { color: var(--text4); }
+select.finput { cursor: pointer; }
+select.finput option { background: white; }
+
+/* ── ALERTS ── */
+.alert {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 11px 14px;
+  border-radius: 9px;
+  margin-bottom: 10px;
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+.alert-warn { background: #FFF8E1; border: 1px solid #FFE082; color: #5D4037; }
+.alert-danger { background: var(--red-light); border: 1px solid #FFCDD2; color: var(--red); }
+.alert-info { background: var(--sky-light); border: 1px solid #BBDEFB; color: var(--sky); }
+.alert-ok { background: var(--green-light); border: 1px solid #C8E6C9; color: var(--green); }
+.a-icon { font-size: 1rem; flex-shrink: 0; margin-top: 1px; }
+
+/* ── MAP WRAPPER ── */
+.map-wrap {
+  border-radius: var(--radius);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-md);
+  position: relative;
+}
+#map-main, #map-full, #map-wx { width: 100%; }
+#map-main { height: 440px; }
+#map-full { height: 580px; }
+#map-wx { height: 500px; }
+
+/* Leaflet overrides */
+.leaflet-container { font-family: 'DM Sans', sans-serif; }
+.leaflet-popup-content-wrapper {
+  border-radius: 10px !important;
+  box-shadow: var(--shadow-lg) !important;
+  border: 1px solid var(--border) !important;
+  font-family: 'DM Sans', sans-serif !important;
+}
+.leaflet-control-zoom a {
+  border-radius: 8px !important;
+  font-family: 'DM Mono', monospace !important;
+}
+
+/* Map overlays */
+.map-ctrl {
+  position: absolute;
+  top: 12px; right: 12px;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.mc-btn {
+  padding: 6px 12px;
+  background: white;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--text2);
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.mc-btn:hover, .mc-btn.on { background: var(--sky-light); border-color: #90CAF9; color: var(--sky); }
+
+.map-info-box {
+  position: absolute;
+  bottom: 12px; left: 12px;
+  background: rgba(255,255,255,0.95);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  padding: 8px 12px;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.62rem;
+  color: var(--text2);
+  z-index: 1000;
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(8px);
+}
+
+/* Weather legend */
+.wx-legend {
+  position: absolute;
+  bottom: 12px; right: 12px;
+  background: rgba(255,255,255,0.95);
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  padding: 10px 14px;
+  font-size: 0.65rem;
+  z-index: 1000;
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(8px);
+}
+.wl-row { display: flex; align-items: center; gap: 8px; margin: 3px 0; color: var(--text2); }
+.wl-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+.wl-bar { width: 24px; height: 8px; border-radius: 3px; flex-shrink: 0; }
+
+/* ── WX STRIP ── */
+.wx-strip {
+  display: grid;
+  grid-template-columns: repeat(8,1fr);
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.wx-cell {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 6px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.wx-cell:hover { border-color: var(--sky-mid); box-shadow: var(--shadow-md); }
+.wx-cell.wx-sel { background: var(--sky-light); border-color: #90CAF9; }
+.wx-time { font-size: 0.6rem; color: var(--text3); font-family: 'DM Mono', monospace; }
+.wx-ico { font-size: 1.5rem; margin: 5px 0; }
+.wx-tmp { font-family: 'Syne', sans-serif; font-size: 0.88rem; font-weight: 700; color: var(--text); }
+.wx-wnd { font-size: 0.58rem; color: var(--text3); font-family: 'DM Mono', monospace; }
+
+/* ── METAR ── */
+.metar-box {
+  background: var(--bg2);
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.72rem;
+  color: var(--text);
+  line-height: 1.8;
+}
+.mt { color: var(--sky); font-weight: 500; }
+.mw { color: var(--red); font-weight: 500; }
+.mo { color: var(--green); }
+
+/* ── WAYPOINTS ── */
+.wp-row {
+  display: grid;
+  grid-template-columns: 28px 72px 1fr 72px 64px 64px 64px;
+  gap: 8px;
+  align-items: center;
+  padding: 9px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin-bottom: 5px;
+  font-size: 0.74rem;
+  transition: all 0.12s;
+  cursor: pointer;
+}
+.wp-row:hover { border-color: var(--sky-mid); box-shadow: var(--shadow-sm); background: var(--sky-light); }
+.wp-num { font-family: 'DM Mono', monospace; color: var(--text3); font-size: 0.62rem; }
+.wp-id { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.88rem; color: var(--sky); }
+.wp-name { color: var(--text2); font-size: 0.72rem; }
+.wp-alt { font-family: 'DM Mono', monospace; color: var(--amber); font-size: 0.72rem; }
+.wp-num2 { font-family: 'DM Mono', monospace; color: var(--text2); text-align: right; font-size: 0.72rem; }
+.type-pill {
+  font-size: 0.58rem; padding: 2px 6px;
+  border-radius: 4px; font-family: 'DM Mono', monospace;
+  text-align: center; letter-spacing: 0.05em;
+}
+.tp-apt { background: #E8F5E9; color: var(--green); border: 1px solid #C8E6C9; }
+.tp-vor { background: var(--amber-light); color: var(--amber); border: 1px solid #FFCC80; }
+.tp-fix { background: var(--sky-light); color: var(--sky); border: 1px solid #BBDEFB; }
+.tp-sid { background: var(--purple-light); color: var(--purple); border: 1px solid #E1BEE7; }
+
+/* ── TABLE ── */
+.dtable { width: 100%; border-collapse: collapse; }
+.dtable th {
+  padding: 8px 12px;
+  font-size: 0.62rem;
+  font-family: 'DM Mono', monospace;
+  color: var(--text3);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-align: left;
+  border-bottom: 1.5px solid var(--border);
+  background: var(--surface2);
+}
+.dtable td {
+  padding: 9px 12px;
+  font-size: 0.76rem;
+  color: var(--text2);
+  border-bottom: 1px solid var(--bg2);
+}
+.dtable tr:last-child td { border-bottom: none; }
+.dtable tr:hover td { background: var(--bg2); }
+.tc { color: var(--sky); font-weight: 600; }
+.ta { color: var(--amber); font-weight: 600; }
+.tg { color: var(--green); font-weight: 600; }
+.tm { font-family: 'DM Mono', monospace; }
+
+/* ── FUEL BAR ── */
+.fuel-bar { height: 10px; background: var(--bg2); border-radius: 5px; overflow: hidden; border: 1px solid var(--border); margin: 6px 0; }
+.fuel-fill { height: 100%; border-radius: 5px; transition: width 1s ease; }
+
+/* ── CHECKLIST ── */
+.cl-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 14px;
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 9px;
+  margin-bottom: 6px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.cl-item:hover { border-color: var(--sky-mid); }
+.cl-item.done { opacity: 0.55; background: var(--surface2); }
+.cl-check {
+  width: 18px; height: 18px;
+  border: 2px solid var(--border2);
+  border-radius: 4px;
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.72rem;
+  transition: all 0.15s;
+}
+.cl-item.done .cl-check { background: var(--green-mid); border-color: var(--green-mid); color: white; }
+.cl-lbl { font-size: 0.8rem; color: var(--text); font-weight: 500; }
+.cl-val { margin-left: auto; font-family: 'DM Mono', monospace; font-size: 0.67rem; color: var(--amber); font-weight: 500; }
+
+/* ── SUB TABS ── */
+.stabs { display: flex; gap: 4px; margin-bottom: 14px; border-bottom: 1px solid var(--border); padding-bottom: 8px; }
+.stab {
+  padding: 6px 14px; font-size: 0.74rem; font-weight: 500;
+  color: var(--text2); border-radius: 7px; cursor: pointer; transition: all 0.12s;
+}
+.stab:hover { background: var(--bg2); }
+.stab.active { background: var(--sky-light); color: var(--sky); font-weight: 600; }
+
+/* ── DIVIDER ── */
+.sdiv { display: flex; align-items: center; gap: 10px; margin: 16px 0 12px; }
+.sdiv-line { flex: 1; height: 1px; background: var(--border); }
+.sdiv-lbl { font-size: 0.62rem; font-family: 'DM Mono', monospace; color: var(--text3); letter-spacing: 0.1em; text-transform: uppercase; }
+
+/* ── RUNWAY ── */
+.rwy-pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 4px 10px;
+  background: var(--sky-light);
+  border: 1px solid #BBDEFB;
+  border-radius: 6px;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.68rem;
+  color: var(--sky);
+  margin: 3px 3px 3px 0;
+}
+
+/* ── STATUS BAR ── */
+#statusbar {
+  position: fixed;
+  bottom: 0; left: 210px; right: 0;
+  height: 28px;
+  background: var(--text);
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  gap: 16px;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.62rem;
+  color: rgba(255,255,255,0.5);
+  z-index: 1900;
+}
+.sb-v { color: rgba(255,255,255,0.9); }
+.sb-sep { color: rgba(255,255,255,0.2); }
+.sb-ok { color: #66BB6A; }
+.sb-warn { color: #FFB300; }
+
+/* ── PAX CARD ── */
+.pax-card {
+  background: linear-gradient(135deg, #EDE7F6, #E3F2FD);
+  border: 1.5px solid #CE93D8;
+  border-radius: var(--radius);
+  padding: 22px;
+  text-align: center;
+}
+
+/* ── FBO CARD ── */
+.fbo-card {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  transition: all 0.15s;
+}
+.fbo-card:hover { box-shadow: var(--shadow-md); border-color: var(--sky-mid); }
+
+/* ── SYNVIS ── */
+#synvis-canvas { width: 100%; height: 380px; display: block; border-radius: 10px; border: 1px solid var(--border); }
+
+/* ── AIRPORT 3D ── */
+#apt3d { width: 100%; height: 360px; display: block; }
+
+/* ── PROFILE ── */
+#profile-cv { width: 100%; height: 160px; display: block; border-radius: 6px; }
+#perf-cv { width: 100%; height: 160px; display: block; border-radius: 6px; }
+#trip-cv { width: 100%; height: 130px; display: block; border-radius: 6px; }
+
+/* ── WX MODEL CONTROLS ── */
+.wx-model-panel {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  box-shadow: var(--shadow-sm);
+}
+
+/* range slider */
+input[type=range] {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 5px;
+  border-radius: 3px;
+  background: var(--border);
+  outline: none;
+  margin: 8px 0;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  background: var(--sky);
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(21,101,192,0.3);
+}
+
+/* scrollbar */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+
+@media(max-width:1100px) { .g4{grid-template-columns:repeat(2,1fr)} .g3{grid-template-columns:1fr 1fr} }
+@media(max-width:800px) {
+  #sidebar { display: none; }
+  #main { margin-left: 0; }
+  #statusbar { left: 0; }
+  .g2,.g3,.g4 { grid-template-columns: 1fr; }
+  .wx-strip { grid-template-columns: repeat(4,1fr); }
+}
+
+/* Leaflet tile credits */
+.leaflet-control-attribution { font-size: 9px !important; }
+
+/* WX layer color scale */
+.scale-bar {
+  display: flex; height: 10px; border-radius: 4px; overflow: hidden;
+  border: 1px solid var(--border); margin: 5px 0;
+}
+.scale-seg { flex: 1; }
+
+/* Tooltip */
+.tip {
+  background: var(--text);
+  color: white;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.68rem;
+  padding: 5px 10px;
+  border-radius: 6px;
+}
+
+/* Loader */
+.loader {
+  display: inline-block;
+  width: 14px; height: 14px;
+  border: 2px solid var(--border2);
+  border-top-color: var(--sky);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Aircraft icon for map */
+.ac-icon { font-size: 18px; transform: rotate(45deg); }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<nav id="topbar">
+  <div class="logo">AERO<span class="logo-dot">·</span>X <span class="logo-tag">FLIGHT INTELLIGENCE</span></div>
+  <div class="nav-pills" id="navPills">
+    <div class="pill active" onclick="goPage('dashboard')">Dashboard</div>
+    <div class="pill" onclick="goPage('flightplan')">Planificación</div>
+    <div class="pill" onclick="goPage('weather')">Meteorología</div>
+    <div class="pill" onclick="goPage('maps')">Mapas</div>
+    <div class="pill" onclick="goPage('approaches')">Cartas</div>
+    <div class="pill" onclick="goPage('airports')">Aeropuertos</div>
+    <div class="pill" onclick="goPage('performance')">Performance</div>
+    <div class="pill" onclick="goPage('fuel')">Combustible</div>
+    <div class="pill" onclick="goPage('synvis')">Visión Sint.</div>
+    <div class="pill" onclick="goPage('checklist')">Checklist</div>
+    <div class="pill" onclick="goPage('logbook')">Bitácora</div>
+    <div class="pill" onclick="goPage('account')">Cuenta</div>
+  </div>
+  <div class="topbar-right">
+    <div class="live-badge"><div class="live-dot"></div>EN VIVO</div>
+    <div class="tb-btn" title="Aviónicos">📡</div>
+    <div class="tb-btn" title="Alertas">🔔</div>
+    <div class="tb-btn" title="Config">⚙️</div>
+  </div>
+</nav>
+
+<!-- SIDEBAR -->
+<aside id="sidebar">
+  <div class="sb-section">Vuelo</div>
+  <div class="sb-item active" onclick="goPage('dashboard')"><span class="ic">🏠</span>Dashboard</div>
+  <div class="sb-item" onclick="goPage('flightplan')"><span class="ic">✈️</span>Plan de Vuelo</div>
+  <div class="sb-item" onclick="goPage('flightplan')"><span class="ic">🌐</span>Filing Intl.</div>
+  <div class="sb-section">Meteorología</div>
+  <div class="sb-item" onclick="goPage('weather')"><span class="ic">🌤️</span>Tiempo Real <span class="sb-badge-blue">LIVE</span></div>
+  <div class="sb-item" onclick="goPage('weather')"><span class="ic">🌡️</span>Modelo Climático</div>
+  <div class="sb-item" onclick="goPage('weather')"><span class="ic">🧊</span>Engelamiento</div>
+  <div class="sb-item" onclick="goPage('maps')"><span class="ic">🗺️</span>Mapas Aero.</div>
+  <div class="sb-section">Planificación</div>
+  <div class="sb-item" onclick="goPage('approaches')"><span class="ic">📋</span>Cartas / Approach</div>
+  <div class="sb-item" onclick="goPage('airports')"><span class="ic">🛬</span>Aeropuertos & FBO <span class="sb-badge">7</span></div>
+  <div class="sb-item" onclick="goPage('performance')"><span class="ic">📊</span>Performance</div>
+  <div class="sb-item" onclick="goPage('fuel')"><span class="ic">⛽</span>Combustible</div>
+  <div class="sb-section">En Vuelo</div>
+  <div class="sb-item" onclick="goPage('synvis')"><span class="ic">🎮</span>Visión Sintética</div>
+  <div class="sb-item" onclick="goPage('checklist')"><span class="ic">☑️</span>Checklist</div>
+  <div class="sb-item" onclick="goPage('logbook')"><span class="ic">📒</span>Bitácora</div>
+  <div class="sb-section">Sistema</div>
+  <div class="sb-item" onclick="goPage('account')"><span class="ic">👤</span>Cuenta & Aviónicos</div>
+</aside>
+
+<!-- MAIN -->
+<main id="main">
+
+<!-- ══════════════════════════════════════
+  DASHBOARD
+══════════════════════════════════════ -->
+<div id="page-dashboard" class="page active">
+  <div class="ph">
+    <div>
+      <div class="ph-title">Centro de Control de Misión</div>
+      <div class="ph-sub">// N7843A · CITATION CJ4 · EN RUTA KMIA → KJFK · ÚLTIMA SYNC <span id="syncTime">--:--Z</span></div>
+    </div>
+    <div class="ph-actions">
+      <button class="btn btn-outline btn-sm">📋 Plan Activo</button>
+      <button class="btn btn-primary" onclick="goPage('flightplan')">+ Nuevo Vuelo</button>
+    </div>
+  </div>
+
+  <!-- Alerts -->
+  <div class="alert alert-danger"><span class="a-icon">⚠️</span><div><strong>SIGMET SIERRA 4</strong> — Turbulencia severa FL180–FL260 en ruta. Desvío recomendado N25° entre KORF–DADES.</div></div>
+  <div class="alert alert-warn"><span class="a-icon">🧊</span>Engelamiento moderado FL100–FL160 en 40nm del destino. PIREP 14:15Z confirmado.</div>
+  <div class="alert alert-info"><span class="a-icon">📡</span>Despeje Pre-Salida recibido · D-ATIS KJFK Info Lima activo.</div>
+
+  <!-- Stats -->
+  <div class="g4" style="margin:16px 0;">
+    <div class="card"><div class="card-title">Altitud (MSL)</div><div class="card-val">FL350</div><div class="card-unit">presión altimétrica</div><div class="card-delta up">▲ Subiendo +1,200 fpm</div></div>
+    <div class="card"><div class="card-title">Velocidad</div><div class="card-val">412<span style="font-size:1rem;color:var(--text3);"> kt</span></div><div class="card-unit">TAS 390 · M 0.74</div><div class="card-delta up">▲ Viento de cola +48 kts</div></div>
+    <div class="card"><div class="card-title">ETE Destino</div><div class="card-val">1:47</div><div class="card-unit">ETA 16:19Z</div><div class="card-delta dn">▼ 3 min atrás del plan</div></div>
+    <div class="card"><div class="card-title">Combustible</div><div class="card-val">4,820<span style="font-size:0.9rem;color:var(--text3);"> lb</span></div><div class="card-unit">~2h 22m endurance</div><div class="card-delta up">✓ 1,240 lb sobre mínimo</div></div>
+  </div>
+
+  <div class="g2">
+    <!-- Real Map -->
+    <div class="card" style="padding:0;overflow:hidden;">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--border);">
+        <span style="font-family:'DM Mono',monospace;font-size:0.65rem;color:var(--text3);">MAPA DE RUTA REAL · OPENSTREETMAP</span>
+        <button class="btn btn-outline btn-sm" onclick="goPage('maps')">Ver Completo</button>
+      </div>
+      <div class="map-wrap" style="border-radius:0;border:none;box-shadow:none;">
+        <div id="map-main"></div>
+        <div class="map-info-box" id="mapCoords">28°31'N 81°22'W · FL350</div>
+      </div>
+    </div>
+
+    <!-- Right panels -->
+    <div style="display:flex;flex-direction:column;gap:14px;">
+      <!-- Profile -->
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+          <div class="card-title" style="margin:0;">PERFIL DE VUELO & ADVISOR</div>
+          <span class="btn btn-outline btn-sm">Detalle</span>
+        </div>
+        <canvas id="profile-cv"></canvas>
+        <div style="display:flex;gap:14px;margin-top:8px;font-size:0.62rem;font-family:'DM Mono',monospace;color:var(--text3);">
+          <span>🔴 Terreno</span><span>🔵 Alt Plan</span><span>🟠 MORA</span><span>🩵 Engelamiento</span>
+        </div>
+      </div>
+
+      <!-- Live traffic -->
+      <div class="card">
+        <div class="card-title">TRÁFICO ADS-B EN TIEMPO REAL</div>
+        <div id="traffic-list"></div>
+      </div>
+
+      <!-- Quick METAR -->
+      <div class="card">
+        <div class="card-title">METAR — KJFK (DESTINO)</div>
+        <div class="metar-box" style="font-size:0.68rem;">
+KJFK 151432Z <span class="mw">31018G24KT</span> 7SM HZ <span class="mt">FEW035 SCT070</span> <span class="mt">14/06</span> A3015<br>RMK AO2 PK WND 32027/1358 SLP201</div>
+        <div style="display:flex;gap:8px;margin-top:10px;">
+          <div class="alert alert-warn" style="flex:1;margin:0;font-size:0.7rem;padding:7px 10px;"><span class="a-icon">⚠️</span>MVFR · Viento 18G24</div>
+          <div class="alert alert-ok" style="flex:1;margin:0;font-size:0.7rem;padding:7px 10px;"><span class="a-icon">✅</span>ILS 31L Operativo</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+  FLIGHT PLAN
+══════════════════════════════════════ -->
+<div id="page-flightplan" class="page">
+  <div class="ph">
+    <div><div class="ph-title">Planificación de Vuelo</div><div class="ph-sub">// BRIEFING GRÁFICO · FILING INTERNACIONAL · NAVLOG IMPRIMIBLE</div></div>
+    <div class="ph-actions">
+      <button class="btn btn-outline btn-sm">🖨️ Imprimir Navlog</button>
+      <button class="btn btn-amber btn-sm">📡 Filing Intl.</button>
+      <button class="btn btn-primary">↑ Presentar Plan</button>
+    </div>
+  </div>
+
+  <div class="stabs">
+    <div class="stab active" onclick="stab(this,'fp','ruta')">Ruta</div>
+    <div class="stab" onclick="stab(this,'fp','briefing')">Briefing</div>
+    <div class="stab" onclick="stab(this,'fp','navlog')">Navlog</div>
+    <div class="stab" onclick="stab(this,'fp','auto')">Autorouting</div>
+    <div class="stab" onclick="stab(this,'fp','pdc')">PDC / D-ATIS</div>
+  </div>
+
+  <div id="fp-ruta">
+    <div class="frow">
+      <div class="fg"><label class="flabel">Salida (ICAO)</label><input class="finput" value="KMIA" placeholder="KMIA"></div>
+      <div class="fg"><label class="flabel">Destino (ICAO)</label><input class="finput" value="KJFK" placeholder="KJFK"></div>
+      <div class="fg"><label class="flabel">Alternado</label><input class="finput" value="KEWR" placeholder="KEWR"></div>
+      <div class="fg"><label class="flabel">Aeronave</label><input class="finput" value="N7843A"></div>
+      <div class="fg"><label class="flabel">Reglas</label><select class="finput"><option>IFR</option><option>VFR</option></select></div>
+    </div>
+    <div class="frow">
+      <div class="fg"><label class="flabel">Altitud Crucero</label><input class="finput" value="FL350"></div>
+      <div class="fg"><label class="flabel">ETD (Zulú)</label><input class="finput" value="1430Z"></div>
+      <div class="fg"><label class="flabel">ETE</label><input class="finput" value="1+47"></div>
+      <div class="fg" style="flex:3;"><label class="flabel">Ruta</label><input class="finput" value="WINCO3 WINCO PALMS PBI J121 ORF Q64 LENDY6"></div>
+    </div>
+    <div class="sdiv"><div class="sdiv-line"></div><div class="sdiv-lbl">Waypoints</div><div class="sdiv-line"></div></div>
+    <div style="display:grid;grid-template-columns:28px 72px 1fr 72px 64px 64px 64px;gap:8px;padding:5px 12px;font-size:0.6rem;font-family:'DM Mono',monospace;color:var(--text3);letter-spacing:0.08em;">
+      <span>#</span><span>IDENT</span><span>NOMBRE</span><span>ALT</span><span>DIST</span><span>ETE</span><span>COMB.</span>
+    </div>
+    <div id="wpList"></div>
+  </div>
+
+  <div id="fp-briefing" style="display:none;">
+    <div class="g2">
+      <div class="card">
+        <div class="card-title">BRIEFING GRÁFICO — SALIDA KMIA</div>
+        <div class="alert alert-info" style="margin-bottom:10px;"><span class="a-icon">ℹ️</span>KMIA: VFR · OVC035 · 10SM · Viento 180/12 · T28 · DP22</div>
+        <div class="metar-box">KMIA 151432Z <span class="mt">18012KT</span> 10SM <span class="mo">FEW020 OVC035</span> <span class="mt">28/22</span> A2992 RMK AO2 SLP132</div>
+        <div style="margin-top:12px;" class="card-title">TAF KMIA</div>
+        <div class="metar-box">KMIA 151120Z 1512/1618 <span class="mt">18010KT</span> 9999 <span class="mo">FEW025</span><br>TEMPO 1514/1516 <span class="mw">TSRA SCT025CB</span> BKN040</div>
+      </div>
+      <div class="card">
+        <div class="card-title">BRIEFING GRÁFICO — DESTINO KJFK</div>
+        <div class="alert alert-warn" style="margin-bottom:10px;"><span class="a-icon">⚠️</span>KJFK: MVFR · Viento 310/18G24 · 7SM Neblina</div>
+        <div class="metar-box">KJFK 151432Z <span class="mw">31018G24KT</span> 7SM HZ <span class="mt">FEW035 SCT070</span> <span class="mt">14/06</span> A3015</div>
+        <div style="margin-top:12px;" class="card-title">NOTAM ACTIVO</div>
+        <div class="alert alert-warn"><span class="a-icon">📢</span>ILS 31L LOC NO MONITOREADO 1500Z–2200Z · TWY K CERRADA</div>
+      </div>
+    </div>
+    <div class="card" style="margin-top:14px;">
+      <div class="card-title">VIENTOS EN ALTURA — FL350</div>
+      <div id="windsTable"></div>
+    </div>
+  </div>
+
+  <div id="fp-navlog" style="display:none;">
+    <div class="card"><div class="card-title" style="margin-bottom:16px;">NAVLOG IMPRIMIBLE — N7843A · KMIA→KJFK · 151430Z</div>
+    <table class="dtable" id="navlogTable"></table></div>
+  </div>
+
+  <div id="fp-auto" style="display:none;">
+    <div class="card">
+      <div class="card-title">AUTOROUTING OPTIMIZADO</div>
+      <div class="frow">
+        <div class="fg"><label class="flabel">Optimización</label><select class="finput"><option>Tiempo Mínimo</option><option>Combustible Mínimo</option><option>Balanceado</option></select></div>
+        <div class="fg"><label class="flabel">Alt. Máxima</label><input class="finput" value="FL390"></div>
+        <div class="fg" style="display:flex;align-items:flex-end;"><button class="btn btn-primary" style="width:100%;">⚡ Calcular Ruta</button></div>
+      </div>
+      <div class="alert alert-ok"><span class="a-icon">✅</span>Ruta óptima: WINCO3 WINCO PALMS J121 ORF Q64 LENDY6 — Ahorro: 4 min y 87 lb combustible vs. directo.</div>
+      <div class="g4" style="margin-top:12px;">
+        <div class="card" style="padding:12px;"><div class="card-title">T. En Ruta</div><div class="card-val" style="font-size:1.5rem;">1:47</div><div class="card-delta up">▲ 4 min ahorrado</div></div>
+        <div class="card" style="padding:12px;"><div class="card-title">Comb. Total</div><div class="card-val" style="font-size:1.5rem;">3,240<span style="font-size:0.7rem;"> lb</span></div><div class="card-delta up">▲ 87 lb ahorrado</div></div>
+        <div class="card" style="padding:12px;"><div class="card-title">Viento Prom.</div><div class="card-val" style="font-size:1.5rem;">+48<span style="font-size:0.7rem;"> kt</span></div><div class="card-unit">Cola</div></div>
+        <div class="card" style="padding:12px;"><div class="card-title">Paradas Comb.</div><div class="card-val" style="font-size:1.5rem;">0</div><div class="card-unit">Sin parada</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="fp-pdc" style="display:none;">
+    <div class="g2">
+      <div class="card">
+        <div class="card-title">DESPACHO PRE-SALIDA (PDC)</div>
+        <div class="metar-box" style="min-height:160px;"><span class="mo">DESPEJE RECIBIDO 14:28Z</span>
+N7843A DESPEJADO A KJFK VÍA
+<span class="mt">SALIDA WINCO3</span>
+SUBIR VÍA SID EXCEPTO MANTENER FL180
+ESPERE FL350 DIEZ MINUTOS DESPUÉS SALIDA
+FRECUENCIA SALIDA: <span class="mt">119.900</span>
+CÓDIGO TRANSPONDEDOR: <span class="mw">4721</span></div>
+        <div style="display:flex;gap:8px;margin-top:12px;">
+          <button class="btn btn-primary">📡 Solicitar PDC</button>
+          <button class="btn btn-outline">🔄 Actualizar</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">D-ATIS — KJFK INFO LIMA</div>
+        <div class="metar-box" style="min-height:160px;">KJFK ATIS INFO <span class="mw">LIMA</span> 1400Z
+VIENTO <span class="mt">310/18G24</span>
+VIS 7SM NEBLINA
+TECHO 3500 NUBLADO
+T 14 PUNTO ROCÍO 06
+ALTÍMETRO <span class="mt">30.15</span>
+APPROACH ILS PISTA <span class="mo">31L</span>
+SALIDA PISTA <span class="mo">31R</span></div>
+        <div style="display:flex;gap:8px;margin-top:12px;">
+          <button class="btn btn-primary">📻 Obtener D-ATIS</button>
+          <button class="btn btn-outline">🔊 Reproducir</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+  WEATHER — REAL DATA + MODELO
+══════════════════════════════════════ -->
+<div id="page-weather" class="page">
+  <div class="ph">
+    <div><div class="ph-title">Meteorología de Aviación</div><div class="ph-sub">// DATOS EN TIEMPO REAL · MODELO CLIMÁTICO INTERACTIVO · CAPAS WMS</div></div>
+    <div class="ph-actions">
+      <button class="btn btn-outline btn-sm">📌 Mis Aeropuertos</button>
+      <button class="btn btn-primary" onclick="refreshWeather()">🔄 Actualizar Todo</button>
+    </div>
+  </div>
+
+  <!-- Hourly strip -->
+  <div class="wx-strip" id="wxStrip"></div>
+
+  <div class="g2">
+    <!-- Weather map with real tile layers -->
+    <div class="card" style="padding:0;overflow:hidden;">
+      <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-family:'DM Mono',monospace;font-size:0.65rem;color:var(--text3);">MAPA METEOROLÓGICO REAL — CAPAS WMS</span>
+        <div style="display:flex;gap:6px;">
+          <button class="btn btn-outline btn-sm" id="wxLayerPrecip" onclick="setWxLayer('precipitation_new')">🌧 Lluvia</button>
+          <button class="btn btn-primary btn-sm" id="wxLayerClouds" onclick="setWxLayer('clouds_new')">☁ Nubes</button>
+          <button class="btn btn-outline btn-sm" id="wxLayerWind" onclick="setWxLayer('wind_new')">💨 Viento</button>
+          <button class="btn btn-outline btn-sm" id="wxLayerTemp" onclick="setWxLayer('temp_new')">🌡 Temp</button>
+        </div>
+      </div>
+      <div class="map-wrap" style="border-radius:0;border:none;box-shadow:none;">
+        <div id="map-wx"></div>
+        <div class="wx-legend" id="wxLegend">
+          <div style="font-family:'DM Mono',monospace;font-size:0.6rem;color:var(--text3);margin-bottom:4px;">NUBES / COBERTURA</div>
+          <div class="scale-bar">
+            <div class="scale-seg" style="background:#b0d0f0;"></div>
+            <div class="scale-seg" style="background:#80b4e8;"></div>
+            <div class="scale-seg" style="background:#4090d0;"></div>
+            <div class="scale-seg" style="background:#0060b8;"></div>
+            <div class="scale-seg" style="background:#003488;"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:0.58rem;color:var(--text3);font-family:'DM Mono',monospace;"><span>0%</span><span>100%</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Weather model controls -->
+    <div style="display:flex;flex-direction:column;gap:14px;">
+      <div class="wx-model-panel">
+        <div class="card-title">MODELO CLIMÁTICO INTERACTIVO</div>
+        <div class="frow" style="margin-bottom:8px;">
+          <div class="fg"><label class="flabel">Modelo</label>
+            <select class="finput" id="wxModel" onchange="updateWxModel()">
+              <option value="GFS">GFS (Global)</option>
+              <option value="NAM">NAM (N. América)</option>
+              <option value="ECMWF">ECMWF (Europa)</option>
+              <option value="RAP">RAP (Rápido)</option>
+            </select>
+          </div>
+          <div class="fg"><label class="flabel">Altitud</label>
+            <select class="finput" id="wxAltitude" onchange="updateWxModel()">
+              <option>Superficie</option><option>FL050</option><option>FL100</option>
+              <option selected>FL180</option><option>FL240</option><option>FL300</option><option>FL350</option>
+            </select>
+          </div>
+        </div>
+        <label class="flabel">Proyección temporal (hrs)</label>
+        <input type="range" id="wxTime" min="0" max="72" value="0" oninput="wxTimeUpdate(this.value)">
+        <div style="display:flex;justify-content:space-between;font-family:'DM Mono',monospace;font-size:0.62rem;color:var(--text3);">
+          <span>Ahora</span><span id="wxTimeLbl">+0h</span><span>+72h</span>
+        </div>
+        <div id="wxModelInfo" class="metar-box" style="margin-top:10px;font-size:0.67rem;line-height:1.7;">
+<span class="mo">MODELO: GFS · ANÁLISIS: 00Z</span>
+Altura: FL180 · Hora: +0h
+Temperatura: -24°C
+Humedad Relativa: 45%
+Velocidad Viento: 280/62KT
+Icing Probabilidad: <span class="mw">BAJA</span>
+Turbulencia CIT: <span class="mo">NULA</span></div>
+      </div>
+
+      <!-- Icing canvas -->
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+          <div class="card-title" style="margin:0;">CAPA ENGELAMIENTO INTERACTIVA</div>
+          <select class="finput" style="width:100px;padding:5px 8px;font-size:0.7rem;" id="icingAlt" onchange="drawIcing()">
+            <option>FL080</option><option>FL100</option><option selected>FL140</option><option>FL180</option>
+          </select>
+        </div>
+        <canvas id="icing-cv" width="600" height="200" style="width:100%;border-radius:7px;border:1px solid var(--border);"></canvas>
+        <div style="display:flex;gap:10px;margin-top:7px;font-size:0.62rem;font-family:'DM Mono',monospace;color:var(--text3);">
+          <span>🔵 Nulo</span><span>🟡 Traza</span><span>🟠 Leve</span><span>🔴 Moderado</span><span>⚫ Severo</span>
+        </div>
+      </div>
+
+      <!-- Turbulence -->
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+          <div class="card-title" style="margin:0;">TURBULENCIA CAT — FL350</div>
+          <select class="finput" style="width:100px;padding:5px 8px;font-size:0.7rem;">
+            <option>FL250</option><option selected>FL350</option><option>FL390</option>
+          </select>
+        </div>
+        <canvas id="turb-cv" width="600" height="130" style="width:100%;border-radius:7px;border:1px solid var(--border);"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Winds aloft -->
+  <div class="card" style="margin-top:14px;">
+    <div class="card-title">VIENTOS EN ALTURA — SECCIÓN TRANSVERSAL DE RUTA</div>
+    <canvas id="winds-cv" height="180" style="width:100%;border-radius:7px;"></canvas>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+  MAPS
+══════════════════════════════════════ -->
+<div id="page-maps" class="page">
+  <div class="ph">
+    <div><div class="ph-title">Mapas Aeronáuticos</div><div class="ph-sub">// VFR · IFR · TERRENO · OBSTÁCULOS · TFR · NOTAM</div></div>
+    <div class="ph-actions">
+      <button class="btn btn-outline btn-sm" onclick="addMarker()">📍 Marcar Posición</button>
+      <button class="btn btn-primary">🖨️ Imprimir Carta</button>
+    </div>
+  </div>
+
+  <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+    <button class="btn btn-primary btn-sm" id="mVFR" onclick="setMapLayer('vfr')">VFR Sectorial</button>
+    <button class="btn btn-outline btn-sm" id="mIFRL" onclick="setMapLayer('ifrl')">IFR Bajo</button>
+    <button class="btn btn-outline btn-sm" id="mIFRH" onclick="setMapLayer('ifrh')">IFR Alto</button>
+    <button class="btn btn-outline btn-sm" id="mTER" onclick="setMapLayer('terrain')">Terreno</button>
+    <button class="btn btn-outline btn-sm" id="mOSM" onclick="setMapLayer('osm')">OpenStreetMap</button>
+    <button class="btn btn-ghost btn-sm" id="mTFR" onclick="toggleMapOverlay('tfr')">TFR</button>
+    <button class="btn btn-ghost btn-sm" id="mNOTAM" onclick="toggleMapOverlay('notam')">NOTAM</button>
+    <button class="btn btn-ghost btn-sm" id="mWX" onclick="toggleMapOverlay('wx')">WX</button>
+  </div>
+
+  <div class="map-wrap">
+    <div id="map-full"></div>
+    <div class="map-ctrl">
+      <div class="mc-btn on" id="mcNEXRAD" onclick="toggleMC(this,'mcNEXRAD')">🌧 NEXRAD</div>
+      <div class="mc-btn" id="mcPIREP" onclick="toggleMC(this,'mcPIREP')">✈ PIREPs</div>
+      <div class="mc-btn" id="mcSIGMET" onclick="toggleMC(this,'mcSIGMET')">⚡ SIGMETs</div>
+      <div class="mc-btn" id="mcTRAFFIC" onclick="toggleMC(this,'mcTRAFFIC')">🔵 Tráfico</div>
+    </div>
+    <div class="map-info-box" id="mapInfoFull">
+      Haz clic en el mapa para info
+    </div>
+  </div>
+
+  <!-- Marked Positions -->
+  <div class="sdiv"><div class="sdiv-line"></div><div class="sdiv-lbl">Posiciones Marcadas</div><div class="sdiv-line"></div></div>
+  <div id="markedPosList" class="ga"></div>
+</div>
+
+<!-- ══════════════════════════════════════
+  APPROACHES
+══════════════════════════════════════ -->
+<div id="page-approaches" class="page">
+  <div class="ph">
+    <div><div class="ph-title">Cartas & Approaches</div><div class="ph-sub">// GEO-REFERENCIADAS · ILS · RNAV · SID · STAR · DIAGRAMA</div></div>
+    <div class="ph-actions">
+      <input class="finput" placeholder="Buscar aeropuerto o carta…" style="width:240px;">
+      <button class="btn btn-primary">🔍 Buscar</button>
+    </div>
+  </div>
+  <div class="ga" id="platGrid"></div>
+</div>
+
+<!-- ══════════════════════════════════════
+  AIRPORTS
+══════════════════════════════════════ -->
+<div id="page-airports" class="page">
+  <div class="ph">
+    <div><div class="ph-title">Aeropuertos & FBOs</div><div class="ph-sub">// INFO · VISTA 3D · ÓRDENES COMBUSTIBLE · PRECIOS JETFUELX</div></div>
+    <div class="ph-actions">
+      <input class="finput" placeholder="Buscar ICAO…" style="width:160px;">
+      <button class="btn btn-primary">🔍</button>
+    </div>
+  </div>
+
+  <div class="stabs">
+    <div class="stab active" onclick="stab(this,'apt','info')">Info Aeropuerto</div>
+    <div class="stab" onclick="stab(this,'apt','fbo')">FBOs & Combustible</div>
+    <div class="stab" onclick="stab(this,'apt','3d')">Aeropuerto 3D</div>
+    <div class="stab" onclick="stab(this,'apt','perf')">T/O & Aterrizaje</div>
+  </div>
+
+  <div id="apt-info">
+    <div class="g2">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+          <div>
+            <div style="font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:800;color:var(--sky);">KJFK</div>
+            <div style="font-size:0.9rem;font-weight:500;margin-top:2px;">John F. Kennedy International Airport</div>
+            <div style="font-family:'DM Mono',monospace;font-size:0.62rem;color:var(--text3);margin-top:4px;">Nueva York, NY · N40°38.4' W073°46.8' · ELEV 13 ft MSL</div>
+          </div>
+          <div style="text-align:right;">
+            <div class="live-badge"><div class="live-dot"></div>ABIERTO</div>
+            <div style="font-size:0.65rem;color:var(--text3);margin-top:6px;">Clase B · Controlado</div>
+          </div>
+        </div>
+        <div class="sdiv" style="margin:14px 0 10px;"><div class="sdiv-line"></div><div class="sdiv-lbl">Pistas</div><div class="sdiv-line"></div></div>
+        <div id="runwayList"></div>
+        <div class="sdiv" style="margin:14px 0 10px;"><div class="sdiv-line"></div><div class="sdiv-lbl">Frecuencias</div><div class="sdiv-line"></div></div>
+        <div id="freqList"></div>
+      </div>
+      <div>
+        <div class="card" style="margin-bottom:14px;">
+          <div class="card-title">METAR — KJFK</div>
+          <div class="metar-box">KJFK 151432Z <span class="mw">31018G24KT</span> 7SM HZ <span class="mt">FEW035 SCT070</span> <span class="mt">14/06</span> A3015</div>
+        </div>
+        <!-- Airport mini-map -->
+        <div class="card" style="padding:0;overflow:hidden;">
+          <div style="padding:10px 14px;border-bottom:1px solid var(--border);font-family:'DM Mono',monospace;font-size:0.62rem;color:var(--text3);">MAPA KJFK — OpenStreetMap</div>
+          <div id="map-apt" style="height:220px;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="apt-fbo" style="display:none;">
+    <div class="ga" id="fboList"></div>
+  </div>
+
+  <div id="apt-3d" style="display:none;">
+    <div class="card" style="padding:0;overflow:hidden;">
+      <div style="padding:12px 16px;border-bottom:1px solid var(--border);font-family:'DM Mono',monospace;font-size:0.65rem;color:var(--text3);">KJFK — VISUALIZACIÓN 3D DEL AEROPUERTO</div>
+      <canvas id="apt3d"></canvas>
+    </div>
+  </div>
+
+  <div id="apt-perf" style="display:none;">
+    <div class="g2">
+      <div class="card">
+        <div class="card-title">PERFORMANCE T/O — PISTA 31L</div>
+        <div class="frow">
+          <div class="fg"><label class="flabel">Peso (lb)</label><input class="finput" value="15,800"></div>
+          <div class="fg"><label class="flabel">Flaps</label><select class="finput"><option>8°</option><option>20°</option><option>30°</option></select></div>
+          <div class="fg"><label class="flabel">OAT (°C)</label><input class="finput" value="14"></div>
+        </div>
+        <div class="g3" style="gap:10px;margin-top:4px;">
+          <div class="card" style="padding:12px;"><div class="card-title">Dist. T/O</div><div class="card-val" style="font-size:1.3rem;">4,820<span style="font-size:0.7rem;"> ft</span></div></div>
+          <div class="card" style="padding:12px;"><div class="card-title">V1</div><div class="card-val" style="font-size:1.3rem;">112<span style="font-size:0.7rem;"> kt</span></div></div>
+          <div class="card" style="padding:12px;"><div class="card-title">VR / V2</div><div class="card-val" style="font-size:1.3rem;color:var(--amber);">118/124</div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">PERFORMANCE ATERRIZAJE — PISTA 31L</div>
+        <div class="frow">
+          <div class="fg"><label class="flabel">Peso Aterrizaje (lb)</label><input class="finput" value="14,200"></div>
+          <div class="fg"><label class="flabel">Flaps</label><select class="finput"><option>30°</option><option>40°</option></select></div>
+        </div>
+        <div class="g3" style="gap:10px;margin-top:4px;">
+          <div class="card" style="padding:12px;"><div class="card-title">Dist. Aterrizar</div><div class="card-val" style="font-size:1.3rem;">3,200<span style="font-size:0.7rem;"> ft</span></div></div>
+          <div class="card" style="padding:12px;"><div class="card-title">VREF</div><div class="card-val" style="font-size:1.3rem;">108<span style="font-size:0.7rem;"> kt</span></div></div>
+          <div class="card" style="padding:12px;"><div class="card-title">VAP</div><div class="card-val" style="font-size:1.3rem;color:var(--green);">119<span style="font-size:0.7rem;"> kt</span></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+  PERFORMANCE
+══════════════════════════════════════ -->
+<div id="page-performance" class="page">
+  <div class="ph">
+    <div><div class="ph-title">Performance de Aeronave</div><div class="ph-sub">// CITATION CJ4 · N7843A · PERFILES DETALLADOS · PESO Y BALANCE</div></div>
+    <button class="btn btn-primary">📊 Calcular Todo</button>
+  </div>
+  <div class="g2">
+    <div class="card">
+      <div class="card-title">PERFIL DE AERONAVE</div>
+      <select class="finput" style="margin-bottom:12px;"><option>Citation CJ4 (N7843A)</option><option>C172 (N1234K)</option></select>
+      <div class="g2" style="gap:8px;">
+        <div class="card" style="padding:10px;background:var(--surface2);"><div class="card-title" style="font-size:0.55rem;">MTOW</div><div style="font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;">15,660 <span style="font-size:0.65rem;color:var(--text3);">lb</span></div></div>
+        <div class="card" style="padding:10px;background:var(--surface2);"><div class="card-title" style="font-size:0.55rem;">Techo Servicio</div><div style="font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;color:var(--sky);">FL450</div></div>
+        <div class="card" style="padding:10px;background:var(--surface2);"><div class="card-title" style="font-size:0.55rem;">Comb. Máx.</div><div style="font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;color:var(--amber);">5,762 <span style="font-size:0.65rem;">lb</span></div></div>
+        <div class="card" style="padding:10px;background:var(--surface2);"><div class="card-title" style="font-size:0.55rem;">Alcance Máx.</div><div style="font-family:'Syne',sans-serif;font-size:1rem;font-weight:700;">2,165 <span style="font-size:0.65rem;color:var(--text3);">nm</span></div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">FLUJO COMBUSTIBLE & TIEMPO</div>
+      <div class="frow">
+        <div class="fg"><label class="flabel">Alt. Crucero</label><input class="finput" value="FL350"></div>
+        <div class="fg"><label class="flabel">Desv. ISA</label><input class="finput" value="+5°C"></div>
+        <div class="fg"><label class="flabel">Ajuste Potencia</label><select class="finput"><option>LRC</option><option>Alta Vel.</option><option>Economía</option></select></div>
+      </div>
+      <div class="g3" style="gap:10px;margin-bottom:12px;">
+        <div class="card" style="padding:12px;"><div class="card-title">Flujo Comb.</div><div class="card-val" style="font-size:1.4rem;">692<span style="font-size:0.7rem;color:var(--text3);"> pph</span></div></div>
+        <div class="card" style="padding:12px;"><div class="card-title">TAS</div><div class="card-val" style="font-size:1.4rem;">390<span style="font-size:0.7rem;color:var(--text3);"> kt</span></div></div>
+        <div class="card" style="padding:12px;"><div class="card-title">Alcance</div><div class="card-val" style="font-size:1.4rem;">1,840<span style="font-size:0.7rem;color:var(--text3);"> nm</span></div></div>
+      </div>
+      <canvas id="perf-cv"></canvas>
+    </div>
+  </div>
+  <div class="card" style="margin-top:14px;">
+    <div class="card-title">PESO Y BALANCE — CHEQUEO DE LÍMITES</div>
+    <div class="frow" style="margin-top:8px;">
+      <div class="fg"><label class="flabel">BOW</label><input class="finput" value="10,280 lb"></div>
+      <div class="fg"><label class="flabel">Tripulación</label><input class="finput" value="370 lb"></div>
+      <div class="fg"><label class="flabel">Pasajeros</label><input class="finput" value="480 lb"></div>
+      <div class="fg"><label class="flabel">Equipaje</label><input class="finput" value="200 lb"></div>
+      <div class="fg"><label class="flabel">Combustible</label><input class="finput" value="4,430 lb"></div>
+    </div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:4px;">
+      <div class="alert alert-warn" style="flex:1;min-width:200px;"><span class="a-icon">⚠️</span>TOW: 15,760 lb — Revisar límite MTOW</div>
+      <div class="alert alert-ok" style="flex:1;min-width:200px;"><span class="a-icon">✅</span>CG: 38.4% MAC — Dentro del sobre</div>
+      <div class="alert alert-info" style="flex:1;min-width:200px;"><span class="a-icon">⛽</span>Comb. máx. este payload: 4,330 lb</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+  FUEL
+══════════════════════════════════════ -->
+<div id="page-fuel" class="page">
+  <div class="ph">
+    <div><div class="ph-title">Planificación de Combustible</div><div class="ph-sub">// JETFUELX · ASISTENTE DE VIAJE · PARADAS · FBO ORDERS</div></div>
+    <div class="ph-actions">
+      <button class="btn btn-amber">📦 Orden FBO</button>
+      <button class="btn btn-primary">⛽ Fuel Release</button>
+    </div>
+  </div>
+  <div class="g2">
+    <div class="card">
+      <div class="card-title">PLANIFICACIÓN DE CARGA</div>
+      <div class="frow"><div class="fg"><label class="flabel">Comb. de Viaje</label><input class="finput" value="3,240 lb" readonly style="background:var(--bg2);"></div></div>
+      <div class="frow"><div class="fg"><label class="flabel">Reserva (45 min)</label><input class="finput" value="780 lb" readonly style="background:var(--bg2);"></div></div>
+      <div class="frow"><div class="fg"><label class="flabel">Comb. Alternado</label><input class="finput" value="400 lb" readonly style="background:var(--bg2);"></div></div>
+      <div class="frow"><div class="fg"><label class="flabel">Adicional</label><input class="finput" value="400 lb"></div></div>
+      <div style="height:1px;background:var(--border);margin:10px 0;"></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <span style="font-family:'DM Mono',monospace;font-size:0.65rem;color:var(--text3);">TOTAL PLANIFICADO</span>
+        <span style="font-family:'Syne',sans-serif;font-size:1.5rem;font-weight:700;color:var(--sky);">4,820 lb</span>
+      </div>
+      <div class="fuel-bar" style="margin-top:10px;">
+        <div class="fuel-fill" style="width:83%;background:linear-gradient(90deg,#2E7D32,#F57C00);"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:0.6rem;color:var(--text3);font-family:'DM Mono',monospace;">
+        <span>0</span><span>MÁXIMO 5,762 lb</span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">PRECIOS JETFUELX — AEROPUERTOS CERCANOS</div>
+      <div id="fuelPriceList"></div>
+    </div>
+  </div>
+  <div class="card" style="margin-top:14px;">
+    <div class="card-title">ASISTENTE DE VIAJE — PLANIFICACIÓN DE PARADAS</div>
+    <div class="alert alert-ok"><span class="a-icon">✅</span>Sin parada de combustible requerida. Destino KJFK con 1,580 lb restantes (2h 17m endurance). Seguro continuar directo.</div>
+    <canvas id="trip-cv"></canvas>
+    <div style="margin-top:8px;display:flex;gap:16px;font-size:0.65rem;font-family:'DM Mono',monospace;color:var(--text3);">
+      <span>🔵 Comb. Planificado</span><span>🔴 Mínimo Req.</span><span>🟡 Reserva</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+  SYN VIS
+══════════════════════════════════════ -->
+<div id="page-synvis" class="page">
+  <div class="ph">
+    <div><div class="ph-title">Visión Sintética</div><div class="ph-sub">// TERRENO 3D · NAVEGACIÓN · TRÁFICO · OBSTÁCULOS</div></div>
+    <div class="ph-actions">
+      <button class="btn btn-primary">⚙️ Config</button>
+    </div>
+  </div>
+  <div class="g2">
+    <canvas id="synvis-canvas"></canvas>
+    <div style="display:flex;flex-direction:column;gap:12px;">
+      <div class="g2" style="gap:10px;">
+        <div class="card" style="text-align:center;padding:14px;"><div class="card-title">ALTITUD</div><div style="font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:800;color:var(--sky);">35,000</div><div class="card-unit">FT MSL</div></div>
+        <div class="card" style="text-align:center;padding:14px;"><div class="card-title">VELOCIDAD</div><div style="font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:800;color:var(--amber);">412</div><div class="card-unit">KT GS</div></div>
+        <div class="card" style="text-align:center;padding:14px;"><div class="card-title">RUMBO</div><div style="font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:800;color:var(--green);">012°</div><div class="card-unit">MAG</div></div>
+        <div class="card" style="text-align:center;padding:14px;"><div class="card-title">MACH</div><div style="font-family:'Syne',sans-serif;font-size:1.8rem;font-weight:800;color:var(--purple);">0.74</div><div class="card-unit">MACH</div></div>
+      </div>
+      <div class="card"><div class="card-title">TRÁFICO CERCANO</div><div id="synTraffic"></div></div>
+      <div class="card">
+        <div class="card-title">ALERTAS DE TERRENO</div>
+        <div class="alert alert-ok"><span class="a-icon">✅</span>Sin terreno dentro de 2000ft de alt. planificada</div>
+        <div class="alert alert-info"><span class="a-icon">⛰️</span>Montañas adelante — MORA 19,000ft — FL350 despejado</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+  CHECKLIST
+══════════════════════════════════════ -->
+<div id="page-checklist" class="page">
+  <div class="ph">
+    <div><div class="ph-title">Checklist</div><div class="ph-sub">// CITATION CJ4 · N7843A · PROCEDIMIENTOS INTERACTIVOS</div></div>
+    <div class="ph-actions">
+      <button class="btn btn-outline" onclick="resetCL()">🔄 Resetear</button>
+      <button class="btn btn-primary">▶ Siguiente Fase</button>
+    </div>
+  </div>
+  <div class="g2">
+    <div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;" id="clPhases"></div>
+      <div id="clItems"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">PROGRESO</div>
+      <div id="clProg"></div>
+      <canvas id="cl-chart" style="width:100%;margin-top:14px;height:200px;"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+  LOGBOOK
+══════════════════════════════════════ -->
+<div id="page-logbook" class="page">
+  <div class="ph">
+    <div><div class="ph-title">Bitácora de Vuelo</div><div class="ph-sub">// 847.3 TOTAL · 312.1 PIC · 48.2 INSTRUMENTO</div></div>
+    <div class="ph-actions">
+      <button class="btn btn-outline">📤 Exportar PDF</button>
+      <button class="btn btn-primary">+ Registrar Vuelo</button>
+    </div>
+  </div>
+  <div class="g4" style="margin-bottom:16px;">
+    <div class="card"><div class="card-title">Tiempo Total</div><div class="card-val">847.3</div><div class="card-unit">horas</div></div>
+    <div class="card"><div class="card-title">Tiempo PIC</div><div class="card-val">312.1</div><div class="card-unit">horas</div></div>
+    <div class="card"><div class="card-title">Instrumento</div><div class="card-val">48.2</div><div class="card-unit">IMC real</div></div>
+    <div class="card"><div class="card-title">Nocturno</div><div class="card-val">124.7</div><div class="card-unit">horas</div></div>
+  </div>
+  <div class="card"><table class="dtable" id="logTable"></table></div>
+</div>
+
+<!-- ══════════════════════════════════════
+  ACCOUNT
+══════════════════════════════════════ -->
+<div id="page-account" class="page">
+  <div class="ph">
+    <div><div class="ph-title">Cuenta & Conectividad</div><div class="ph-sub">// AVIÓNICOS · APP PASAJEROS · ADMIN</div></div>
+  </div>
+  <div class="g3">
+    <div class="card">
+      <div class="card-title">PERFIL DEL PILOTO</div>
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px;">
+        <div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,var(--sky),var(--purple));display:flex;align-items:center;justify-content:center;font-size:1.4rem;color:white;">✈</div>
+        <div>
+          <div style="font-weight:600;font-size:0.95rem;">Capt. Alex Monroe</div>
+          <div style="font-family:'DM Mono',monospace;font-size:0.63rem;color:var(--text3);">ATP · CFII · MEI</div>
+          <div class="live-badge" style="margin-top:6px;display:inline-flex;"><div class="live-dot"></div>Plan Premium Activo</div>
+        </div>
+      </div>
+      <div class="frow"><div class="fg"><label class="flabel">Certificado N°</label><input class="finput" value="3849201"></div></div>
+      <div class="frow"><div class="fg"><label class="flabel">Clase Médica</label><select class="finput"><option>Primera</option><option>Segunda</option></select></div><div class="fg"><label class="flabel">Vence</label><input class="finput" value="2026-08-01"></div></div>
+    </div>
+    <div class="card">
+      <div class="card-title">CONECTIVIDAD AVIÓNICOS</div>
+      <div id="avList"></div>
+      <button class="btn btn-primary" style="width:100%;margin-top:12px;">+ Vincular Dispositivo</button>
+    </div>
+    <div class="pax-card">
+      <div style="font-size:2.5rem;margin-bottom:12px;">📱</div>
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;color:var(--purple);">APP DE PASAJEROS</div>
+      <div style="font-size:0.75rem;color:var(--text2);margin-top:6px;line-height:1.5;">Comparte datos en tiempo real con tus pasajeros. Ver posición, ETA, clima y más en sus teléfonos.</div>
+      <div style="margin-top:16px;">
+        <div style="font-family:'DM Mono',monospace;font-size:0.62rem;color:var(--text3);margin-bottom:6px;">CÓDIGO DE ACCESO</div>
+        <div style="font-family:'Syne',sans-serif;font-size:2rem;font-weight:800;color:var(--purple);letter-spacing:0.1em;">AX·7843</div>
+      </div>
+      <div style="display:flex;gap:8px;margin-top:14px;">
+        <button class="btn" style="flex:1;background:#EDE7F6;border:1.5px solid #CE93D8;color:var(--purple);">📋 Copiar</button>
+        <button class="btn" style="flex:1;background:#EDE7F6;border:1.5px solid #CE93D8;color:var(--purple);">📤 Enviar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<!-- STATUS BAR -->
+<div id="statusbar">
+  <span>✈ <span class="sb-v">N7843A</span></span>
+  <span class="sb-sep">|</span>
+  <span>FL <span class="sb-v">350</span></span>
+  <span class="sb-sep">|</span>
+  <span>GS <span class="sb-v">412 kt</span></span>
+  <span class="sb-sep">|</span>
+  <span>DEST <span class="sb-v">KJFK</span></span>
+  <span class="sb-sep">|</span>
+  <span>ETE <span class="sb-v">1:47</span></span>
+  <span class="sb-sep">|</span>
+  <span>COMB <span class="sb-ok">4,820 lb</span></span>
+  <span class="sb-sep">|</span>
+  <span>WX <span class="sb-warn">MVFR @ KJFK</span></span>
+  <span class="sb-sep" style="margin-left:auto;">|</span>
+  <span>ZULÚ <span class="sb-v" id="clock">--:--:--</span></span>
+</div>
+
+<script>
+'use strict';
+
+// ══ UTILS ══
+const $ = id => document.getElementById(id);
+
+// Zulu clock
+setInterval(() => {
+  const n = new Date();
+  $('clock').textContent = [n.getUTCHours(),n.getUTCMinutes(),n.getUTCSeconds()].map(v=>String(v).padStart(2,'0')).join(':');
+  const st = $('syncTime');
+  if(st) st.textContent = String(n.getUTCHours()).padStart(2,'0')+':'+String(n.getUTCMinutes()).padStart(2,'0')+'Z';
+}, 1000);
+
+// ══ PAGE ROUTING ══
+function goPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  $('page-'+id).classList.add('active');
+  document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.sb-item').forEach(s => s.classList.remove('active'));
+  const labels = {dashboard:'Dashboard',flightplan:'Planificación',weather:'Meteorología',maps:'Mapas',approaches:'Cartas',airports:'Aeropuertos',performance:'Performance',fuel:'Combustible',synvis:'Visión Sint.',checklist:'Checklist',logbook:'Bitácora',account:'Cuenta'};
+  document.querySelectorAll('.pill').forEach(p => { if(p.textContent.trim()===labels[id]) p.classList.add('active'); });
+  setTimeout(() => initPage(id), 80);
+}
+
+function stab(el, pre, sub) {
+  el.parentElement.querySelectorAll('.stab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('[id^="'+pre+'-"]').forEach(d => d.style.display='none');
+  $(pre+'-'+sub).style.display = 'block';
+  setTimeout(() => { if(sub==='3d') drawApt3D(); if(sub==='perf') {} }, 60);
+}
+
+// ══ LEAFLET MAPS ══
+let mapMain = null, mapFull = null, mapWx = null, mapApt = null;
+let routePolyline = null, wxLayer = null, currentWxType = 'clouds_new';
+let markersList = [];
+let acMarker = null;
+let fullMapRoute = null;
+
+const OWM_KEY = ''; // OpenWeatherMap API key (demo uses free tile endpoint)
+const ROUTE_COORDS = [
+  [25.7959,-80.2870], // KMIA
+  [26.5833,-80.0833], // WINCO
+  [27.3333,-80.1167], // PALMS
+  [26.6833,-80.0955], // PBI
+  [36.8978,-76.0122], // ORF
+  [38.5000,-75.0000], // DADES
+  [40.6800,-73.9339], // LENDY
+  [40.6413,-73.7781]  // KJFK
+];
+
+const WP_DATA = [
+  {n:1,id:'KMIA',name:'Miami Intl',alt:'SFC',dist:'0.0',ete:'0:00',fuel:'4,820',type:'apt'},
+  {n:2,id:'WINCO',name:'WINCO INT',alt:'5000',dist:'42.1',ete:'0:06',fuel:'4,680',type:'fix'},
+  {n:3,id:'PALMS',name:'PALMS INT',alt:'18000',dist:'98.3',ete:'0:14',fuel:'4,420',type:'fix'},
+  {n:4,id:'PBI',name:'W. Palm Beach VOR',alt:'35000',dist:'58.7',ete:'0:09',fuel:'4,280',type:'vor'},
+  {n:5,id:'ORF',name:'Norfolk VOR',alt:'35000',dist:'320.4',ete:'0:47',fuel:'3,560',type:'vor'},
+  {n:6,id:'DADES',name:'DADES INT',alt:'35000',dist:'88.2',ete:'0:13',fuel:'3,270',type:'fix'},
+  {n:7,id:'LENDY',name:'LENDY INT',alt:'11000',dist:'90.1',ete:'0:13',fuel:'3,010',type:'fix'},
+  {n:8,id:'KJFK',name:'JFK Intl',alt:'SFC',dist:'38.6',ete:'0:07',fuel:'4,820',type:'apt'},
+];
+
+function initLeafletMap(containerId, centerLat, centerLng, zoom) {
+  const m = L.map(containerId, { zoomControl: true, attributionControl: true }).setView([centerLat, centerLng], zoom);
+  // OpenStreetMap base
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© <a href="https://openstreetmap.org">OpenStreetMap</a> contributors',
+    maxZoom: 19
+  }).addTo(m);
+  return m;
+}
+
+function addRouteToMap(m) {
+  if(!m) return;
+  // Draw route polyline
+  const poly = L.polyline(ROUTE_COORDS, {
+    color: '#1565C0', weight: 3, opacity: 0.85, dashArray: '8,4'
+  }).addTo(m);
+
+  // Waypoint markers
+  WP_DATA.forEach((wp, i) => {
+    const coord = ROUTE_COORDS[i];
+    if(!coord) return;
+    const isApt = wp.type === 'apt';
+    const icon = L.divIcon({
+      className: '',
+      html: `<div style="
+        width:${isApt?14:10}px;height:${isApt?14:10}px;
+        border-radius:${isApt?'3px':'50%'};
+        background:${isApt?'#2E7D32':wp.type==='vor'?'#E65100':'#1565C0'};
+        border:2px solid white;
+        box-shadow:0 2px 6px rgba(0,0,0,0.3);
+        transform:${isApt?'rotate(45deg)':'none'};
+      "></div>`,
+      iconSize:[isApt?14:10,isApt?14:10], iconAnchor:[isApt?7:5,isApt?7:5]
+    });
+    L.marker(coord, {icon}).addTo(m)
+      .bindPopup(`<div style="font-family:'DM Sans',sans-serif;min-width:140px;">
+        <div style="font-weight:700;font-size:1rem;color:#1565C0;">${wp.id}</div>
+        <div style="color:#666;font-size:0.8rem;">${wp.name}</div>
+        <div style="font-family:'DM Mono',monospace;font-size:0.72rem;margin-top:6px;">
+          Alt: ${wp.alt}<br>Dist: ${wp.dist} nm<br>Comb. rem.: ${wp.fuel} lb
+        </div>
+      </div>`);
+  });
+  return poly;
+}
+
+function addWeatherLayer(m, layerType) {
+  if(wxLayer) { m.removeLayer(wxLayer); wxLayer=null; }
+  if(!layerType) return;
+  // Using OpenWeatherMap free tile API
+  const url = `https://tile.openweathermap.org/map/${layerType}/{z}/{x}/{y}.png?appid=demo`;
+  // Fallback: use a working free API
+  // We'll use OpenWeatherMap with a demo approach
+  wxLayer = L.tileLayer(
+    `https://tile.openweathermap.org/map/${layerType}/{z}/{x}/{y}.png?appid=a04371a9b0c1d31e3ebb10e6f8dde9af`,
+    { opacity: 0.65, attribution: '© OpenWeatherMap' }
+  ).addTo(m);
+}
+
+function initMainMap() {
+  if(mapMain) return;
+  mapMain = initLeafletMap('map-main', 33.0, -78.0, 5);
+  addRouteToMap(mapMain);
+  addWeatherLayer(mapMain, 'clouds_new');
+
+  // Animated aircraft position
+  let idx = 0;
+  const animateAC = () => {
+    if(acMarker) mapMain.removeLayer(acMarker);
+    const coord = ROUTE_COORDS[idx % ROUTE_COORDS.length];
+    const icon = L.divIcon({
+      className: '',
+      html: `<div style="font-size:20px;transform:rotate(-45deg);filter:drop-shadow(0 2px 4px rgba(21,101,192,0.5));">✈️</div>`,
+      iconSize:[24,24], iconAnchor:[12,12]
+    });
+    acMarker = L.marker(coord, {icon}).addTo(mapMain);
+    $('mapCoords').textContent = coord[0].toFixed(4)+'°N '+Math.abs(coord[1]).toFixed(4)+'°W · FL350';
+    idx++;
+    if(idx < ROUTE_COORDS.length) setTimeout(animateAC, 3000);
+  };
+  setTimeout(animateAC, 1000);
+
+  mapMain.on('mousemove', e => {
+    $('mapCoords').textContent = e.latlng.lat.toFixed(4)+'°N '+Math.abs(e.latlng.lng).toFixed(4)+'°W';
+  });
+}
+
+function initFullMap() {
+  if(mapFull) return;
+  mapFull = initLeafletMap('map-full', 33.0, -78.0, 5);
+  fullMapRoute = addRouteToMap(mapFull);
+  addWeatherLayer(mapFull, 'precipitation_new');
+  mapFull.on('click', e => {
+    $('mapInfoFull').textContent = `Lat: ${e.latlng.lat.toFixed(4)}° · Lon: ${e.latlng.lng.toFixed(4)}° · Click para marcar`;
+  });
+}
+
+function initWxMap() {
+  if(mapWx) return;
+  mapWx = initLeafletMap('map-wx', 33.0, -78.0, 5);
+  addRouteToMap(mapWx);
+  addWeatherLayer(mapWx, currentWxType);
+}
+
+function initAptMap() {
+  if(mapApt) return;
+  mapApt = initLeafletMap('map-apt', 40.6413, -73.7781, 13);
+  const icon = L.divIcon({
+    className: '',
+    html: `<div style="width:14px;height:14px;border-radius:3px;background:#2E7D32;border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.3);transform:rotate(45deg);"></div>`,
+    iconSize:[14,14], iconAnchor:[7,7]
+  });
+  L.marker([40.6413,-73.7781],{icon}).addTo(mapApt).bindPopup('<b>KJFK</b><br>John F. Kennedy Intl').openPopup();
+}
+
+function setWxLayer(type) {
+  currentWxType = type;
+  document.querySelectorAll('[id^="wxLayer"]').forEach(b => { b.className='btn btn-outline btn-sm'; });
+  const map = {'precipitation_new':'Precip','clouds_new':'Clouds','wind_new':'Wind','temp_new':'Temp'};
+  $('wxLayer'+map[type]).className = 'btn btn-primary btn-sm';
+  if(mapWx) addWeatherLayer(mapWx, type);
+  // Update legend
+  const legends = {
+    'precipitation_new': {label:'PRECIPITACIÓN (mm/h)', colors:['#b0e0ff','#6bbbff','#2d9bff','#006fd6','#003d8a']},
+    'clouds_new': {label:'NUBES / COBERTURA', colors:['#b0d0f0','#80b4e8','#4090d0','#0060b8','#003488']},
+    'wind_new': {label:'VELOCIDAD VIENTO (m/s)', colors:['#e8f5e9','#a5d6a7','#4caf50','#1b5e20','#0a2e0f']},
+    'temp_new': {label:'TEMPERATURA (°C)', colors:['#003488','#0060b8','#4090d0','#ffd54f','#e65100']},
+  };
+  const l = legends[type];
+  if(l && $('wxLegend')) {
+    $('wxLegend').innerHTML = `<div style="font-family:'DM Mono',monospace;font-size:0.6rem;color:var(--text3);margin-bottom:4px;">${l.label}</div>
+    <div class="scale-bar">${l.colors.map(c=>`<div class="scale-seg" style="background:${c};"></div>`).join('')}</div>
+    <div style="display:flex;justify-content:space-between;font-size:0.58rem;color:var(--text3);font-family:'DM Mono',monospace;"><span>Bajo</span><span>Alto</span></div>`;
+  }
+}
+
+function setMapLayer(type) {
+  if(!mapFull) return;
+  mapFull.eachLayer(l => { if(l instanceof L.TileLayer) mapFull.removeLayer(l); });
+  const tiles = {
+    vfr: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    ifrl: 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
+    ifrh: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    terrain: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',
+    osm: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+  };
+  L.tileLayer(tiles[type]||tiles.osm, {maxZoom:19, attribution:'© OpenStreetMap'}).addTo(mapFull);
+  addRouteToMap(mapFull);
+  ['mVFR','mIFRL','mIFRH','mTER','mOSM'].forEach(id => { if($(id)) $(id).className='btn btn-outline btn-sm'; });
+  const map2 = {vfr:'mVFR',ifrl:'mIFRL',ifrh:'mIFRH',terrain:'mTER',osm:'mOSM'};
+  if($(map2[type])) $(map2[type]).className = 'btn btn-primary btn-sm';
+}
+
+function toggleMC(el, id) { el.classList.toggle('on'); }
+
+function toggleMapOverlay(type) {}
+
+let mapMarkersArr = [];
+function addMarker() {
+  if(!mapFull) return;
+  const center = mapFull.getCenter();
+  const icon = L.divIcon({
+    className:'',
+    html:`<div style="font-size:20px;">📍</div>`,
+    iconSize:[20,20], iconAnchor:[10,20]
+  });
+  const m = L.marker(center, {icon, draggable:true}).addTo(mapFull)
+    .bindPopup(`Posición marcada<br>${center.lat.toFixed(4)}°N ${Math.abs(center.lng).toFixed(4)}°W`).openPopup();
+  mapMarkersArr.push({lat:center.lat.toFixed(4),lng:center.lng.toFixed(4),name:'Marcador '+(mapMarkersArr.length+1)});
+  renderMarkedPos();
+}
+function renderMarkedPos() {
+  const el = $('markedPosList'); if(!el) return;
+  if(mapMarkersArr.length===0){ el.innerHTML='<div class="alert alert-info" style="margin:0;"><span class="a-icon">ℹ️</span>Haz clic en "Marcar Posición" para agregar posiciones al mapa.</div>'; return; }
+  el.innerHTML = mapMarkersArr.map((p,i)=>`
+    <div class="card" style="display:flex;align-items:center;gap:12px;padding:12px 14px;">
+      <div style="font-size:1.4rem;">📍</div>
+      <div>
+        <div style="font-weight:600;">${p.name}</div>
+        <div style="font-family:'DM Mono',monospace;font-size:0.62rem;color:var(--text3);">${p.lat}°N · ${p.lng}°W</div>
+      </div>
+      <button class="btn btn-outline btn-sm" style="margin-left:auto;">Ir al punto</button>
+      <button class="btn btn-danger btn-sm" onclick="removeMarker(${i})">✕</button>
+    </div>`).join('');
+}
+function removeMarker(i) { mapMarkersArr.splice(i,1); renderMarkedPos(); }
+
+// ══ PAGE INIT ══
+function initPage(id) {
+  if(id==='dashboard') { initMainMap(); drawProfile(); renderTraffic(); }
+  if(id==='maps') { initFullMap(); renderMarkedPos(); }
+  if(id==='weather') { initWxMap(); drawIcing(); drawTurb(); drawWinds(); renderWxStrip(); }
+  if(id==='airports') { renderRunways(); renderFreqs(); renderFBOs(); setTimeout(()=>{ initAptMap(); drawApt3D(); },200); }
+  if(id==='performance') { drawPerfCurve(); }
+  if(id==='fuel') { renderFuelPrices(); drawTripFuel(); }
+  if(id==='synvis') { drawSynVis(); renderSynTraffic(); }
+  if(id==='checklist') { renderCL(); }
+  if(id==='logbook') { renderLogbook(); }
+  if(id==='account') { renderAvionics(); }
+  if(id==='flightplan') { renderWPs(); renderNavlog(); renderWinds2(); }
+  if(id==='approaches') { renderPlates(); }
+}
+
+// ══ WEATHER STRIP ══
+const WX_ICONS = ['☀️','⛅','🌤️','☁️','🌧️','⛈️','🌩️','❄️'];
+function renderWxStrip() {
+  const el = $('wxStrip'); if(!el) return;
+  const hrs = ['Ahora','Z+1','Z+2','Z+3','Z+4','Z+5','Z+6','Z+7'];
+  el.innerHTML = hrs.map((h,i)=>`
+    <div class="wx-cell${i===0?' wx-sel':''}" onclick="document.querySelectorAll('.wx-cell').forEach(c=>c.classList.remove('wx-sel'));this.classList.add('wx-sel');">
+      <div class="wx-time">${h}</div>
+      <div class="wx-ico">${WX_ICONS[i]}</div>
+      <div class="wx-tmp">${14+Math.floor(Math.random()*6)}°C</div>
+      <div class="wx-wnd">${Math.floor(270+Math.random()*80)%360}/${Math.floor(10+Math.random()*20)}KT</div>
+    </div>`).join('');
+}
+
+function refreshWeather() {
+  renderWxStrip();
+  drawIcing(); drawTurb(); drawWinds();
+  if(mapWx) addWeatherLayer(mapWx, currentWxType);
+}
+
+// ══ WX MODEL ══
+function wxTimeUpdate(v) {
+  const lbl = $('wxTimeLbl'); if(lbl) lbl.textContent = v>0?'+'+v+'h':'Ahora';
+  updateWxModel();
+}
+function updateWxModel() {
+  const model = $('wxModel')?$('wxModel').value:'GFS';
+  const alt = $('wxAltitude')?$('wxAltitude').value:'FL180';
+  const t = $('wxTime')?$('wxTime').value:0;
+  const temps = [-4,-8,-14,-18,-24,-32,-40,-52];
+  const altIdx = ['Superficie','FL050','FL100','FL180','FL240','FL300','FL350','FL390'].indexOf(alt)||0;
+  const box = $('wxModelInfo');
+  if(box) box.innerHTML = `<span class="mo">MODELO: ${model} · ANÁLISIS: 00Z</span>
+Altura: ${alt} · Hora: +${t}h
+Temperatura: ${temps[altIdx]||'-24'}°C
+Humedad Relativa: ${Math.floor(30+Math.random()*40)}%
+Velocidad Viento: ${Math.floor(260+Math.random()*60)}/${Math.floor(20+parseInt(t)/2+30)}KT
+Icing Prob.: <span class="${altIdx>=2&&altIdx<=4?'mw':'mo'}">${altIdx>=2&&altIdx<=4?'MODERADA':'BAJA'}</span>
+Turbulencia CIT: <span class="${t>24?'mw':'mo'}">${t>24?'LEVE':'NULA'}</span>`;
+  drawIcing(); drawTurb();
+}
+
+// ══ CANVAS DRAWINGS ══
+function drawProfile() {
+  const cv = $('profile-cv'); if(!cv) return;
+  const ctx = cv.getContext('2d');
+  cv.width = cv.offsetWidth||600; cv.height = 160;
+  const W=cv.width,H=160;
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle='#F7FAFC'; ctx.fillRect(0,0,W,H);
+  // Grid
+  ctx.strokeStyle='#D1DCE8'; ctx.lineWidth=1;
+  for(let x=0;x<W;x+=W/8){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
+  for(let y=0;y<H;y+=40){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+  // Terrain
+  const terr=[0,0.05,0.1,0.18,0.22,0.28,0.35,0.28,0.22,0.15,0.1,0.12,0.18,0.12,0.08,0.04];
+  const g=ctx.createLinearGradient(0,H*0.4,0,H);
+  g.addColorStop(0,'rgba(183,28,28,0.35)'); g.addColorStop(1,'rgba(183,28,28,0.05)');
+  ctx.fillStyle=g;
+  ctx.beginPath(); ctx.moveTo(0,H);
+  terr.forEach((t,i)=>ctx.lineTo(i/(terr.length-1)*W,H-(t*H*0.65)-8));
+  ctx.lineTo(W,H); ctx.closePath(); ctx.fill();
+  ctx.strokeStyle='#D32F2F'; ctx.lineWidth=1.5;
+  ctx.beginPath(); terr.forEach((t,i)=>i===0?ctx.moveTo(0,H-(t*H*0.65)-8):ctx.lineTo(i/(terr.length-1)*W,H-(t*H*0.65)-8)); ctx.stroke();
+  // Icing band
+  ctx.fillStyle='rgba(144,202,249,0.25)';
+  ctx.fillRect(0,H*0.22,W,H*0.14);
+  ctx.strokeStyle='rgba(21,101,192,0.3)'; ctx.lineWidth=1; ctx.setLineDash([4,4]);
+  ctx.strokeRect(0,H*0.22,W,H*0.14); ctx.setLineDash([]);
+  // MORA line
+  ctx.strokeStyle='rgba(230,81,0,0.5)'; ctx.lineWidth=1.5; ctx.setLineDash([6,4]);
+  ctx.beginPath(); ctx.moveTo(0,H*0.42); ctx.lineTo(W,H*0.40); ctx.stroke(); ctx.setLineDash([]);
+  // Flight path
+  ctx.shadowColor='rgba(21,101,192,0.4)'; ctx.shadowBlur=6;
+  ctx.strokeStyle='#1565C0'; ctx.lineWidth=2.5;
+  ctx.beginPath();
+  for(let x=0;x<W;x+=4){const y=H*0.16+Math.sin(x/W*Math.PI)*H*0.06; x===0?ctx.moveTo(x,y):ctx.lineTo(x,y);}
+  ctx.stroke(); ctx.shadowBlur=0;
+  // Labels
+  ctx.fillStyle='#5C7A8F'; ctx.font='8px "DM Mono"';
+  ctx.fillText('FL350',4,H*0.14); ctx.fillStyle='rgba(230,81,0,0.8)'; ctx.fillText('MORA FL190',4,H*0.40);
+  ctx.fillStyle='rgba(21,101,192,0.7)'; ctx.fillText('Engelamiento FL100-160',4,H*0.30);
+}
+
+function drawIcing() {
+  const cv = $('icing-cv'); if(!cv) return;
+  const ctx = cv.getContext('2d');
+  const W=cv.width||600, H=cv.height||200;
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle='#F7FAFC'; ctx.fillRect(0,0,W,H);
+  ctx.strokeStyle='#E3EDF5'; ctx.lineWidth=1;
+  for(let x=0;x<W;x+=40){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
+  for(let y=0;y<H;y+=40){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+  const blobs=[
+    {x:W*.3,y:H*.4,r:90,c:'rgba(255,160,0,0.45)'},
+    {x:W*.45,y:H*.3,r:60,c:'rgba(230,50,50,0.4)'},
+    {x:W*.6,y:H*.5,r:75,c:'rgba(255,100,0,0.35)'},
+    {x:W*.2,y:H*.6,r:50,c:'rgba(21,101,192,0.25)'},
+    {x:W*.75,y:H*.35,r:45,c:'rgba(255,160,0,0.4)'},
+  ];
+  blobs.forEach(b=>{
+    const g=ctx.createRadialGradient(b.x,b.y,0,b.x,b.y,b.r);
+    g.addColorStop(0,b.c); g.addColorStop(1,'transparent');
+    ctx.fillStyle=g; ctx.beginPath(); ctx.arc(b.x,b.y,b.r,0,Math.PI*2); ctx.fill();
+  });
+  ctx.strokeStyle='#1565C0'; ctx.lineWidth=2.5; ctx.setLineDash([8,5]);
+  ctx.beginPath(); ctx.moveTo(W*.04,H*.78); ctx.lineTo(W*.96,H*.15); ctx.stroke(); ctx.setLineDash([]);
+  ctx.fillStyle='rgba(21,101,192,0.7)'; ctx.font='9px "DM Mono"';
+  const altEl=$('icingAlt'); ctx.fillText('ENGELAMIENTO — '+( altEl?altEl.value:'FL140'),6,14);
+}
+
+function drawTurb() {
+  const cv = $('turb-cv'); if(!cv) return;
+  const ctx = cv.getContext('2d');
+  const W=cv.width||600, H=cv.height||130;
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle='#F7FAFC'; ctx.fillRect(0,0,W,H);
+  const blobs=[
+    {x:W*.35,y:H*.3,r:95,c:'rgba(255,120,0,0.35)'},
+    {x:W*.5,y:H*.5,r:65,c:'rgba(230,50,50,0.4)'},
+    {x:W*.65,y:H*.4,r:50,c:'rgba(255,200,0,0.35)'},
+    {x:W*.15,y:H*.5,r:55,c:'rgba(46,125,50,0.25)'},
+  ];
+  blobs.forEach(b=>{
+    const g=ctx.createRadialGradient(b.x,b.y,0,b.x,b.y,b.r);
+    g.addColorStop(0,b.c); g.addColorStop(1,'transparent');
+    ctx.fillStyle=g; ctx.beginPath(); ctx.arc(b.x,b.y,b.r,0,Math.PI*2); ctx.fill();
+  });
+  ctx.strokeStyle='#1565C0'; ctx.lineWidth=2; ctx.setLineDash([8,5]);
+  ctx.beginPath(); ctx.moveTo(W*.04,H*.82); ctx.lineTo(W*.96,H*.15); ctx.stroke(); ctx.setLineDash([]);
+  ctx.fillStyle='rgba(21,101,192,0.6)'; ctx.font='9px "DM Mono"'; ctx.fillText('TURBULENCIA CAT — FL350',6,14);
+}
+
+function drawWinds() {
+  const cv = $('winds-cv'); if(!cv) return;
+  const ctx = cv.getContext('2d');
+  cv.width = cv.offsetWidth||900; const W=cv.width, H=180;
+  ctx.fillStyle='#F7FAFC'; ctx.fillRect(0,0,W,H);
+  const data = Array.from({length:28},(_,i)=>({spd:20+Math.sin(i/4)*32+Math.random()*18, dir:270+Math.sin(i/5)*45}));
+  // Heat strip
+  const g=ctx.createLinearGradient(0,0,W,0);
+  data.forEach((d,i)=>{
+    const v=Math.min(d.spd/120,1);
+    g.addColorStop(i/27,`hsl(${220-v*180},80%,${70-v*30}%)`);
+  });
+  ctx.fillStyle=g; ctx.fillRect(0,40,W,H-80);
+  // Arrows
+  ctx.strokeStyle='rgba(15,33,51,0.5)'; ctx.lineWidth=1.2;
+  data.forEach((d,i)=>{
+    const x=i/27*W, y=H/2;
+    const rad=(d.dir-90)*Math.PI/180;
+    const len=10+d.spd/9;
+    ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(x+Math.cos(rad)*len,y+Math.sin(rad)*len); ctx.stroke();
+  });
+  ctx.strokeStyle='#1565C0'; ctx.lineWidth=2;
+  ctx.beginPath();
+  data.forEach((d,i)=>{const x=i/27*W,y=H-18-(d.spd/120)*(H-40); i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);});
+  ctx.stroke();
+  ctx.fillStyle='#5C7A8F'; ctx.font='9px "DM Mono"';
+  ['KMIA','KSAV','KRDU','KDCA','KBWI','KJFK'].forEach((l,i)=>ctx.fillText(l,i/5*W+4,H-4));
+  ctx.fillText('VIENTOS EN ALTURA — FL350',6,14);
+}
+
+function drawWinds2() {
+  const cv = document.querySelector('#fp-briefing canvas'); // skip if no canvas
+}
+
+function drawPerfCurve() {
+  const cv = $('perf-cv'); if(!cv) return;
+  const ctx = cv.getContext('2d');
+  cv.width=cv.offsetWidth||600; const W=cv.width, H=160;
+  ctx.fillStyle='#F7FAFC'; ctx.fillRect(0,0,W,H);
+  ctx.strokeStyle='#D1DCE8'; ctx.lineWidth=1;
+  for(let i=0;i<=4;i++){const y=H-20-(i/4)*(H-28); ctx.beginPath();ctx.moveTo(28,y);ctx.lineTo(W-8,y);ctx.stroke();}
+  const flows=[400,420,445,480,520,580,640,710,800,910,1050];
+  const range=[1000,1100,1250,1380,1440,1470,1465,1420,1340,1200,1010];
+  ctx.strokeStyle='#E65100'; ctx.lineWidth=2;
+  ctx.beginPath(); flows.forEach((v,i)=>{const x=28+(i/10)*(W-36),y=H-20-(v/1200)*(H-28); i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);}); ctx.stroke();
+  ctx.strokeStyle='#1565C0'; ctx.lineWidth=2;
+  ctx.beginPath(); range.forEach((v,i)=>{const x=28+(i/10)*(W-36),y=H-20-(v/1600)*(H-28); i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);}); ctx.stroke();
+  const lx=28+(9/10)*(W-36);
+  ctx.strokeStyle='#2E7D32'; ctx.lineWidth=1.5; ctx.setLineDash([4,4]);
+  ctx.beginPath(); ctx.moveTo(lx,10); ctx.lineTo(lx,H-20); ctx.stroke(); ctx.setLineDash([]);
+  ctx.fillStyle='#2E7D32'; ctx.font='8px "DM Mono"'; ctx.fillText('LRC',lx+2,14);
+  ctx.fillStyle='#E65100'; ctx.fillText('Flujo Comb.',4,14);
+  ctx.fillStyle='#1565C0'; ctx.fillText('Alcance',W-60,14);
+}
+
+function drawTripFuel() {
+  const cv = $('trip-cv'); if(!cv) return;
+  const ctx = cv.getContext('2d');
+  cv.width=cv.offsetWidth||900; const W=cv.width, H=130;
+  ctx.fillStyle='#F7FAFC'; ctx.fillRect(0,0,W,H);
+  const pts=[4820,4680,4420,4280,3560,3270,3010,1580];
+  const g=ctx.createLinearGradient(0,0,0,H);
+  g.addColorStop(0,'rgba(21,101,192,0.25)'); g.addColorStop(1,'rgba(21,101,192,0.04)');
+  ctx.fillStyle=g;
+  ctx.beginPath(); ctx.moveTo(0,H);
+  pts.forEach((v,i)=>ctx.lineTo(i/7*W,H-v/5200*(H-18)));
+  ctx.lineTo(W,H); ctx.closePath(); ctx.fill();
+  ctx.strokeStyle='rgba(183,28,28,0.6)'; ctx.lineWidth=1.5; ctx.setLineDash([5,4]);
+  ctx.beginPath(); pts.forEach((_,i)=>i===0?ctx.moveTo(0,H-1200/5200*(H-18)):ctx.lineTo(i/7*W,H-1200/5200*(H-18)));
+  ctx.stroke(); ctx.setLineDash([]);
+  ctx.strokeStyle='#1565C0'; ctx.lineWidth=2.5;
+  ctx.beginPath(); pts.forEach((v,i)=>i===0?ctx.moveTo(0,H-v/5200*(H-18)):ctx.lineTo(i/7*W,H-v/5200*(H-18))); ctx.stroke();
+  pts.forEach((v,i)=>{ctx.fillStyle='#1565C0';ctx.beginPath();ctx.arc(i/7*W,H-v/5200*(H-18),3,0,Math.PI*2);ctx.fill();});
+  ctx.fillStyle='#5C7A8F'; ctx.font='8px "DM Mono"';
+  WP_DATA.forEach((w,i)=>ctx.fillText(w.id,i/7*(W-24)+2,H-4));
+}
+
+function drawSynVis() {
+  const cv = $('synvis-canvas'); if(!cv) return;
+  const ctx = cv.getContext('2d');
+  cv.width=cv.offsetWidth||700; cv.height=380;
+  const W=cv.width,H=380,hor=H*0.44;
+  // Sky — light gradient for daytime
+  const sky=ctx.createLinearGradient(0,0,0,hor);
+  sky.addColorStop(0,'#BBDEFB'); sky.addColorStop(1,'#E3F2FD');
+  ctx.fillStyle=sky; ctx.fillRect(0,0,W,hor);
+  // Horizon haze
+  const haze=ctx.createLinearGradient(0,hor-30,0,hor+20);
+  haze.addColorStop(0,'rgba(255,255,255,0)'); haze.addColorStop(1,'rgba(200,220,240,0.6)');
+  ctx.fillStyle=haze; ctx.fillRect(0,hor-30,W,50);
+  // Ground
+  const gnd=ctx.createLinearGradient(0,hor,0,H);
+  gnd.addColorStop(0,'#4CAF50'); gnd.addColorStop(0.3,'#388E3C'); gnd.addColorStop(1,'#1B5E20');
+  ctx.fillStyle=gnd; ctx.fillRect(0,hor,W,H-hor);
+  // Terrain bumps
+  ctx.fillStyle='rgba(46,125,50,0.9)';
+  ctx.beginPath(); ctx.moveTo(0,H);
+  const terr=[0,0.03,0.08,0.15,0.1,0.2,0.12,0.18,0.1,0.06,0.08,0.12,0.07,0.04,0.02,0];
+  terr.forEach((t,i)=>ctx.lineTo(i/(terr.length-1)*W,hor+(H-hor)*(1-t*1.1)));
+  ctx.lineTo(W,H); ctx.closePath(); ctx.fill();
+  // Horizon line
+  ctx.strokeStyle='rgba(21,101,192,0.6)'; ctx.lineWidth=1.5;
+  ctx.beginPath(); ctx.moveTo(0,hor); ctx.lineTo(W,hor); ctx.stroke();
+  // FPV
+  const cx=W/2,cy=hor-12;
+  ctx.strokeStyle='rgba(21,101,192,0.9)'; ctx.lineWidth=2;
+  ctx.beginPath(); ctx.arc(cx,cy,10,0,Math.PI*2); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx-22,cy); ctx.lineTo(cx-10,cy); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx+10,cy); ctx.lineTo(cx+22,cy); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(cx,cy+10); ctx.lineTo(cx,cy+19); ctx.stroke();
+  // Pitch ladder
+  ctx.strokeStyle='rgba(21,101,192,0.45)'; ctx.lineWidth=1;
+  ctx.fillStyle='rgba(21,101,192,0.55)'; ctx.font='8px "DM Mono"'; ctx.textAlign='left';
+  for(let p=-3;p<=3;p++){
+    if(p===0) continue;
+    const y=hor-p*20; const len=p%2===0?55:38;
+    ctx.beginPath(); ctx.moveTo(cx-len,y); ctx.lineTo(cx-10,y); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(cx+10,y); ctx.lineTo(cx+len,y); ctx.stroke();
+    if(p%2===0){ctx.fillText(String(p*5),cx-len-22,y+3); ctx.fillText(String(p*5),cx+len+4,y+3);}
+  }
+  // Traffic
+  ctx.fillStyle='rgba(230,81,0,0.9)';
+  ctx.beginPath(); ctx.moveTo(W*.64,hor-38); ctx.lineTo(W*.64-8,hor-26); ctx.lineTo(W*.64+8,hor-26); ctx.closePath(); ctx.fill();
+  ctx.fillStyle='rgba(230,81,0,0.75)'; ctx.font='8px "DM Mono"';
+  ctx.textAlign='center'; ctx.fillText('DAL441 +2000 / 12.3nm',W*.64,hor-50); ctx.textAlign='left';
+  // WP diamond
+  ctx.strokeStyle='rgba(21,101,192,0.8)'; ctx.lineWidth=1.5;
+  const wpx=W*.52,wpy=hor-55;
+  ctx.beginPath(); ctx.moveTo(wpx,wpy-10); ctx.lineTo(wpx+8,wpy); ctx.lineTo(wpx,wpy+10); ctx.lineTo(wpx-8,wpy); ctx.closePath(); ctx.stroke();
+  ctx.fillStyle='rgba(21,101,192,0.7)'; ctx.font='8px "DM Mono"'; ctx.fillText('ORF 42nm',wpx-20,wpy-16);
+  // HUD panels
+  ctx.fillStyle='rgba(255,255,255,0.7)'; ctx.strokeStyle='rgba(21,101,192,0.3)'; ctx.lineWidth=1;
+  ctx.fillRect(W-72,0,72,H); ctx.strokeRect(W-72,0,72,H);
+  ctx.fillRect(0,0,62,H); ctx.strokeRect(0,0,62,H);
+  ctx.fillStyle='#1565C0'; ctx.font='bold 13px "Syne"'; ctx.textAlign='center';
+  ctx.fillText('35000',W-36,H/2+5); ctx.fillStyle='#5C7A8F'; ctx.font='8px "DM Mono"'; ctx.fillText('ALT',W-36,H/2+18);
+  ctx.fillStyle='#E65100'; ctx.font='bold 13px "Syne"'; ctx.fillText('412',31,H/2+5);
+  ctx.fillStyle='#5C7A8F'; ctx.font='8px "DM Mono"'; ctx.fillText('GS',31,H/2+18);
+  ctx.textAlign='left';
+}
+
+function drawApt3D() {
+  const cv = $('apt3d'); if(!cv) return;
+  const ctx = cv.getContext('2d');
+  cv.width=cv.offsetWidth||800; cv.height=360;
+  const W=cv.width,H=360;
+  ctx.fillStyle='#E8EEF4'; ctx.fillRect(0,0,W,H);
+  ctx.fillStyle='#C5D5E0'; ctx.fillRect(0,H*.5,W,H*.5);
+  // Runways
+  [[W*.1,H*.55,W*.9,H*.55,22],[W*.3,H*.38,W*.7,H*.75,18]].forEach(([sx,sy,ex,ey,w])=>{
+    ctx.strokeStyle='#8A9BB0'; ctx.lineWidth=w;
+    ctx.beginPath(); ctx.moveTo(sx,sy); ctx.lineTo(ex,ey); ctx.stroke();
+    ctx.strokeStyle='rgba(255,255,255,0.6)'; ctx.lineWidth=2; ctx.setLineDash([20,20]);
+    ctx.beginPath(); ctx.moveTo(sx,sy); ctx.lineTo(ex,ey); ctx.stroke(); ctx.setLineDash([]);
+  });
+  // Terminal
+  ctx.fillStyle='#B0C4D8'; ctx.strokeStyle='#7A9BB5'; ctx.lineWidth=1.5;
+  ctx.beginPath(); ctx.moveTo(W*.35,H*.2+50); ctx.lineTo(W*.35+200,H*.2+50); ctx.lineTo(W*.35+220,H*.2+30);
+  ctx.lineTo(W*.35+220,H*.2); ctx.lineTo(W*.35+20,H*.2); ctx.lineTo(W*.35,H*.2+20); ctx.closePath();
+  ctx.fill(); ctx.stroke();
+  for(let wx=W*.35+18;wx<W*.35+200;wx+=16){
+    ctx.fillStyle='rgba(255,220,140,0.5)'; ctx.fillRect(wx,H*.2+7,10,14);
+  }
+  // Lights
+  for(let i=0;i<W;i+=30){
+    ctx.fillStyle='rgba(46,125,50,0.7)'; ctx.beginPath(); ctx.arc(i,H*.55-11,2,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='rgba(230,81,0,0.6)'; ctx.beginPath(); ctx.arc(i,H*.55+11,2,0,Math.PI*2); ctx.fill();
+  }
+  ctx.fillStyle='#3D5A72'; ctx.font='bold 11px "DM Sans"'; ctx.fillText('KJFK — JOHN F. KENNEDY INTERNATIONAL — VISTA 3D',12,20);
+  ctx.fillStyle='#7A9BB5'; ctx.font='9px "DM Mono"'; ctx.fillText('ELEV 13 FT · N40°38.4\' W073°46.8\' · 4 PISTAS · CLASE B',12,36);
+}
+
+// ══ CONTENT RENDERS ══
+function renderTraffic() {
+  const el=$('traffic-list'); if(!el) return;
+  const ac=[
+    {call:'DAL441',type:'B738',alt:'FL370',dist:'12.3nm',vert:'+200'},
+    {call:'UAL892',type:'B77W',alt:'FL330',dist:'18.7nm',vert:'-100'},
+    {call:'AAL203',type:'A321',alt:'FL350',dist:'6.1nm',vert:'LVL'},
+    {call:'N441BX',type:'CJ4',alt:'FL310',dist:'22.4nm',vert:'+400'},
+  ];
+  el.innerHTML=ac.map(a=>`
+    <div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--bg2);font-size:0.73rem;">
+      <span style="font-weight:700;color:var(--sky);min-width:58px;">${a.call}</span>
+      <span style="color:var(--text3);font-family:'DM Mono',monospace;font-size:0.62rem;min-width:34px;">${a.type}</span>
+      <span style="color:var(--amber);font-family:'DM Mono',monospace;font-size:0.65rem;">${a.alt}</span>
+      <span style="margin-left:auto;color:var(--text2);font-family:'DM Mono',monospace;font-size:0.62rem;">${a.dist}</span>
+      <span style="font-family:'DM Mono',monospace;font-size:0.62rem;color:${a.vert.startsWith('+')? 'var(--green)':a.vert==='LVL'?'var(--text3)':'var(--red)'};">${a.vert}</span>
+    </div>`).join('');
+}
+
+function renderWPs() {
+  const el=$('wpList'); if(!el) return;
+  const typeClass={apt:'tp-apt',vor:'tp-vor',fix:'tp-fix',sid:'tp-sid'};
+  el.innerHTML=WP_DATA.map(w=>`
+    <div class="wp-row">
+      <span class="wp-num">${String(w.n).padStart(2,'0')}</span>
+      <span class="wp-id">${w.id}</span>
+      <span class="wp-name">${w.name}</span>
+      <span class="wp-alt">${w.alt}</span>
+      <span class="wp-num2">${w.dist}nm</span>
+      <span class="wp-num2">${w.ete}</span>
+      <span class="wp-num2" style="color:${w.n===8?'var(--green)':'var(--text2)'};">${w.fuel}</span>
+    </div>`).join('');
+}
+
+function renderNavlog() {
+  const el=$('navlogTable'); if(!el) return;
+  el.innerHTML=`<thead><tr><th>#</th><th>IDENT</th><th>NOMBRE</th><th>FREQ</th><th>CRM</th><th>ALT</th><th>TAS</th><th>GS</th><th>DIST</th><th>ETE</th><th>COMB.</th></tr></thead><tbody>
+  ${WP_DATA.map(w=>`<tr><td class="tm">${w.n}</td><td class="tc">${w.id}</td><td>${w.name}</td>
+  <td class="tm ta">${w.type==='vor'?'115.'+Math.floor(Math.random()*9):'-'}</td>
+  <td class="tm">${Math.floor(10+Math.random()*350)}°</td><td class="tm ta">${w.alt}</td>
+  <td class="tm">390</td><td class="tm">412</td><td class="tm">${w.dist}nm</td>
+  <td class="tm">${w.ete}</td><td class="tm tg">${w.fuel}</td></tr>`).join('')}</tbody>`;
+}
+
+function renderWinds2() {
+  const el=$('windsTable'); if(!el) return;
+  const stations=['KMIA','KSAV','KRDU','KDCA','KBWI','KJFK'];
+  const alts=['FL180','FL240','FL300','FL340','FL390'];
+  el.innerHTML=`<table class="dtable"><thead><tr><th>ALT</th>${stations.map(s=>`<th>${s}</th>`).join('')}</tr></thead><tbody>
+  ${alts.map(a=>`<tr><td class="tm ta">${a}</td>${stations.map(()=>`<td class="tm">${Math.floor(Math.random()*36)*10}°/${Math.floor(20+Math.random()*80)}kt</td>`).join('')}</tr>`).join('')}</tbody></table>`;
+}
+
+function renderPlates() {
+  const el=$('platGrid'); if(!el) return;
+  const plates=[
+    {name:'ILS 31L',apt:'KJFK',cat:'ILS CAT III',minima:'DH 50ft'},
+    {name:'ILS 31R',apt:'KJFK',cat:'ILS CAT I',minima:'DH 200ft'},
+    {name:'RNAV 22L',apt:'KJFK',cat:'RNAV(GPS)',minima:'LPV 250ft'},
+    {name:'VOR 13R',apt:'KJFK',cat:'VOR',minima:'MDA 540ft'},
+    {name:'WINCO3 DEP',apt:'KMIA',cat:'SID',minima:'—'},
+    {name:'LENDY6 ARR',apt:'KJFK',cat:'STAR',minima:'—'},
+    {name:'DIAG. APT',apt:'KJFK',cat:'APD',minima:'—'},
+    {name:'DIAG. APT',apt:'KMIA',cat:'APD',minima:'—'},
+  ];
+  el.innerHTML=plates.map(p=>`
+    <div class="card" style="cursor:pointer;padding:0;overflow:hidden;">
+      <div style="padding:10px 14px;border-bottom:1px solid var(--border);background:var(--surface2);">
+        <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:0.85rem;color:var(--sky);">${p.name}</div>
+        <div style="font-family:'DM Mono',monospace;font-size:0.62rem;color:var(--text3);">${p.apt} · ${p.cat}</div>
+      </div>
+      <div style="padding:12px;">
+        <canvas width="280" height="110" class="plate-mini" data-name="${p.name}" style="width:100%;border-radius:5px;border:1px solid var(--border);display:block;background:var(--bg2);"></canvas>
+        <div style="display:flex;justify-content:space-between;margin-top:8px;font-family:'DM Mono',monospace;font-size:0.65rem;">
+          <span style="color:var(--text3);">MÍNIMA</span>
+          <span style="color:var(--amber);font-weight:600;">${p.minima}</span>
+        </div>
+        <div style="display:flex;gap:6px;margin-top:8px;">
+          <button class="btn btn-outline btn-sm" style="flex:1;">📋 Ver</button>
+          <button class="btn btn-ghost btn-sm">📥</button>
+        </div>
+      </div>
+    </div>`).join('');
+  el.querySelectorAll('.plate-mini').forEach(cv=>{
+    const ctx=cv.getContext('2d');
+    ctx.fillStyle='#F0F7EE'; ctx.fillRect(0,0,cv.width,cv.height);
+    ctx.strokeStyle='rgba(21,101,192,0.5)'; ctx.lineWidth=1.5;
+    ctx.beginPath(); ctx.moveTo(cv.width*.78,cv.height*.08); ctx.lineTo(cv.width*.48,cv.height*.5); ctx.lineTo(cv.width*.18,cv.height*.82); ctx.stroke();
+    ctx.strokeStyle='rgba(230,81,0,0.35)'; ctx.lineWidth=1; ctx.setLineDash([5,4]);
+    ctx.beginPath(); ctx.arc(cv.width*.5,cv.height*.5,28,0,Math.PI*2); ctx.stroke(); ctx.setLineDash([]);
+    ctx.strokeStyle='rgba(46,125,50,0.6)'; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.moveTo(cv.width*.08,cv.height*.9); ctx.lineTo(cv.width*.92,cv.height*.9); ctx.stroke();
+    ctx.fillStyle='rgba(21,101,192,0.7)'; ctx.font='8px "DM Mono"'; ctx.fillText(cv.dataset.name,5,14);
+  });
+}
+
+function renderRunways() {
+  const el=$('runwayList'); if(!el) return;
+  const rwys=[
+    {id:'13L/31R',len:'14,511',ils:'13L/31R'},{id:'13R/31L',len:'14,572',ils:'13R/31L'},
+    {id:'04L/22R',len:'8,400',ils:'22R'},{id:'04R/22L',len:'8,600',ils:'22L'},
+  ];
+  el.innerHTML=rwys.map(r=>`
+    <div style="display:flex;align-items:center;gap:8px;margin:5px 0;">
+      <span class="rwy-pill">${r.id}</span>
+      <span style="font-family:'DM Mono',monospace;font-size:0.63rem;color:var(--text2);">${r.len} ft</span>
+      <span style="font-family:'DM Mono',monospace;font-size:0.63rem;color:var(--green);margin-left:auto;">ILS ${r.ils}</span>
+    </div>`).join('');
+}
+
+function renderFreqs() {
+  const el=$('freqList'); if(!el) return;
+  const freqs=[{n:'ATIS',f:'127.450'},{n:'Clearance',f:'135.050'},{n:'Ground',f:'121.900'},{n:'Torre',f:'119.100'},{n:'Approach',f:'132.400'},{n:'Salida',f:'119.900'}];
+  el.innerHTML=freqs.map(f=>`
+    <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--bg2);font-size:0.73rem;">
+      <span style="color:var(--text2);">${f.n}</span>
+      <span style="font-family:'Syne',sans-serif;font-weight:700;color:var(--sky);font-size:0.8rem;">${f.f}</span>
+    </div>`).join('');
+}
+
+function renderFBOs() {
+  const el=$('fboList'); if(!el) return;
+  const fbos=[
+    {name:'Signature Flight Support',apt:'KJFK',price:'$6.42/gal',tags:['Jet-A','GPU','Deicing','Lounge']},
+    {name:'Million Air JFK',apt:'KJFK',price:'$6.18/gal',tags:['Jet-A','GPU','Wi-Fi']},
+    {name:'Sheltair JFK',apt:'KJFK',price:'$5.98/gal',tags:['Jet-A','Avgas','Hangar']},
+    {name:'Jet Aviation EWR',apt:'KEWR',price:'$6.05/gal',tags:['Jet-A','GPU','Deicing']},
+  ];
+  el.innerHTML=fbos.map(f=>`
+    <div class="fbo-card">
+      <div style="font-weight:600;font-size:0.85rem;">${f.name}</div>
+      <div style="font-family:'DM Mono',monospace;font-size:0.62rem;color:var(--text3);margin-top:2px;">${f.apt}</div>
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:1.2rem;color:var(--green);margin:8px 0 4px;">${f.price}</div>
+      <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:6px;">${f.tags.map(t=>`<span style="font-size:0.6rem;padding:2px 7px;border-radius:4px;background:var(--sky-light);border:1px solid #BBDEFB;color:var(--sky);">${t}</span>`).join('')}</div>
+      <div style="display:flex;gap:6px;margin-top:10px;">
+        <button class="btn btn-primary btn-sm" style="flex:1;">Ordenar</button>
+        <button class="btn btn-outline btn-sm">Release</button>
+      </div>
+    </div>`).join('');
+}
+
+function renderFuelPrices() {
+  const el=$('fuelPriceList'); if(!el) return;
+  const prices=[
+    {apt:'KJFK',fbo:'Signature',price:6.42,chg:+0.05},{apt:'KJFK',fbo:'Million Air',price:6.18,chg:-0.12},
+    {apt:'KEWR',fbo:'Jet Aviation',price:6.05,chg:-0.08},{apt:'KLGA',fbo:'TAC Air',price:5.89,chg:+0.03},
+    {apt:'KBOS',fbo:'Signature',price:6.31,chg:+0.15},{apt:'KPHL',fbo:'Jet Aviation',price:5.77,chg:-0.04},
+  ];
+  el.innerHTML=`<table class="dtable"><thead><tr><th>APT</th><th>FBO</th><th>$/GAL</th><th>CAMBIO</th><th>EST. COSTO</th><th></th></tr></thead><tbody>
+  ${prices.map(p=>`<tr><td class="tc">${p.apt}</td><td>${p.fbo}</td>
+  <td style="font-weight:700;color:var(--green);">$${p.price.toFixed(2)}</td>
+  <td class="tm" style="color:${p.chg>0?'var(--red)':'var(--green)'};">${p.chg>0?'+':''}${p.chg.toFixed(2)}</td>
+  <td class="tm">$${(p.price*700).toLocaleString()}</td>
+  <td><button class="btn btn-primary btn-sm">Ordenar</button></td></tr>`).join('')}</tbody></table>`;
+}
+
+function renderSynTraffic() {
+  const el=$('synTraffic'); if(!el) return;
+  const ac=[{call:'DAL441',type:'B738',rel:'+2000',dist:'12.3nm'},{call:'UAL892',type:'B77W',rel:'-2000',dist:'18.7nm'},{call:'AAL203',type:'A321',rel:'0',dist:'6.1nm'}];
+  el.innerHTML=ac.map(a=>`
+    <div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--bg2);">
+      <span style="font-size:1rem;">✈️</span>
+      <span style="font-weight:600;font-size:0.78rem;color:var(--sky);flex:1;">${a.call}</span>
+      <span style="font-family:'DM Mono',monospace;font-size:0.62rem;color:var(--text3);">${a.type}</span>
+      <span style="font-family:'DM Mono',monospace;font-size:0.65rem;color:${a.rel.startsWith('+')? 'var(--green)':a.rel==='0'?'var(--text3)':'var(--red)'};">${a.rel}ft</span>
+      <span style="font-family:'DM Mono',monospace;font-size:0.62rem;color:var(--text2);">${a.dist}</span>
+    </div>`).join('');
+}
+
+// ══ CHECKLIST ══
+const CL_DATA = {
+  'Pre-Vuelo':[{l:'Inspección Pre-Vuelo',v:'COMPLETO'},{l:'Documentos',v:'A BORDO'},{l:'Combustible',v:'4820 LB'},{l:'Aceite',v:'REVISADO'},{l:'Superficies',v:'LIBRE Y CORRECTO'}],
+  'Antes Arranque':[{l:'Cinturones y Asientos',v:'ASEGURADO'},{l:'Aviónica Principal',v:'ON'},{l:'Plan de Vuelo',v:'VERIFICADO'},{l:'Freno Parqueo',v:'PUESTO'}],
+  'Despegue':[{l:'Flaps',v:'8°'},{l:'Trim',v:'3° NU'},{l:'Transpondedor',v:'ALT/4721'},{l:'Luces',v:'TODAS ON'},{l:'Briefing Tripulación',v:'COMPLETO'}],
+  'Crucero':[{l:'Altitud',v:'FL350 ✓'},{l:'Automotriz',v:'LRC'},{l:'TCAS',v:'TA/RA'},{l:'SELCAL',v:'ARMADO'}],
+  'Aterrizaje':[{l:'ATIS',v:'INFO LIMA'},{l:'Briefing Approach',v:'ILS 31L'},{l:'Luces Aterrizaje',v:'ON'},{l:'Flaps',v:'30°'},{l:'Tren',v:'ABAJO 3 VERDE'}],
+};
+let curPhase='Pre-Vuelo', checked={};
+let clChart=null;
+
+function renderCL() {
+  const phases=$('clPhases'),items=$('clItems'),prog=$('clProg');
+  if(!phases||!items) return;
+  phases.innerHTML=Object.keys(CL_DATA).map(p=>`<button class="btn btn-sm ${p===curPhase?'btn-primary':'btn-outline'}" onclick="setCLPhase('${p}')">${p}</button>`).join('');
+  const list=CL_DATA[curPhase];
+  items.innerHTML=list.map((it,i)=>`
+    <div class="cl-item${checked[curPhase+i]?' done':''}" onclick="toggleCL('${curPhase+i}',${i})">
+      <div class="cl-check">${checked[curPhase+i]?'✓':''}</div>
+      <div class="cl-lbl">${it.l}</div>
+      <div class="cl-val">${it.v}</div>
+    </div>`).join('');
+  const done=list.filter((_,i)=>checked[curPhase+i]).length;
+  if(prog) prog.innerHTML=`
+    <div style="display:flex;justify-content:space-between;font-size:0.75rem;margin-bottom:8px;">
+      <span>${done}/${list.length} ítems</span>
+      <span style="color:${done===list.length?'var(--green)':'var(--amber)'};">${done===list.length?'✅ FASE COMPLETA':'EN PROGRESO'}</span>
+    </div>
+    <div class="fuel-bar"><div class="fuel-fill" style="width:${done/list.length*100}%;background:linear-gradient(90deg,${done===list.length?'#2E7D32':'#1565C0'},${done===list.length?'#66BB6A':'#42A5F5'});"></div></div>`;
+  drawCLChart();
+}
+function setCLPhase(p){curPhase=p; renderCL();}
+function toggleCL(key,i){checked[key]=!checked[key]; renderCL();}
+function resetCL(){checked={}; renderCL();}
+
+function drawCLChart() {
+  const cv=$('cl-chart'); if(!cv) return;
+  const phases=Object.keys(CL_DATA);
+  const data=phases.map(p=>{ const l=CL_DATA[p]; return Math.round(l.filter((_,i)=>checked[p+i]).length/l.length*100); });
+  if(clChart) clChart.destroy();
+  clChart=new Chart(cv,{
+    type:'bar',
+    data:{
+      labels:phases.map(p=>p.length>7?p.slice(0,7)+'…':p),
+      datasets:[{data,backgroundColor:data.map(v=>v===100?'rgba(46,125,50,0.7)':'rgba(21,101,192,0.6)'),borderColor:data.map(v=>v===100?'#2E7D32':'#1565C0'),borderWidth:1.5,borderRadius:5}]
+    },
+    options:{plugins:{legend:{display:false}},scales:{y:{min:0,max:100,ticks:{callback:v=>v+'%',font:{family:'DM Mono',size:10}},grid:{color:'#E3EDF5'}},x:{ticks:{font:{family:'DM Mono',size:9}},grid:{display:false}}}}
+  });
+}
+
+function renderLogbook() {
+  const el=$('logTable'); if(!el) return;
+  const flights=[
+    {d:'2025-03-14',f:'KMIA',t:'KJFK',ac:'N7843A',type:'Citation CJ4',tot:'2.1',pic:'2.1',inst:'0.4',noc:'0.0',app:'1'},
+    {d:'2025-03-12',f:'KORD',t:'KMIA',ac:'N7843A',type:'Citation CJ4',tot:'2.8',pic:'2.8',inst:'1.2',noc:'0.6',app:'2'},
+    {d:'2025-03-10',f:'KLAX',t:'KORD',ac:'N7843A',type:'Citation CJ4',tot:'3.2',pic:'3.2',inst:'0.8',noc:'1.4',app:'1'},
+    {d:'2025-03-08',f:'KSFO',t:'KLAX',ac:'N1234K',type:'C172',tot:'1.3',pic:'1.3',inst:'0.0',noc:'0.0',app:'0'},
+    {d:'2025-03-05',f:'KLAS',t:'KSFO',ac:'N7843A',type:'Citation CJ4',tot:'1.1',pic:'1.1',inst:'0.5',noc:'0.0',app:'2'},
+  ];
+  el.innerHTML=`<thead><tr><th>FECHA</th><th>DESDE</th><th>HASTA</th><th>AERONAVE</th><th>TIPO</th><th>TOTAL</th><th>PIC</th><th>INST</th><th>NOCHE</th><th>APR</th></tr></thead><tbody>
+  ${flights.map(f=>`<tr><td class="tm">${f.d}</td><td class="tc">${f.f}</td><td class="tc">${f.t}</td><td class="tm ta">${f.ac}</td><td>${f.type}</td><td class="tg tm">${f.tot}</td><td class="tm">${f.pic}</td><td class="tm">${f.inst}</td><td class="tm">${f.noc}</td><td class="tm">${f.app}</td></tr>`).join('')}</tbody>`;
+}
+
+function renderAvionics() {
+  const el=$('avList'); if(!el) return;
+  const devs=[{n:'Garmin G5000',s:'Conectado',sig:'98%'},{n:'SiriusXM WX',s:'Conectado',sig:'94%'},{n:'ADS-B In',s:'Activo',sig:'100%'},{n:'ARINC 429',s:'Activo',sig:'VIVO'}];
+  el.innerHTML=devs.map(d=>`
+    <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--bg2);">
+      <div class="live-dot" style="flex-shrink:0;"></div>
+      <div style="flex:1;font-size:0.8rem;font-weight:500;">${d.n}</div>
+      <div style="font-family:'DM Mono',monospace;font-size:0.65rem;color:var(--green);">${d.sig}</div>
+    </div>`).join('');
+}
+
+// ══ INIT ══
+window.addEventListener('load', () => {
+  renderWxStrip();
+  initPage('dashboard');
+});
+
+window.addEventListener('resize', () => {
+  if($('page-dashboard').classList.contains('active')) drawProfile();
+  if($('page-weather').classList.contains('active')) { drawIcing(); drawTurb(); drawWinds(); }
+  if($('page-synvis').classList.contains('active')) drawSynVis();
+  if($('page-performance').classList.contains('active')) drawPerfCurve();
+  if($('page-fuel').classList.contains('active')) drawTripFuel();
+  // Invalidate leaflet maps
+  [mapMain,mapFull,mapWx,mapApt].forEach(m=>{ if(m) m.invalidateSize(); });
+});
+</script>
+</body>
+</html>
