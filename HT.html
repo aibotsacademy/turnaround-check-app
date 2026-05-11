@@ -571,11 +571,32 @@
             }
 
             // Sort newest first by timestamp
-            const sorted = [...filtered].sort((a, b) => {
-                const da = a.timestamp ? new Date(a.timestamp) : 0;
-                const db = b.timestamp ? new Date(b.timestamp) : 0;
-                return db - da;
-            });
+    const sorted = [...filtered].sort((a, b) => {
+    const parsear = (r) => {
+        // Intentar timestamp ISO primero
+        if (r.timestamp) {
+            const d = new Date(r.timestamp);
+            if (!isNaN(d.getTime())) return d;
+        }
+        // Fallback: fechaCreacion "04/12/2026" = MM/DD/YYYY + horaCreacion "11:55"
+        try {
+            const f = (r.fechaCreacion || '').split('/');
+            const h = (r.horaCreacion  || '00:00').split(':');
+            if (f.length === 3) {
+                return new Date(
+                    parseInt(f[2]),      // año  → 2026
+                    parseInt(f[0]) - 1,  // mes  → 04 - 1 = 3 (abril) ← corregido
+                    parseInt(f[1]),      // dia  → 12
+                    parseInt(h[0]) || 0,
+                    parseInt(h[1]) || 0
+                );
+            }
+        } catch(e) {}
+        return new Date(0);
+    };
+
+    return parsear(b) - parsear(a); // descendente
+});
 
             list.innerHTML = sorted.map((r, i) => buildCard(r, i)).join('');
         }
