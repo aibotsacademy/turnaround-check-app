@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>Mi Historial — Turnaround Check</title>
+<title>Mi Historial — Turnaround Check VF-12-7-26</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Syne:wght@400;500;600;700;800&display=swap');
@@ -289,6 +289,7 @@ body{font-family:'Syne',sans-serif;background:#050816;color:#e2e8f0;min-height:1
         <button class="pill" onclick="setFilter('Completado',this)">Completados</button>
         <button class="pill" onclick="setFilter('En Proceso',this)">En Proceso</button>
         <button class="pill" onclick="setFilter('Cancelado',this)">Cancelados</button>
+      <button class="pill" id="scopePill" onclick="toggleScope()" style="margin-left:auto;border-color:rgba(139,92,246,.3);color:#c4b5fd">📅 Hoy</button>
       </div>
       <input class="search-bar" id="searchBar" placeholder="🔍 Buscar vuelo, aerolínea, posición..." oninput="renderReports()">
       <div id="reportsList">
@@ -387,10 +388,14 @@ let allSeguridad   = [];
 let allCancelados  = [];
 let filterStatus   = 'all';
 let autoTimer      = null;
-
+let histScope = 'today';  
+let loading   = false;
 // Modal state
 let modalReport     = null;   // report currently targeted by modal
 let delReasonVal    = '';
+
+
+
 
 // ── AUTH ─────────────────────────────────────────────────────────────────────
 (()=>{
@@ -424,33 +429,63 @@ let delReasonVal    = '';
 })();
 
 // ── LOAD ─────────────────────────────────────────────────────────────────────
-function load(manual=false){
-  if(manual){
-    const rb=document.getElementById('refreshBtn');
+// v2.2: UNA sola llamada getAll (antes eran 5 en paralelo → saturaba GAS)
+
+
+function load(manual = false) {
+  if (loading) return;           // no apilar requests
+  loading = true;
+  if (manual) {
+    const rb = document.getElementById('refreshBtn');
     rb.classList.add('spin');
-    setTimeout(()=>rb.classList.remove('spin'),700);
+    setTimeout(() => rb.classList.remove('spin'), 700);
     toast('↻ Actualizando…');
   }
-  jsonp('getHistory',   d=>{ allReports=parseReports(d.reports||[]); renderReports(); updateStats(); checkInProgress(); });
-  jsonp('getFacturables',d=>{ allFacturables=d.rows||[];  renderFacturables(); });
-  jsonp('getIncidentes', d=>{ allIncidentes=d.rows||[];   renderIncidentes(); });
-  jsonp('getSeguridad',  d=>{ allSeguridad=d.rows||[];    renderSeguridad(); });
-  jsonp('getCancelados', d=>{ allCancelados=d.rows||[];   renderCancelados(); });
+  jsonpRetry('getAll', { scope: histScope }, d => {
+    loading = false;
+    allReports     = parseReports(d.reports || []);
+    allFacturables = d.facturables || [];
+    allIncidentes  = d.incidentes  || [];
+    allSeguridad   = d.seguridad   || [];
+    allCancelados  = d.cancelados  || [];
+    renderReports(); updateStats(); checkInProgress();
+    renderFacturables(); renderIncidentes(); renderSeguridad(); renderCancelados();
+  }, () => { loading = false; });
 }
 
-function jsonp(action, cb){
-  const name = 'cb_'+action+'_'+Date.now();
-  const url  = `${SCRIPT_URL}?action=${action}&inspector=${encodeURIComponent(U.username)}&callback=${name}`;
-  window[name] = function(data){
-    delete window[name];
-    const s=document.getElementById('_sc_'+action); if(s)s.remove();
-    if(data&&data.success) cb(data);
+// JSONP con reintento + backoff exponencial (2 reintentos: ~1.5s y ~3.5s)
+function jsonpRetry(action, extra, cb, onFail, attempt = 0) {
+  const name = 'cb_' + action + '_' + Date.now() + '_' + Math.floor(Math.random() * 1e5);
+  let url = `${SCRIPT_URL}?action=${action}&inspector=${encodeURIComponent(U.username)}&callback=${name}`;
+  for (const k in (extra || {})) url += `&${k}=${encodeURIComponent(extra[k])}`;
+
+  let settled = false;
+  const s = document.createElement('script');
+
+  function cleanup() { delete window[name]; s.remove(); clearTimeout(to); }
+  function retry(msg) {
+    if (attempt < 2) {
+      const delay = 1200 * Math.pow(2, attempt) + Math.random() * 800; // jitter anti-estampida
+      setTimeout(() => jsonpRetry(action, extra, cb, onFail, attempt + 1), delay);
+    } else {
+      toast(msg || '⚠ No se pudo cargar. Toca ↻ para reintentar', true);
+      if (onFail) onFail();
+    }
+  }
+
+  window[name] = function (data) {
+    if (settled) return; settled = true; cleanup();
+    if (data && data.success) cb(data);
+    else retry(data && data.message ? '⚠ ' + data.message : null);
   };
-  const s=document.createElement('script');
-  s.id='_sc_'+action; s.src=url;
-  s.onerror=()=>{ delete window[name]; s.remove(); };
+
+  s.src = url;
+  s.onerror = () => { if (!settled) { settled = true; cleanup(); retry('⚠ Sin conexión con el servidor'); } };
   document.body.appendChild(s);
-  setTimeout(()=>{ if(window[name]){ delete window[name]; const e=document.getElementById('_sc_'+action); if(e)e.remove(); } },14000);
+
+  const to = setTimeout(() => {
+    if (!settled) { settled = true; cleanup(); retry('⚠ El servidor tardó demasiado'); }
+  }, 15000);
 }
 
 function parseReports(rows){
@@ -496,6 +531,15 @@ function setFilter(f,el){
   document.querySelectorAll('.pill').forEach(p=>p.classList.remove('active'));
   el.classList.add('active');
   renderReports();
+}
+  function toggleScope() {
+  histScope = (histScope === 'today') ? 'all' : 'today';
+  const p = document.getElementById('scopePill');
+  p.textContent = histScope === 'today' ? '📅 Hoy' : '🗂️ Todo';
+  allReports = []; allFacturables = []; allIncidentes = []; allSeguridad = []; allCancelados = [];
+  document.getElementById('reportsList').innerHTML =
+    '<div class="skeleton"><div class="skel-l m"></div><div class="skel-l s"></div></div>';
+  load(true);
 }
 
 // ── RENDER REPORTES ───────────────────────────────────────────────────────────
@@ -818,7 +862,7 @@ function confirmFinish(){
     observaciones:'Finalizado manualmente desde Historial por '+U.username+' el '+fmtDT(new Date())
   });
   // Reload after 2s to confirm
-  setTimeout(()=>load(false), 2200);
+  setTimeout(()=>load(false), 4500);
 }
 
 // ── SOLICITAR ELIMINACIÓN ─────────────────────────────────────────────────────
