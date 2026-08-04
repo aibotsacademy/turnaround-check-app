@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Avianca · Asistente MetaHuman</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --red: #E30613;
+    --red-deep: #8C0A1F;
+    --maroon: #5A0A18;
+    --ink: #17100F;
+    --paper: #F7F4EF;
+    --amber: #FFB300;
+    --line: rgba(247,244,239,0.16);
+    --line-soft: rgba(23,16,15,0.10);
+  }
+
+  *{box-sizing:border-box; margin:0; padding:0;}
+
+  html,body{
+    height:100%;
+    background: var(--maroon);
+    font-family:'Inter', sans-serif;
+    color: var(--paper);
+    overflow-x:hidden;
+  }
+
+  body{
+    background:
+      radial-gradient(1200px 800px at 85% -10%, rgba(227,6,19,0.55), transparent 60%),
+      linear-gradient(160deg, #3E0712 0%, #5A0A18 45%, #7A0E22 100%);
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+  }
+
+  /* ---------- Flight path ambient line ---------- */
+  .skyline{
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    z-index:0;
+    opacity:0.35;
+  }
+  .skyline svg{width:100%; height:100%;}
+  .flight-path{
+    fill:none;
+    stroke: var(--paper);
+    stroke-opacity:0.18;
+    stroke-width:1;
+    stroke-dasharray: 2 10;
+  }
+  .plane{
+    animation: fly 22s linear infinite;
+  }
+  @keyframes fly{
+    0%{ offset-distance: 0%; opacity:0; }
+    5%{ opacity:0.7; }
+    95%{ opacity:0.7; }
+    100%{ offset-distance: 100%; opacity:0; }
+  }
+
+  /* ---------- Header ---------- */
+  header{
+    position:relative;
+    z-index:2;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding: clamp(16px,3vw,28px) clamp(20px,4vw,48px);
+    border-bottom: 1px solid var(--line);
+  }
+  .brand{
+    display:flex;
+    align-items:baseline;
+    gap:10px;
+  }
+  .brand-mark{
+    font-family:'Space Grotesk', sans-serif;
+    font-weight:700;
+    font-size: clamp(20px, 2.4vw, 26px);
+    letter-spacing:0.02em;
+  }
+  .brand-mark span{ color: var(--amber); }
+  .brand-sub{
+    font-family:'Space Mono', monospace;
+    font-size:11px;
+    letter-spacing:0.16em;
+    text-transform:uppercase;
+    color: rgba(247,244,239,0.62);
+    border-left:1px solid var(--line);
+    padding-left:10px;
+  }
+  .status-chip{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-family:'Space Mono', monospace;
+    font-size:11px;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color: var(--amber);
+  }
+  .status-dot{
+    width:7px; height:7px; border-radius:50%;
+    background: var(--amber);
+    box-shadow: 0 0 0 0 rgba(255,179,0,0.6);
+    animation: pulse 1.8s ease-out infinite;
+  }
+  @keyframes pulse{
+    0%{ box-shadow: 0 0 0 0 rgba(255,179,0,0.55); }
+    70%{ box-shadow: 0 0 0 8px rgba(255,179,0,0); }
+    100%{ box-shadow: 0 0 0 0 rgba(255,179,0,0); }
+  }
+
+  /* ---------- Main split layout ---------- */
+  main{
+    position:relative;
+    z-index:2;
+    flex:1;
+    display:grid;
+    grid-template-columns: minmax(280px, 1fr) minmax(320px, 0.86fr);
+    align-items:stretch;
+    min-height:0;
+  }
+
+  .intro{
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    gap:clamp(18px,2.6vw,28px);
+    padding: clamp(28px,5vw,64px);
+  }
+
+  .eyebrow{
+    font-family:'Space Mono', monospace;
+    font-size:12px;
+    letter-spacing:0.2em;
+    text-transform:uppercase;
+    color: var(--amber);
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .eyebrow::before{
+    content:"";
+    width:22px; height:1px;
+    background: var(--amber);
+  }
+
+  h1{
+    font-family:'Space Grotesk', sans-serif;
+    font-weight:600;
+    font-size: clamp(30px, 4.4vw, 52px);
+    line-height:1.05;
+    letter-spacing:-0.01em;
+    max-width:14ch;
+  }
+  h1 em{
+    font-style:normal;
+    color: var(--amber);
+  }
+
+  .lede{
+    font-size: clamp(15px,1.3vw,17px);
+    line-height:1.6;
+    color: rgba(247,244,239,0.82);
+    max-width:46ch;
+  }
+
+  /* Split-flap status line */
+  .board{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    margin-top:4px;
+  }
+  .board-label{
+    font-family:'Space Mono', monospace;
+    font-size:11px;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color: rgba(247,244,239,0.5);
+  }
+  .flap{
+    font-family:'Space Mono', monospace;
+    font-weight:700;
+    font-size:13px;
+    letter-spacing:0.1em;
+    background: rgba(23,16,15,0.35);
+    border:1px solid var(--line);
+    border-radius:3px;
+    padding:6px 10px;
+    color: var(--paper);
+    min-width:9ch;
+    text-align:center;
+  }
+
+  .topics{
+    display:flex;
+    flex-wrap:wrap;
+    gap:10px;
+    margin-top:6px;
+  }
+  .topic{
+    font-size:13px;
+    font-weight:500;
+    padding:9px 14px;
+    border-radius:999px;
+    border:1px solid var(--line);
+    background: rgba(247,244,239,0.06);
+    color: var(--paper);
+  }
+
+  .howto{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    margin-top:8px;
+    font-size:13px;
+    color: rgba(247,244,239,0.72);
+  }
+  .mic-badge{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    width:34px; height:34px;
+    border-radius:50%;
+    background: var(--red);
+    flex-shrink:0;
+  }
+  .mic-badge svg{ width:16px; height:16px; fill:var(--paper); }
+
+  /* ---------- Avatar panel ---------- */
+  .stage{
+    position:relative;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding: clamp(20px,3.5vw,40px);
+    background: linear-gradient(180deg, rgba(23,16,15,0.15), rgba(23,16,15,0.35));
+    border-left:1px solid var(--line);
+  }
+
+  .avatar-frame{
+    position:relative;
+    width:100%;
+    max-width:420px;
+    height:min(78vh, 720px);
+    border-radius:20px;
+    overflow:hidden;
+    background: var(--ink);
+    box-shadow:
+      0 30px 60px -20px rgba(0,0,0,0.55),
+      0 0 0 1px rgba(247,244,239,0.08);
+  }
+
+  .avatar-frame::before{
+    content:"";
+    position:absolute;
+    inset:0;
+    z-index:3;
+    pointer-events:none;
+    border-radius:20px;
+    box-shadow: inset 0 0 0 1px rgba(255,179,0,0.15);
+  }
+
+  .avatar-frame iframe{
+    width:100%;
+    height:100%;
+    border:0;
+    display:block;
+    aspect-ratio: 9/16;
+  }
+
+  .frame-tag{
+    position:absolute;
+    top:12px; left:12px;
+    z-index:4;
+    display:flex;
+    align-items:center;
+    gap:6px;
+    font-family:'Space Mono', monospace;
+    font-size:10px;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    color: var(--paper);
+    background: rgba(23,16,15,0.55);
+    backdrop-filter: blur(4px);
+    padding:6px 9px;
+    border-radius:999px;
+    border:1px solid rgba(247,244,239,0.15);
+  }
+  .frame-tag .status-dot{ width:6px; height:6px; }
+
+  /* ---------- Footer ---------- */
+  footer{
+    position:relative;
+    z-index:2;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding: 16px clamp(20px,4vw,48px);
+    border-top:1px solid var(--line);
+    font-family:'Space Mono', monospace;
+    font-size:10.5px;
+    letter-spacing:0.08em;
+    color: rgba(247,244,239,0.45);
+    text-transform:uppercase;
+  }
+
+  /* ---------- Responsive ---------- */
+  @media (max-width: 880px){
+    main{
+      grid-template-columns:1fr;
+    }
+    .stage{
+      border-left:none;
+      border-top:1px solid var(--line);
+      order:-1;
+      padding-bottom:8px;
+    }
+    .avatar-frame{
+      height:min(60vh, 560px);
+    }
+    .intro{
+      text-align:left;
+      padding-top:clamp(20px,4vw,32px);
+    }
+    h1{ max-width:none; }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .plane{ animation:none; opacity:0.5; }
+    .status-dot{ animation:none; }
+  }
+</style>
+</head>
+<body>
+
+  <div class="skyline">
+    <svg viewBox="0 0 1000 600" preserveAspectRatio="none">
+      <path id="route" class="flight-path" d="M -50 480 C 200 420, 350 180, 600 140 S 900 40, 1050 -20" />
+      <g class="plane">
+        <circle r="2.5" fill="#FFB300">
+          <animateMotion dur="22s" repeatCount="indefinite" rotate="auto">
+            <mpath href="#route" />
+          </animateMotion>
+        </circle>
+      </g>
+    </svg>
+  </div>
+
+  <header>
+    <div class="brand">
+      <span class="brand-mark">avianca<span>·</span></span>
+      <span class="brand-sub">MetaHuman Assist</span>
+    </div>
+    <div class="status-chip">
+      <span class="status-dot"></span>
+      <span>En línea</span>
+    </div>
+  </header>
+
+  <main>
+    <section class="intro">
+      <p class="eyebrow">Terminal · Asistente conversacional</p>
+      <h1>Tu vuelo, tus dudas, <em>una sola conversación.</em></h1>
+      <p class="lede">
+        Habla directamente con el asistente MetaHuman de Avianca. Responde con voz e imagen
+        en tiempo real, en español o inglés, para ayudarte antes, durante y después de tu paso
+        por el aeropuerto.
+      </p>
+
+      <div class="topics">
+        <span class="topic">Estado de vuelo</span>
+        <span class="topic">Puertas de embarque</span>
+        <span class="topic">Equipaje</span>
+        <span class="topic">Check-in</span>
+        <span class="topic">Migración y aduanas</span>
+      </div>
+
+      <div class="howto">
+        <span class="mic-badge">
+          <svg viewBox="0 0 24 24"><path d="M12 14a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v5a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11h-2z"/></svg>
+        </span>
+        <span>Toca el ícono del micrófono en pantalla y comienza a hablar cuando quieras.</span>
+      </div>
+
+      <div class="board">
+        <span class="board-label">Estado</span>
+        <span class="flap" id="flap">CONECTADO</span>
+      </div>
+    </section>
+
+    <section class="stage">
+      <div class="avatar-frame">
+        <span class="frame-tag"><span class="status-dot"></span>Live</span>
+        <iframe
+          src="https://embed.liveavatar.com/v1/f743e82c-6dd4-40f0-8f69-c919a5c2ce87?orientation=vertical"
+          allow="microphone"
+          title="LiveAvatar Embed"
+          style="aspect-ratio: 9/16;">
+        </iframe>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <span>Avianca · Asistencia en aeropuerto</span>
+    <span>Impulsado por MetaHuman AI</span>
+  </footer>
+
+  <script>
+    const words = ["CONECTADO", "ESCUCHANDO", "EN VIVO", "LISTO"];
+    let i = 0;
+    const flap = document.getElementById('flap');
+    setInterval(() => {
+      i = (i + 1) % words.length;
+      flap.style.opacity = 0;
+      setTimeout(() => {
+        flap.textContent = words[i];
+        flap.style.opacity = 1;
+      }, 180);
+    }, 3200);
+    flap.style.transition = 'opacity 180ms ease';
+  </script>
+
+</body>
+</html>
