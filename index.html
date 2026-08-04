@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>Turnaround Check</title>
+<title>Turnaround Check V1.07</title>
 
 
 
@@ -213,6 +213,7 @@ select option{background:#111e3a;color:#fff}
 .btn-start-cam{width:100%;padding:13px;background:rgba(59,130,246,.1);border:2px dashed rgba(59,130,246,.38);border-radius:11px;color:#60a5fa;font-size:13px;font-weight:600;cursor:pointer;margin-bottom:9px;transition:all .2s;font-family:inherit}
 .btn-start-cam:hover{background:rgba(59,130,246,.2);border-color:rgba(59,130,246,.65)}
 .btn-close-m{width:100%;padding:10px;background:rgba(51,65,85,.28);border:1px solid rgba(51,65,85,.42);border-radius:10px;color:#94a3b8;font-size:13px;font-weight:600;cursor:pointer;margin-top:7px;font-family:inherit}
+#btnNoAirlineSup.sel{background:rgba(239,68,68,.22);border-color:rgba(239,68,68,.6);color:#fca5a5;font-weight:700}
 
 /* FORM ELEMENTS */
 .form-lbl{color:#64748b;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px;display:block}
@@ -312,6 +313,33 @@ textarea.ta:focus{border-color:#3b82f6}
 .assign-confirm .ac-lab{color:#64748b}
 .assign-confirm .ac-val{color:#e2e8f0;font-weight:600}
 
+.cred-scan-box{background:rgba(139,92,246,.06);border:1px solid rgba(139,92,246,.2);border-radius:11px;padding:13px;margin-bottom:13px}
+.cred-loading{text-align:center;color:#c4b5fd;font-size:12px;padding:14px 0}
+.cred-confirm-row{display:flex;flex-direction:column;gap:8px;margin-bottom:10px}
+.cred-confirm-row input{padding:9px 11px;background:rgba(18,28,52,.8);border:1px solid rgba(139,92,246,.25);border-radius:8px;color:#fff;font-size:12px;font-family:inherit}
+
+.pers-card{background:rgba(18,28,52,.55);border:1px solid rgba(139,92,246,.15);border-radius:12px;padding:12px 13px;margin-bottom:9px}
+.pers-card-top{display:flex;gap:10px;align-items:flex-start;margin-bottom:10px}
+.pers-photo{width:52px;height:52px;border-radius:9px;object-fit:cover;flex-shrink:0;background:rgba(139,92,246,.1);border:1px solid rgba(139,92,246,.25)}
+.pers-photo-ph{width:52px;height:52px;border-radius:9px;flex-shrink:0;background:rgba(139,92,246,.1);border:1px solid rgba(139,92,246,.25);display:flex;align-items:center;justify-content:center;font-size:20px}
+.pers-info{flex:1;min-width:0}
+.pers-nombre{color:#e2e8f0;font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pers-meta{color:#64748b;font-size:11px;margin-top:2px}
+.pers-vig-badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;padding:2px 8px;border-radius:6px;margin-top:5px}
+.pers-vig-badge.ok{background:rgba(16,185,129,.15);color:#34d399;border:1px solid rgba(16,185,129,.3)}
+.pers-vig-badge.warn{background:rgba(245,158,11,.15);color:#fbbf24;border:1px solid rgba(245,158,11,.3)}
+.pers-vig-badge.exp{background:rgba(239,68,68,.18);color:#fca5a5;border:1px solid rgba(239,68,68,.4)}
+.pers-del-top{background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.28);color:#fca5a5;width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;cursor:pointer;flex-shrink:0;font-family:inherit}
+.pers-block-title{color:#475569;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;margin-top:10px}
+.pers-extra-row select{width:100%;padding:9px;background:rgba(10,17,35,.7);border:1px solid rgba(59,130,246,.18);border-radius:8px;color:#fff;font-size:12px;font-family:inherit;margin-bottom:7px}
+.pers-jornada-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-bottom:7px}
+.pers-jornada-item{padding:7px 6px;background:rgba(10,17,35,.6);border:2px solid rgba(59,130,246,.13);border-radius:8px;text-align:center;cursor:pointer;font-size:10.5px;color:#94a3b8;font-weight:600;transition:all .2s}
+.pers-jornada-item.sel{border-color:#8b5cf6;background:rgba(139,92,246,.15);color:#c4b5fd}
+.pers-mixta-row{display:none;gap:7px;margin-bottom:7px}
+.pers-mixta-row.visible{display:flex}
+.pers-mixta-row select{width:100%;padding:8px;background:rgba(10,17,35,.7);border:1px solid rgba(59,130,246,.18);border-radius:8px;color:#fff;font-size:11px;font-family:inherit}
+.pers-mixta-lbl{color:#64748b;font-size:9px;display:block;margin-bottom:3px}
+.pers-alert-nostart{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.32);border-radius:7px;padding:6px 9px;color:#fca5a5;font-size:10.5px;font-weight:700;margin-top:6px;margin-bottom:2px;text-align:center}
 /* Fleet list */
 .fleet-item{display:flex;align-items:center;gap:10px;padding:10px 12px;background:rgba(18,28,52,.5);border:1px solid rgba(59,130,246,.1);border-radius:10px;margin-bottom:7px}
 .fleet-icon{font-size:20px;flex-shrink:0}
@@ -395,7 +423,7 @@ textarea.ta:focus{border-color:#3b82f6}
       <select id="airlineSelect" onchange="pickAirline(this.value)">
         <option value="">— Seleccione —</option>
         <option value="DL">Delta</option><option value="WN">Southwest</option>
-        <option value="UA">United</option><option value="NK">Spirit</option>
+        <option value="UA">United</option><option value="VB">Viva Aerobus</option>
         <option value="AA">American Airlines</option><option value="WS">Westjet</option>
         <option value="E9">Iberojet</option><option value="PO">Porter</option>
         <option value="AV">Avianca</option><option value="IB">Iberia</option>
@@ -441,9 +469,23 @@ textarea.ta:focus{border-color:#3b82f6}
           <option value="A4">A4</option><option value="A5">A5</option><option value="A6">A6</option>
           <option value="A7">A7</option><option value="A8">A8</option><option value="A9">A9</option>
           <option value="A10">A10</option><option value="A11">A11</option><option value="A12">A12</option>
-          <option value="A13">A13</option><option value="Remota">Remota</option><option value="Oficina AS Rampa">Oficina AS Rampa</option>
-          <option value="LIR">LIR</option><option value="SAL">SAL</option><option value="Otra">Otra</option><option value="NA">N/A</option>
-
+          <option value="A13">A13</option>
+                <option value="C1">C1</option>
+                <option value="C2">C2</option>
+                <option value="C3">C3</option>
+                <option value="C4">C4</option>
+                <option value="C5">C5</option>
+                <option value="C6">C6</option>
+                <option value="C7">C7</option>
+                <option value="C8">C8</option>
+                <option value="C9">C9</option>
+                <option value="C10">C10</option>
+                <option value="R7">R7</option>
+                <option value="R8">R8</option>
+                <option value="R9">R9</option>
+                <option value="R10">R10</option>
+                <option value="R11">R11</option>
+        
         </select>
       </div>
       <div class="nav-btns">
@@ -494,6 +536,12 @@ textarea.ta:focus{border-color:#3b82f6}
           <span class="sum-val" id="cSvcTotal" style="color:#2dd4bf;font-size:15px;font-family:'Courier New',monospace"></span>
         </div>
       </div>
+
+<div class="sum-card" id="cFirmaCard" style="display:none">
+        <div class="sum-card-t" style="color:#60a5fa">✍️ Firmas y Cierre</div>
+        <div id="cFirmaContent"></div>
+      </div>
+            
       <div class="sum-card">
         <div class="sum-card-t">🖼️ Galería</div>
         <div class="photo-gal" id="cGallery"></div>
@@ -523,7 +571,7 @@ textarea.ta:focus{border-color:#3b82f6}
   </div>
   <div class="bottom-btns-r2">
     <button class="bot-btn equip-btn" onclick="openM('mEquip')">
-      <span class="bot-icon">🔧</span><span class="bot-label">Equipo</span>
+      <span class="bot-icon">👤</span><span class="bot-label">Equipo</span>
     </button>
     <button class="bot-btn svc-btn" onclick="openM('mSvc')" style="position:relative">
       <span class="bot-icon">💰</span><span class="bot-label">Servicios</span>
@@ -547,6 +595,19 @@ textarea.ta:focus{border-color:#3b82f6}
     <h2 class="modal-title">✅ Finalizar Reporte</h2>
     <p class="modal-sub">Cierre y confirme la inspección completa de este vuelo. Esta acción no se puede deshacer.</p>
     <!-- Summary preview -->
+
+<!-- Planta Eléctrica — tiempo excedido (automático) -->
+    <div id="plantaChargeBox" style="display:none;background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.28);border-radius:12px;padding:14px;margin-bottom:14px">
+      <div style="color:#fbbf24;font-size:12px;font-weight:700;margin-bottom:8px">⚡ Planta Eléctrica — Tiempo Excedido</div>
+      <div id="plantaChargeText" style="color:#fcd34d;font-size:12px;line-height:1.5"></div>
+    </div>
+
+    <!-- Aire Acondicionado — tiempo excedido (automático) -->
+    <div id="acChargeBox" style="display:none;background:rgba(59,130,246,.07);border:1px solid rgba(59,130,246,.28);border-radius:12px;padding:14px;margin-bottom:14px">
+      <div style="color:#60a5fa;font-size:12px;font-weight:700;margin-bottom:8px">❄️ Aire Acondicionado — Tiempo Excedido</div>
+      <div id="acChargeText" style="color:#93c5fd;font-size:12px;line-height:1.5"></div>
+    </div>
+          
     <div style="background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.2);border-radius:12px;padding:14px;margin-bottom:14px" id="finalSummaryBox">
       <div style="color:#6ee7b7;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">Resumen de la Operación</div>
       <div id="finalSummaryRows"></div>
@@ -563,6 +624,36 @@ textarea.ta:focus{border-color:#3b82f6}
     </div>
 
     <!-- Pending checkpoints warning -->
+<!-- Firmas del reporte -->
+    <div style="background:rgba(59,130,246,.05);border:1px solid rgba(59,130,246,.18);border-radius:12px;padding:14px;margin-bottom:14px">
+      <div style="color:#60a5fa;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px">✍️ Firmas del Reporte</div>
+
+      <div class="form-g">
+        <label class="form-lbl">Nombre completo — Encargado AS</label>
+        <input type="text" id="asNombreSup" placeholder="Nombre del supervisor/inspector AS">
+      </div>
+      <div class="form-g">
+        <label class="form-lbl">Firma — Encargado AS</label>
+        <canvas id="asSignCanvas" width="560" height="140" style="width:100%;height:110px;background:#fff;border-radius:9px;touch-action:none;display:block"></canvas>
+        <button class="btn-close-m" style="margin-top:6px;margin-bottom:0" onclick="clearSignaturePad('asSignCanvas')">🧹 Borrar Firma</button>
+      </div>
+
+      <div id="airlineSignBox" style="margin-top:14px">
+        <div class="form-g">
+          <label class="form-lbl">Nombre completo — Supervisor Aerolínea</label>
+          <input type="text" id="airlineNombreSup" placeholder="Nombre del supervisor de la aerolínea">
+        </div>
+        <div class="form-g">
+          <label class="form-lbl">Firma — Supervisor Aerolínea</label>
+          <canvas id="airlineSignCanvas" width="560" height="140" style="width:100%;height:110px;background:#fff;border-radius:9px;touch-action:none;display:block"></canvas>
+          <button class="btn-close-m" style="margin-top:6px;margin-bottom:0" onclick="clearSignaturePad('airlineSignCanvas')">🧹 Borrar Firma</button>
+        </div>
+      </div>
+
+      <button class="btn-close-m" id="btnNoAirlineSup" style="margin-top:10px;border-color:rgba(239,68,68,.35);color:#fca5a5" onclick="toggleNoAirlineSupervisor()">🚫 No se encontró supervisor de la aerolínea</button>
+    </div>
+
+          
     <div id="finalPendingWarn" style="display:none;background:rgba(245,158,11,.07);border:1px solid rgba(245,158,11,.25);border-radius:10px;padding:11px 13px;margin-bottom:14px;color:#fcd34d;font-size:12px;line-height:1.5"></div>
 
     <!-- Confirmation -->
@@ -823,7 +914,22 @@ textarea.ta:focus{border-color:#3b82f6}
           <option value="A4">A4</option><option value="A5">A5</option><option value="A6">A6</option>
           <option value="A7">A7</option><option value="A8">A8</option><option value="A9">A9</option>
           <option value="A10">A10</option><option value="A11">A11</option><option value="A12">A12</option>
-          <option value="A13">A13</option><option value="Remota">Remota</option>
+          <option value="A13">A13</option>
+                <option value="C1">C1</option>
+                <option value="C2">C2</option>
+                <option value="C3">C3</option>
+                <option value="C4">C4</option>
+                <option value="C5">C5</option>
+                <option value="C6">C6</option>
+                <option value="C7">C7</option>
+                <option value="C8">C8</option>
+                <option value="C9">C9</option>
+                <option value="C10">C10</option>
+                <option value="R7">R7</option>
+                <option value="R8">R8</option>
+                <option value="R9">R9</option>
+                <option value="R10">R10</option>
+                <option value="R11">R11</option>
         </select>
       </div>
       <div class="form-g">
@@ -834,7 +940,22 @@ textarea.ta:focus{border-color:#3b82f6}
           <option value="A4">A4</option><option value="A5">A5</option><option value="A6">A6</option>
           <option value="A7">A7</option><option value="A8">A8</option><option value="A9">A9</option>
           <option value="A10">A10</option><option value="A11">A11</option><option value="A12">A12</option>
-          <option value="A13">A13</option><option value="Remota">Remota</option>
+          <option value="A13">A13</option>
+               <option value="C1">C1</option>
+                <option value="C2">C2</option>
+                <option value="C3">C3</option>
+                <option value="C4">C4</option>
+                <option value="C5">C5</option>
+                <option value="C6">C6</option>
+                <option value="C7">C7</option>
+                <option value="C8">C8</option>
+                <option value="C9">C9</option>
+                <option value="C10">C10</option>
+                <option value="R7">R7</option>
+                <option value="R8">R8</option>
+                <option value="R9">R9</option>
+                <option value="R10">R10</option>
+                <option value="R11">R11</option>
         </select>
       </div>
       <div class="form-g">
@@ -1170,17 +1291,20 @@ textarea.ta:focus{border-color:#3b82f6}
 <div class="modal-overlay" id="mEquip" onclick="ovClose(event,'mEquip')">
   <div class="modal-sheet">
     <div class="modal-handle"></div>
-    <h2 class="modal-title">🔧 Gestión de Equipo</h2>
-    <p class="modal-sub">Asigne, solicite o libere equipo de apoyo en rampa</p>
+    <h2 class="modal-title">🔧Gestión de Personal & Equipo </h2>
+    <p class="modal-sub">Asigne, solicite o libere equipo GSE de apoyo en rampa</p>
     <div class="equip-tabs">
-      <button class="eq-tab active" onclick="switchEqTab('asignar',this)">📍 Asignar</button>
+      <button class="eq-tab  active" onclick="switchEqTab('personal',this)">🪪 Personal</button>
+      <button class="eq-tab" onclick="switchEqTab('asignar',this)">📍 Asignar</button>
       <button class="eq-tab" onclick="switchEqTab('solicitar',this)">📥 Solicitar</button>
       <button class="eq-tab" onclick="switchEqTab('liberar',this)">📤 Liberar</button>
       <button class="eq-tab" onclick="switchEqTab('flota',this)">📋 Flota</button>
+  
+
     </div>
 
     <!-- ASIGNAR -->
-    <div class="eq-panel active" id="ep-asignar">
+    <div class="eq-panel" id="ep-asignar">
       <p style="color:#64748b;font-size:12px;margin-bottom:11px;line-height:1.5">Ingrese el número de equipo y seleccione la posición donde será asignado. Esto actualiza la ubicación del equipo en tiempo real.</p>
       <div class="form-g">
         <label class="form-lbl">Número / ID del Equipo</label>
@@ -1208,7 +1332,23 @@ textarea.ta:focus{border-color:#3b82f6}
             <option value="A4">A4</option><option value="A5">A5</option><option value="A6">A6</option>
             <option value="A7">A7</option><option value="A8">A8</option><option value="A9">A9</option>
             <option value="A10">A10</option><option value="A11">A11</option><option value="A12">A12</option>
-            <option value="A13">A13</option><option value="Remota">Remota</option><option value="Oficina AS Rampa">Oficina AS Rampa</option>
+            <option value="A13">A13</option>
+                  <option value="C1">C1</option>
+                <option value="C2">C2</option>
+                <option value="C3">C3</option>
+                <option value="C4">C4</option>
+                <option value="C5">C5</option>
+                <option value="C6">C6</option>
+                <option value="C7">C7</option>
+                <option value="C8">C8</option>
+                <option value="C9">C9</option>
+                <option value="C10">C10</option>
+                <option value="R7">R7</option>
+                <option value="R8">R8</option>
+                <option value="R9">R9</option>
+                <option value="R10">R10</option>
+                <option value="R11">R11</option>
+                  
           </select>
         </div>
       </div>
@@ -1245,7 +1385,22 @@ textarea.ta:focus{border-color:#3b82f6}
           <option value="A4">A4</option><option value="A5">A5</option><option value="A6">A6</option>
           <option value="A7">A7</option><option value="A8">A8</option><option value="A9">A9</option>
           <option value="A10">A10</option><option value="A11">A11</option><option value="A12">A12</option>
-          <option value="A13">A13</option><option value="Remota">Remota</option><option value="Oficina AS Rampa">Oficina AS Rampa</option>
+          <option value="A13">A13</option>
+                <option value="C1">C1</option>
+                <option value="C2">C2</option>
+                <option value="C3">C3</option>
+                <option value="C4">C4</option>
+                <option value="C5">C5</option>
+                <option value="C6">C6</option>
+                <option value="C7">C7</option>
+                <option value="C8">C8</option>
+                <option value="C9">C9</option>
+                <option value="C10">C10</option>
+                <option value="R7">R7</option>
+                <option value="R8">R8</option>
+                <option value="R9">R9</option>
+                <option value="R10">R10</option>
+                <option value="R11">R11</option>
         </select>
       </div>
       <div class="form-g">
@@ -1273,7 +1428,23 @@ textarea.ta:focus{border-color:#3b82f6}
           <option value="A4">A4</option><option value="A5">A5</option><option value="A6">A6</option>
           <option value="A7">A7</option><option value="A8">A8</option><option value="A9">A9</option>
           <option value="A10">A10</option><option value="A11">A11</option><option value="A12">A12</option>
-          <option value="A13">A13</option><option value="Remota">Remota</option><option value="Oficina AS Rampa">Oficina AS Rampa</option>
+          <option value="A13">A13</option>
+<option value="C1">C1</option>
+                <option value="C2">C2</option>
+                <option value="C3">C3</option>
+                <option value="C4">C4</option>
+                <option value="C5">C5</option>
+                <option value="C6">C6</option>
+                <option value="C7">C7</option>
+                <option value="C8">C8</option>
+                <option value="C9">C9</option>
+                <option value="C10">C10</option>
+                <option value="R7">R7</option>
+                <option value="R8">R8</option>
+                <option value="R9">R9</option>
+                <option value="R10">R10</option>
+                <option value="R11">R11</option>
+                
         </select>
       </div>
       <div class="form-g">
@@ -1288,14 +1459,45 @@ textarea.ta:focus{border-color:#3b82f6}
       <div id="flotaList"></div>
     </div>
 
+    <!-- PERSONAL / CREDENCIALES -->
+    <div class="eq-panel active" id="ep-personal">
+      <div class="cred-scan-box">
+        <div style="color:#c4b5fd;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:9px">🪪 Escaneo de Credenciales</div>
+        <p style="color:#64748b;font-size:11px;line-height:1.5;margin-bottom:11px">Capture el carnet o cédula del agente para registrarlo en este vuelo.</p>
+        <div id="credCamV" style="display:none">
+          <div class="cam-wrap"><video id="credVid" autoplay playsinline></video><div class="cam-lbl">Credencial</div><div class="cam-corners"><span class="c-tl"></span><span class="c-tr"></span><span class="c-bl"></span><span class="c-br"></span></div><div class="cam-ts" id="credTs">--:--:--</div></div>
+          <button class="btn-capture" onclick="credCapture()">📸 Capturar</button>
+          <button class="btn-close-m" style="margin-bottom:9px" onclick="credStopCam()">✕ Cerrar Cámara</button>
+        </div>
+        <div id="credPrevV" style="display:none">
+          <img class="prev-img" id="credPrevImg">
+          <div class="photo-act"><button class="btn-retake" onclick="credRetake()">🔄 Retomar</button><button class="btn-confirm" onclick="credProcess()">🔎 Extraer Datos</button></div>
+        </div>
+        <div id="credLoadingV" class="cred-loading" style="display:none">🔎 Analizando credencial…</div>
+        <div id="credFormV" style="display:none">
+          <div class="cred-confirm-row">
+            <input type="text" id="credNombre" placeholder="Nombre completo">
+            <input type="text" id="credCedula" placeholder="Cédula / ID">
+            <input type="text" id="credEmpresa" placeholder="Empresa">
+            <input type="text" id="credVigencia" placeholder="Vigencia (dd/mm/aaaa)">
+            <input type="text" id="credNumCred" placeholder="No. Credencial">
+          </div>
+          <button class="btn-action purple" onclick="credConfirmAdd()">➕ Agregar al Vuelo</button>
+        </div>
+        <button class="btn-start-cam" id="credStartBtn" onclick="credStartCam()">📷 Escanear Credencial</button>
+      </div>
+     <div style="color:#475569;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px" id="persTableHdr">Personal Registrado (0)</div>
+      <div id="persCardsList"></div>
+    </div>
+
     <button class="btn-close-m" onclick="closeM('mEquip')">Cerrar</button>
   </div>
 </div>
 
 <!-- ═══════════ SCRIPTS ═══════════ -->
 <script>
-const SCRIPT_URL='https://script.google.com/macros/s/AKfycbxovZDMcl12zsNDu09jSZmzlomJjFcj2zfy2jQBqt-a0QsJSqRVZNujSfoMGrpy0BmS/exec';
-const ANAMES={'DL':'Delta','WN':'Southwest','UA':'United','NK':'Spirit','AA':'American Airlines','WS':'Westjet','E9':'Iberojet','PO':'Porter','AV':'Avianca','IB':'Iberia','TS':'Air Transat','B6':'Jetblue','D0':'DHL','CG':'Cargo'};
+const SCRIPT_URL='https://script.google.com/macros/s/AKfycbwbRGQn8wHlGnvNrtO0f6h6ZXyVTa2l0vbOh0iVzni-j7p8MDa0FfJ4YMyIWcXghHvy/exec';
+const ANAMES={'DL':'Delta','WN':'Southwest','UA':'United','VB':'Viva Aerobus','AA':'American Airlines','WS':'Westjet','E9':'Iberojet','PO':'Porter','AV':'Avianca','IB':'Iberia','TS':'Air Transat','B6':'Jetblue','D0':'DHL','CG':'Cargo'};
 
 // ── STATE ──
 let U={username:'',role:'Inspector'};
@@ -1304,8 +1506,14 @@ let CPS=[],photos={},beaconOff=null,incData=null,segData=null;
 let camStream=null,camTSint=null;
 let mSess=[],mPrevPhoto=null,mPrevTS=null;
 let alertInt=null;
+let _plantaExtraMin=0, noAirlineSupervisorFlag=false, firmaFinalData=null, _sigPadsInit=false;
+const LIMITE_MIN_PLANTA=60, TARIFA_POR_MINUTO_PLANTA=5;
+const LIMITE_MIN_AC=60, TARIFA_POR_MINUTO_AC=5;  
+const sigState={}; 
 let chatTarget='',chatTargetClass='',chatMsgStore={};
 let eqSolTipo='',urgVal='';
+
+  const POSICIONES_RAMPA=['Supervisor','Encargado','Alero','Operador','Limpieza','Toilet','Agua'];
 
 // Fleet state
 let flota=[
@@ -1337,7 +1545,7 @@ const PRESETS={
 // Beacon alerts config
 const BALERTS=[
   {key:'planta_electrica',label:'Planta Eléctrica',warn:7,crit:12},
-  {key:'aire_acondicionado',label:'A/C',warn:7,crit:12},
+  {key:'aire_acondicionado_grupo',label:'A/C',warn:7,crit:12},
   {key:'banda',label:'Banda',warn:10,crit:15},
   {key:'escalera',label:'Escalera',warn:10,crit:15},
   {key:'inicia_carga_maleta',label:'1ra Maleta',warn:15,crit:22},
@@ -1366,7 +1574,7 @@ const QS={
     {key:'beacon_off',label:'Beacon OFF',emoji:'🚨'},
     {key:'360_inicio',label:'360° Aeronave — Inicio',emoji:'🔄',type:'multi_photo'},
     {key:'planta_electrica',label:'Planta Eléctrica',emoji:'⚡',optional:true,type:'planta'},
-    {key:'aire_acondicionado',label:'Aire Acondicionado',emoji:'❄️',optional:true},
+    {key:'aire_acondicionado_grupo',label:'Aire Acondicionado (Inicio + Fin)',emoji:'❄️',optional:true,type:'cargo_group',subs:['inicio','fin'],subLabels:['Aire Acondicionado','Finaliza Aire Acondicionado']},
     {key:'banda',label:'Banda',emoji:'📦'},
     {key:'escalera',label:'Escalera',emoji:'🪜',optional:true},
     {key:'carga_grupo',label:'Carga (Descarga + Carga)',emoji:'🛄',type:'cargo_group',subs:['inicia_descarga_carga','finaliza_descarga_carga','inicia_carga_carga','finaliza_carga_carga'],subLabels:['Inicia Descarga Carga','Finaliza Descarga Carga','Inicia Carga Carga','Finaliza Carga Carga']},
@@ -1378,7 +1586,8 @@ const QS={
     {key:'towbar',label:'Towbar',emoji:'🔧'},
     {key:'cierre_bines',label:'Cierre Bines',emoji:'🚪',type:'bines_group'},
     {key:'360_fin',label:'360° Aeronave — Fin',emoji:'🔄',type:'multi_photo'},
-    {key:'push_back',label:'Push Back',emoji:'⬅️'},
+ {key:'push_back',label:'Push Back',emoji:'⬅️'},
+    {key:'posicion_limpia',label:'Posición Limpia',emoji:'🧼',type:'multi_photo'},
   ],
   'RON-ARRIVAL':[
     {key:'briefing',label:'Briefing',emoji:'⚡',type:'briefing'},
@@ -1386,7 +1595,7 @@ const QS={
     {key:'beacon_off',label:'Beacon OFF',emoji:'🚨'},
     {key:'360_inicio',label:'360° Aeronave — Inicio',emoji:'🔄',type:'multi_photo'},
     {key:'planta_electrica',label:'Planta Eléctrica',emoji:'⚡',optional:true,type:'planta'},
-    {key:'aire_acondicionado',label:'Aire Acondicionado',emoji:'❄️',optional:true},
+    {key:'aire_acondicionado_grupo',label:'Aire Acondicionado (Inicio + Fin)',emoji:'❄️',optional:true,type:'cargo_group',subs:['inicio','fin'],subLabels:['Aire Acondicionado','Finaliza Aire Acondicionado']},
     {key:'banda',label:'Banda',emoji:'📦'},
     {key:'escalera',label:'Escalera',emoji:'🪜',optional:true},
     {key:'equipaje_grupo',label:'Equipaje (Descarga)',emoji:'🧳',type:'cargo_group',subs:['inicia_descarga_eq','finaliza_descarga_eq'],subLabels:['Inicia Descarga Equipaje','Finaliza Descarga Equipaje']},
@@ -1396,14 +1605,15 @@ const QS={
     {key:'ultimo_viaje_carreta',label:'Último Viaje Carreta',emoji:'🚚'},
     {key:'cierre_bines',label:'Cierre Bines',emoji:'🚪',type:'bines_group'},
     {key:'360_fin',label:'360° Aeronave — Fin',emoji:'🔄',type:'multi_photo'},
-    {key:'towbar',label:'Towbar',emoji:'🔧'},
+{key:'towbar',label:'Towbar',emoji:'🔧'},
+    {key:'posicion_limpia',label:'Posición Limpia',emoji:'🧼',type:'multi_photo'},
   ],
   'RON-DEPARTURE':[
     {key:'briefing',label:'Briefing',emoji:'⚡',type:'briefing'},
     {key:'fod',label:'FOD',emoji:'🔍'},
     {key:'avion_posicion',label:'Avión en Posición',emoji:'✈️'},
     {key:'planta_electrica',label:'Planta Eléctrica',emoji:'⚡',optional:true,type:'planta'},
-    {key:'aire_acondicionado',label:'Aire Acondicionado',emoji:'❄️',optional:true},
+    {key:'aire_acondicionado_grupo',label:'Aire Acondicionado (Inicio + Fin)',emoji:'❄️',optional:true,type:'cargo_group',subs:['inicio','fin'],subLabels:['Aire Acondicionado','Finaliza Aire Acondicionado']},
     {key:'banda',label:'Banda',emoji:'📦'},
     {key:'escalera',label:'Escalera',emoji:'🪜',optional:true},
     {key:'equipaje_carga_grupo',label:'Carga + Equipaje',emoji:'🛄',type:'cargo_group',subs:['inicia_carga_eq','finaliza_carga_eq','inicia_carga_carga','finaliza_carga_carga'],subLabels:['Inicia Carga Equipaje','Finaliza Carga Equipaje','Inicia Carga Carga','Finaliza Carga Carga']},
@@ -1412,7 +1622,8 @@ const QS={
     {key:'towbar',label:'Towbar',emoji:'🔧'},
     {key:'cierre_bines',label:'Cierre Bines',emoji:'🚪',type:'bines_group'},
     {key:'360_fin',label:'360° Aeronave — Fin',emoji:'🔄',type:'multi_photo'},
-    {key:'push_back',label:'Push Back',emoji:'🔧'},
+{key:'push_back',label:'Push Back',emoji:'🔧'},
+    {key:'posicion_limpia',label:'Posición Limpia',emoji:'🧼',type:'multi_photo'},
   ]
 };
 
@@ -1421,7 +1632,7 @@ const QS={
   const r=sessionStorage.getItem('user');
   if(r){try{const u=JSON.parse(r);U={username:u.username,role:u.role};document.getElementById('usernameDisplay').textContent=U.username;document.getElementById('userRole').textContent=U.role}catch(e){alert('Sesión inválida');location.href='login-P10.html'}}
   else{alert('Inicie sesión primero');location.href='login-P10.html'}
-  checkResumeSession();  // ← ÚNICA LÍNEA AÑADIDA
+  setTimeout(checkResumeSession, 0);  // esperar a que TODO el script esté inicializado
 })();
 
   function checkResumeSession() {
@@ -1446,34 +1657,36 @@ const QS={
   // 2. Cargar checkpoints del tipo de vuelo
   CPS = QS[sT] || [];
 
- // 3. Reconstruir fotos desde los checkpoints guardados en historial
+// 3. Reconstruir fotos desde los checkpoints guardados en historial
   photos = {};
+  console.log('🔄 Retomando — labels recibidos:', (rep.checkpoints || []).map(c => c.label));
   (rep.checkpoints || []).forEach(cp => {
-    const key = resolveCheckpointKey(cp);
-    const def = CPS.find(c => c.key === key);
-    if (!photos[key]) photos[key] = [];
-
-    const subVal = cp.sub || undefined;
-    const alreadyHas = subVal !== undefined && photos[key].some(p => p.sub === subVal);
-    if (!alreadyHas) {
-      photos[key].push({
-        checkpoint: key,
+    try {
+      const m = resolveRestoredCP(cp);
+      if (!m) return;
+      if (!photos[m.key]) photos[m.key] = [];
+      if (m.sub && photos[m.key].some(p => p.sub === m.sub)) return;
+      photos[m.key].push({
+        checkpoint: m.key,
         label:      cp.label,
-        emoji:      cp.emoji || (def && def.emoji) || '✅',
-        timestamp:  cp.timestamp || new Date().toISOString(),
+        emoji:      cp.emoji || m.emoji || '✅',
+        timestamp:  normalizeRestoredTS(cp.timestamp),
         photo:      null,
         photoUrl:   cp.photoUrl || null,
-        sub:        subVal,
+        sub:        m.sub,
+        realizadoPor: cp.realizadoPor || '',   // ← NUEVO
         restored:   true
       });
+    } catch (err) {
+      console.warn('⚠ No se pudo restaurar checkpoint:', cp.label, err);
     }
   });
+  console.log('📦 photos restaurado:',
+    Object.keys(photos).map(k => `${k}[${photos[k].map(p => p.sub || '·').join(',')}]`).join(' | '));
+          
   // 4. Restaurar Beacon OFF si ya fue registrado
-  const beaconCP = (rep.checkpoints || []).find(c =>
-    c.label === 'Beacon OFF' || c.key === 'beacon_off'
-  );
-  if (beaconCP && beaconCP.timestamp) {
-    beaconOff = new Date(beaconCP.timestamp);
+  if (photos['beacon_off'] && photos['beacon_off'][0]) {
+    beaconOff = new Date(photos['beacon_off'][0].timestamp);
     startBeaconAlerts();
   }
 
@@ -1492,8 +1705,9 @@ const QS={
   document.getElementById('stepLabel').textContent =
     `${ANAMES[sA] || sA} · ${sT} · ${sF} ✦ RETOMADO`;
 
-  renderFlightBar();
+renderFlightBar();
   renderMissions();
+  loadPersonalForFlight();
   showSC('sI');
 
   // 8. Toast de confirmación
@@ -1503,44 +1717,120 @@ const QS={
   ), 400);
 }
 
+// ── FIRMA DIGITAL (canvas) ──
+function initSignaturePad(id){
+  const canvas=document.getElementById(id);
+  const ctx=canvas.getContext('2d');
+  ctx.fillStyle='#fff';ctx.fillRect(0,0,canvas.width,canvas.height);
+  ctx.strokeStyle='#111';ctx.lineWidth=2.2;ctx.lineCap='round';ctx.lineJoin='round';
+  sigState[id]={drawing:false,hasDrawn:false,ctx,canvas};
+  const getPos=(e)=>{
+    const r=canvas.getBoundingClientRect();
+    const cx=(e.touches?e.touches[0].clientX:e.clientX)-r.left;
+    const cy=(e.touches?e.touches[0].clientY:e.clientY)-r.top;
+    return {x:cx*(canvas.width/r.width), y:cy*(canvas.height/r.height)};
+  };
+  const start=(e)=>{e.preventDefault();const s=sigState[id];s.drawing=true;s.hasDrawn=true;const p=getPos(e);s.ctx.beginPath();s.ctx.moveTo(p.x,p.y)};
+  const move=(e)=>{const s=sigState[id];if(!s.drawing)return;e.preventDefault();const p=getPos(e);s.ctx.lineTo(p.x,p.y);s.ctx.stroke()};
+  const end=()=>{sigState[id].drawing=false};
+  canvas.addEventListener('mousedown',start);canvas.addEventListener('mousemove',move);window.addEventListener('mouseup',end);
+  canvas.addEventListener('touchstart',start,{passive:false});canvas.addEventListener('touchmove',move,{passive:false});canvas.addEventListener('touchend',end);
+}
+function clearSignaturePad(id){
+  const s=sigState[id];if(!s)return;
+  s.ctx.fillStyle='#fff';s.ctx.fillRect(0,0,s.canvas.width,s.canvas.height);
+  s.hasDrawn=false;
+}
+function getSignatureDataURL(id){
+  const s=sigState[id];
+  if(!s||!s.hasDrawn)return null;
+  return s.canvas.toDataURL('image/png');
+}
+function toggleNoAirlineSupervisor(){
+  noAirlineSupervisorFlag=!noAirlineSupervisorFlag;
+  const box=document.getElementById('airlineSignBox');
+  const btn=document.getElementById('btnNoAirlineSup');
+  if(noAirlineSupervisorFlag){
+    box.style.display='none';
+    btn.classList.add('sel');
+    btn.textContent='✓ Marcado: Sin supervisor de aerolínea — Factura quedará PENDIENTE';
+  }else{
+    box.style.display='block';
+    btn.classList.remove('sel');
+    btn.textContent='🚫 No se encontró supervisor de la aerolínea';
+  }
+}
+function initFinalSignatures(){
+  if(!_sigPadsInit){
+    initSignaturePad('asSignCanvas');
+    initSignaturePad('airlineSignCanvas');
+    _sigPadsInit=true;
+  }else{
+    clearSignaturePad('asSignCanvas');
+    clearSignaturePad('airlineSignCanvas');
+  }
+  noAirlineSupervisorFlag=false;
+  document.getElementById('airlineSignBox').style.display='block';
+  document.getElementById('btnNoAirlineSup').classList.remove('sel');
+  document.getElementById('btnNoAirlineSup').textContent='🚫 No se encontró supervisor de la aerolínea';
+  document.getElementById('asNombreSup').value='';
+  document.getElementById('airlineNombreSup').value='';
+}
 
-// Helper: resuelve la key real de CPS a partir de un checkpoint del historial
-function resolveCheckpointKey(cp) {
-  if (cp.sub) {
-    const bySubs = CPS.find(c => Array.isArray(c.subs) && c.subs.includes(cp.sub));
-    if (bySubs) return bySubs.key;
+// ── PLANTA ELÉCTRICA / A.C — TIEMPO EXCEDIDO (AUTOMÁTICO) ──
+function calcPlantaExtra(){
+  const ph=photos['planta_electrica']||[];
+  const con=ph.find(p=>p.sub==='conecta');
+  const des=ph.find(p=>p.sub==='desconecta');
+  if(!con||!des)return null;
+  const mins=Math.round((new Date(des.timestamp)-new Date(con.timestamp))/60000);
+  return {mins, conTs:con.timestamp, desTs:des.timestamp};
+}
 
-    if (['conecta','desconecta'].includes(cp.sub)) {
-      const p = CPS.find(c => c.type === 'planta');
-      if (p) return p.key;
-    }
-    if (['waste','water'].includes(cp.sub)) {
-      const w = CPS.find(c => c.type === 'waste_water');
-      if (w) return w.key;
-    }
-    const LIMP_SUB_KEYS = ['sube','baja','banios_delantero','banios_trasero','pasillos',
-      'cocina_delantera','cocina_trasera','basureros','bolsas_asiento','compartimentos'];
-    if (LIMP_SUB_KEYS.includes(cp.sub)) {
-      const l = CPS.find(c => c.type === 'limpieza_group');
-      if (l) return l.key;
-    }
-    if (/^fod_\d+$/.test(cp.sub)) {
-      const f = CPS.find(c => c.type === 'fod_group');
-      if (f) return f.key;
-    }
-    if (['bin_delantero','bin_trasero'].includes(cp.sub)) {
-      const b = CPS.find(c => c.type === 'bines_group');
-      if (b) return b.key;
-    }
+function calcACExtra(){
+  const ph=photos['aire_acondicionado_grupo']||[];
+  const ini=ph.find(p=>p.sub==='inicio');
+  const fin=ph.find(p=>p.sub==='fin');
+  if(!ini||!fin)return null;
+  const mins=Math.round((new Date(fin.timestamp)-new Date(ini.timestamp))/60000);
+  return {mins, iniTs:ini.timestamp, finTs:fin.timestamp};
+}
+
+// Calcula y agrega (o quita si ya no aplica) los cargos automáticos de
+// Planta Eléctrica y Aire Acondicionado en la lista de facturación.
+function autoAddExcessCharges(){
+  // Limpia cargos automáticos previos para recalcular siempre con datos frescos
+  billingItems=billingItems.filter(i=>i.type!=='planta_extra_auto' && i.type!=='ac_extra_auto');
+
+  // ── Planta Eléctrica ──
+  const planta=calcPlantaExtra();
+  const plantaBox=document.getElementById('plantaChargeBox');
+  if(planta && planta.mins>LIMITE_MIN_PLANTA){
+    const exceso=planta.mins-LIMITE_MIN_PLANTA;
+    const monto=exceso*TARIFA_POR_MINUTO_PLANTA;
+    billingItems.push({type:'planta_extra_auto',icon:'⚡',name:'Planta Eléctrica — Tiempo Adicional',detail:`${exceso} min excedentes × $${TARIFA_POR_MINUTO_PLANTA.toFixed(2)} (Total conectada: ${planta.mins} min)`,amount:monto,timestamp:fmt(new Date())});
+    plantaBox.style.display='block';
+    document.getElementById('plantaChargeText').innerHTML=`La planta eléctrica estuvo conectada <strong>${planta.mins} minutos</strong> (Conecta: ${fmt(new Date(planta.conTs))} → Desconecta: ${fmt(new Date(planta.desTs))}).<br>Exceso sobre el límite de ${LIMITE_MIN_PLANTA} min: <strong>${exceso} minutos</strong> — <strong>$${monto.toFixed(2)}</strong> agregado automáticamente a facturación.`;
+  }else{
+    plantaBox.style.display='none';
   }
 
-  const baseLabel = String(cp.label || '').replace(/\s#\d+\s*$/, '').trim();
-  const byLabel = CPS.find(c => c.label === baseLabel);
-  if (byLabel) return byLabel.key;
+  // ── Aire Acondicionado ──
+  const ac=calcACExtra();
+  const acBox=document.getElementById('acChargeBox');
+  if(ac && ac.mins>LIMITE_MIN_AC){
+    const exceso=ac.mins-LIMITE_MIN_AC;
+    const monto=exceso*TARIFA_POR_MINUTO_AC;
+    billingItems.push({type:'ac_extra_auto',icon:'❄️',name:'Aire Acondicionado — Tiempo Adicional',detail:`${exceso} min excedentes × $${TARIFA_POR_MINUTO_AC.toFixed(2)} (Total: ${ac.mins} min)`,amount:monto,timestamp:fmt(new Date())});
+    acBox.style.display='block';
+    document.getElementById('acChargeText').innerHTML=`El aire acondicionado estuvo activo <strong>${ac.mins} minutos</strong> (Inicio: ${fmt(new Date(ac.iniTs))} → Fin: ${fmt(new Date(ac.finTs))}).<br>Exceso sobre el límite de ${LIMITE_MIN_AC} min: <strong>${exceso} minutos</strong> — <strong>$${monto.toFixed(2)}</strong> agregado automáticamente a facturación.`;
+  }else{
+    acBox.style.display='none';
+  }
 
-  return _slugify(baseLabel || cp.label || '');
-}
-    
+  renderBillingList();
+  updateSvcBadge();
+}        
 // Helper: convierte un label a slug de clave
 function _slugify(str) {
   return String(str)
@@ -1549,6 +1839,123 @@ function _slugify(str) {
     .replace(/[^a-z0-9]+/g, '_')
     .replace(/^_|_$/g, '');
 }
+
+// Normaliza un label: quita emojis, acentos y símbolos para comparar
+function _normLbl(s){
+  return String(s||'')
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .replace(/[^\w\s°#\/&()—-]/g,'')
+    .replace(/\s+/g,' ').trim().toLowerCase();
+}
+
+// Resuelve un checkpoint del historial → {key, sub, emoji} del CPS actual
+function resolveRestoredCP(cp){
+  const raw = String(cp.label||'').trim();
+  const n   = _normLbl(raw);
+
+  // 1. Match exacto contra CPS
+  let def = CPS.find(c => _normLbl(c.label) === n);
+  if (def) return { key: def.key, sub: cp.sub || undefined, emoji: def.emoji };
+
+  // 2. Multi-foto 360°: "360° Aeronave — Inicio #2"
+  const mm = raw.match(/^(.*)\s#\d+\s*$/);
+  if (mm) {
+    def = CPS.find(c => _normLbl(c.label) === _normLbl(mm[1]));
+    if (def) return { key: def.key, sub: undefined, emoji: def.emoji };
+  }
+
+  // 3. Planta Eléctrica — Conecta / Desconecta / Desconecta (auto)
+  if (n.startsWith('planta electrica')) {
+    const p = CPS.find(c => c.key === 'planta_electrica');
+    if (p) {
+      const sub = /desconecta/.test(n) ? 'desconecta'
+                : /conecta/.test(n)    ? 'conecta' : undefined;
+      return { key: 'planta_electrica', sub, emoji: p.emoji };
+    }
+  }
+
+  // 4. Grupos con subs/subLabels definidos (carga, equipaje, FOD de RON…)
+  for (const c of CPS) {
+    if (c.subs && c.subLabels) {
+      const si = c.subLabels.findIndex(l => _normLbl(l) === n);
+      if (si >= 0) return { key: c.key, sub: c.subs[si], emoji: c.emoji };
+    }
+  }
+
+  // 5. FOD group por defecto (TURN): "1er FOD", "2do FOD", "3er FOD"
+  const fodMap = { '1er fod':'fod_1', '2do fod':'fod_2', '3er fod':'fod_3' };
+  if (fodMap[n]) {
+    const c = CPS.find(x => x.type === 'fod_group');
+    if (c) return { key: c.key, sub: fodMap[n], emoji: '🔍' };
+  }
+
+  // 6. Limpieza de cabina
+  const ls = LIMP_SUBS.find(s => _normLbl(s.label) === n);
+  if (ls) {
+    const c = CPS.find(x => x.type === 'limpieza_group');
+    if (c) return { key: c.key, sub: ls.key, emoji: '🧹' };
+  }
+
+  // 7. Waste & Water
+  if (/waste|aguas residuales/.test(n)) {
+    const c = CPS.find(x => x.type === 'waste_water');
+    if (c) return { key: c.key, sub: 'waste', emoji: c.emoji };
+  }
+  if (/water|agua potable/.test(n)) {
+    const c = CPS.find(x => x.type === 'waste_water');
+    if (c) return { key: c.key, sub: 'water', emoji: c.emoji };
+  }
+
+  // 8. Cierre de Bines
+  if (/bin delantero/.test(n)) {
+    const c = CPS.find(x => x.type === 'bines_group');
+    if (c) return { key: c.key, sub: 'bin_delantero', emoji: '🚪' };
+  }
+  if (/bin trasero/.test(n)) {
+    const c = CPS.find(x => x.type === 'bines_group');
+    if (c) return { key: c.key, sub: 'bin_trasero', emoji: '🚪' };
+  }
+
+  // 9. Fallback
+  return { key: _slugify(raw), sub: cp.sub || undefined };
+}
+
+// Corrige timestamps que llegan corridos o rotos desde el GAS/Sheet
+function normalizeRestoredTS(ts){
+  if (!ts) return new Date().toISOString();
+  const raw = String(ts).split('|')[0].trim();
+
+  // Formato "HH:MM" o "HH:MM:SS" (solo hora): montar sobre la fecha del vuelo
+  const t = raw.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
+  if (t) {
+    const base = fTS ? new Date(fTS) : new Date();
+    base.setHours(+t[1], +t[2], +(t[3]||0), 0);
+    return base.toISOString();
+  }
+
+  const d = new Date(raw);
+  if (!isNaN(d.getTime())) {
+    // Celdas de solo-hora de Sheets regresan como fechas de 1899:
+    // extraer la hora y montarla sobre la fecha del vuelo
+    if (d.getFullYear() < 1990) {
+      const base = fTS ? new Date(fTS) : new Date();
+      base.setHours(d.getHours(), d.getMinutes(), d.getSeconds(), 0);
+      return base.toISOString();
+    }
+    return d.toISOString();
+  }
+  return new Date().toISOString();
+}
+
+// Miniatura de Drive para fotos restauradas (solo tenemos la URL, no el base64)
+function toDriveThumb(url){
+  if (!url) return '';
+  if (url.includes('drive.google.com')) {
+    const id = url.replace(/.*\/d\//,'').replace(/\/view.*/,'').replace(/.*id=/,'').split('&')[0];
+    return `https://drive.google.com/thumbnail?id=${id}&sz=w400`;
+  }
+  return url;
+}  
 
 // ── THREE.JS ──
 (()=>{
@@ -1583,8 +1990,10 @@ function startInsp(){
   clearAlerts();showSC('sI');
   document.getElementById('bottomBar').style.display='flex';
   document.getElementById('stepLabel').textContent=`${ANAMES[sA]||sA} · ${sT} · ${sF}`;
-  renderFlightBar();renderMissions();
+renderFlightBar();renderMissions();loadPersonalForFlight();
 }
+
+  
 
 // ── FLIGHT BAR ──
 function renderFlightBar(){
@@ -1762,19 +2171,25 @@ function rWasteWaterBody(b,idx){
   const cp=CPS[idx];
   const ph=photos[cp.key]||[];
   const wasteD=ph.find(p=>p.sub==='waste');const waterD=ph.find(p=>p.sub==='water');
-  const mkBlock=(sub,label,color,done)=>`
+  const mkBlock=(sub,label,done)=>`
     <div style="background:${done?'rgba(16,185,129,.07)':'rgba(18,28,52,.5)'};border:1px solid ${done?'rgba(16,185,129,.25)':'rgba(59,130,246,.13)'};border-radius:10px;padding:11px 13px;margin-bottom:10px">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:${done?'6px':'8px'}">
         <span style="color:${done?'#6ee7b7':'#cbd5e1'};font-size:13px;font-weight:700">${label}</span>
         ${done?`<span style="color:#6ee7b7;font-size:10px;font-family:'Courier New',monospace">✅ ${fmt(new Date(done.timestamp))}</span>`:''}
       </div>
+      ${done
+        ? `<div style="color:#64748b;font-size:11px;margin-bottom:6px">👤 Realizado por: <strong style="color:#cbd5e1">${done.realizadoPor||'—'}</strong></div>`
+        : `<div style="margin-bottom:9px">
+             <label class="form-lbl" style="margin-bottom:4px;display:block">👤 Realizado por <span style="color:#f87171">*</span></label>
+             <input type="text" id="wwRealizado_${sub}" placeholder="Nombre de quien realiza el servicio" style="width:100%;padding:9px 11px;background:rgba(10,17,35,.7);border:1px solid rgba(59,130,246,.22);border-radius:8px;color:#fff;font-size:12px;font-family:inherit">
+           </div>`}
       ${done&&done.photo?`<img src="${done.photo}" style="width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:7px;margin-bottom:6px">`:``}
       <button class="btn-start-cam" style="margin-bottom:0" onclick="wwCapture(${idx},'${sub}','${label}')">${done?'📷 Actualizar':'📷 Registrar '+label}</button>
     </div>`;
   b.innerHTML=`
-  <div style="color:#64748b;font-size:11px;line-height:1.5;margin-bottom:11px">Registre Waste (aguas residuales) y Water (agua potable) de forma separada.</div>
-  ${mkBlock('waste','🗑️ Waste (Aguas Residuales)','#10b981',wasteD)}
-  ${mkBlock('water','💧 Water (Agua Potable)','#3b82f6',waterD)}
+  <div style="color:#64748b;font-size:11px;line-height:1.5;margin-bottom:11px">Registre Waste (aguas residuales) y Water (agua potable) de forma separada. Es obligatorio indicar quién realizó cada servicio.</div>
+  ${mkBlock('waste','🗑️ Waste (Aguas Residuales)',wasteD)}
+  ${mkBlock('water','💧 Water (Agua Potable)',waterD)}
   <div id="wwCamArea" style="display:none;margin-top:10px">
     <div class="cam-wrap"><video id="wwVid" autoplay playsinline></video><div class="cam-lbl" id="wwLbl"></div><div class="cam-corners"><span class="c-tl"></span><span class="c-tr"></span><span class="c-bl"></span><span class="c-br"></span></div><div class="cam-ts" id="wwTs">--:--:--</div></div>
     <button class="btn-capture" onclick="wwDoCapture()">📸 Capturar</button>
@@ -1787,9 +2202,16 @@ function rWasteWaterBody(b,idx){
   ${(cp.optional)?`<button class="btn-close-m" style="margin-bottom:8px" onclick="wwSkip(${idx})">Omitir Waste & Water</button>`:''}
   <button class="btn-close-m" onclick="closeCP()">Cerrar</button>`;
 }
-let wwCurSub='',wwCurLbl='',wwPhotoData=null,wwPhotoTS=null;
+let wwCurSub='',wwCurLbl='',wwCurRealizado='',wwPhotoData=null,wwPhotoTS=null;
 async function wwCapture(idx,sub,lbl){
-  wwCurSub=sub;wwCurLbl=lbl;wwPhotoData=null;wwPhotoTS=null;
+  const nameInput=document.getElementById(`wwRealizado_${sub}`);
+  const realizadoPor=nameInput?nameInput.value.trim():wwCurRealizado;
+  if(!realizadoPor){
+    alert('Indique quién realizó el servicio ("Realizado por") antes de tomar la foto.');
+    if(nameInput)nameInput.focus();
+    return;
+  }
+  wwCurSub=sub;wwCurLbl=lbl;wwCurRealizado=realizadoPor;wwPhotoData=null;wwPhotoTS=null;
   document.getElementById('wwCamArea').style.display='block';document.getElementById('wwPrevArea').style.display='none';
   document.getElementById('wwLbl').textContent=lbl;
   try{camStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'},audio:false});document.getElementById('wwVid').srcObject=camStream;camTSint=setInterval(()=>{const e=document.getElementById('wwTs');if(e)e.textContent=fmt(new Date())},1000)}
@@ -1806,14 +2228,13 @@ function wwStopCam(){stopCam();document.getElementById('wwCamArea').style.displa
 function wwConfirm(idx){
   const cp=CPS[idx];if(!photos[cp.key])photos[cp.key]=[];
   photos[cp.key]=photos[cp.key].filter(p=>p.sub!==wwCurSub);
-  photos[cp.key].push({checkpoint:cp.key,label:wwCurLbl,emoji:cp.emoji,photo:wwPhotoData,timestamp:wwPhotoTS,sub:wwCurSub});
-  saveCP(idx, wwCurLbl, wwPhotoTS, wwPhotoData, { sub: wwCurSub });
-  wwPhotoData=null;wwPhotoTS=null;stopCam();
+  photos[cp.key].push({checkpoint:cp.key,label:wwCurLbl,emoji:cp.emoji,photo:wwPhotoData,timestamp:wwPhotoTS,sub:wwCurSub,realizadoPor:wwCurRealizado});
+  saveCP(idx, wwCurLbl, wwPhotoTS, wwPhotoData, { sub: wwCurSub, realizadoPor: wwCurRealizado });
+  wwPhotoData=null;wwPhotoTS=null;wwCurRealizado='';stopCam();
   document.getElementById('wwCamArea').style.display='none';document.getElementById('wwPrevArea').style.display='none';
   closeCP();renderMissions();setTimeout(()=>openCP(idx),200);
 }
-function wwSkip(idx){closeCP();renderMissions()}
-function rPlantaBody(b,idx){
+function wwSkip(idx){closeCP();renderMissions()}function rPlantaBody(b,idx){
   const cp=CPS[idx];
   const ph=photos[cp.key]||[];
   const conectado=ph.find(p=>p.sub==='conecta');
@@ -1909,7 +2330,7 @@ function stStopCam(){stopCam();document.getElementById('sCamV').style.display='n
 
 // Multi photo
 function rMultiBody(b,idx){
-  const cp=CPS[idx];mSess=(photos[cp.key]||[]).filter(p=>p.photo).map(p=>({photo:p.photo,timestamp:p.timestamp}));
+ const cp=CPS[idx];mSess=(photos[cp.key]||[]).filter(p=>p.photo||p.photoUrl).map(p=>({photo:p.photo,photoUrl:p.photoUrl,timestamp:p.timestamp,restored:p.restored}));
   b.innerHTML=`<div style="background:rgba(251,191,36,.06);border:1px solid rgba(251,191,36,.18);border-radius:8px;padding:8px 11px;color:#fbbf24;font-size:11px;margin-bottom:11px">📸 Capture mínimo 1 foto — cubra el 360° completo de la aeronave</div>
   <div class="m-counter"><div class="m-count-n" id="mCnt">${mSess.length}</div><div class="m-count-l" id="mCntL">fotos capturadas</div></div>
   <div class="m-grid" id="mTG"></div>
@@ -1920,7 +2341,7 @@ function rMultiBody(b,idx){
   <button class="btn-close-m" onclick="closeCP()">Cancelar</button>`;
   rMThumbs();
 }
-function rMThumbs(){const g=document.getElementById('mTG');if(!g)return;g.innerHTML=mSess.map((p,i)=>`<div class="tw"><img src="${p.photo}"><div class="tw-idx">${i+1}</div><div class="tw-t">${fmt(new Date(p.timestamp))}</div><button class="tw-del" onclick="mDel(${i})">✕</button></div>`).join('')}
+function rMThumbs(){const g=document.getElementById('mTG');if(!g)return;g.innerHTML=mSess.map((p,i)=>`<div class="tw"><img src="${p.photo||toDriveThumb(p.photoUrl)}"><div class="tw-idx">${i+1}</div><div class="tw-t">${fmt(new Date(p.timestamp))}</div><button class="tw-del" onclick="mDel(${i})">✕</button></div>`).join('')}
 function updMUI(){const n=mSess.length;const c=document.getElementById('mCnt');if(c)c.textContent=n;const l=document.getElementById('mCntL');if(l)l.textContent=`foto${n!==1?'s':''} capturada${n!==1?'s':''}`;const b=document.getElementById('m360B');if(b){b.disabled=n===0;b.textContent=`✅ Continuar (${n} foto${n!==1?'s':''})`}const a=document.getElementById('mAddBtn');if(a)a.textContent=`📷 ${n===0?'Iniciar Cámara':'Agregar Otra Foto'}`}
 async function mStartCam(){try{camStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'},audio:false});document.getElementById('mVid').srcObject=camStream;document.getElementById('mCamV').style.display='block';document.getElementById('mAddA').style.display='none';document.getElementById('mPrevV').style.display='none';camTSint=setInterval(()=>{const e=document.getElementById('mTs');if(e)e.textContent=fmt(new Date())},1000)}catch(e){alert('Error cámara: '+e.message)}}
 function mCapture(idx){const v=document.getElementById('mVid');const c=document.createElement('canvas');c.width=v.videoWidth;c.height=v.videoHeight;c.getContext('2d').drawImage(v,0,0);mPrevPhoto=c.toDataURL('image/jpeg',.82);mPrevTS=new Date().toISOString();document.getElementById('mPrevImg').src=mPrevPhoto;document.getElementById('mPrevTs').textContent=`⏰ ${fmt(new Date(mPrevTS))}`;document.getElementById('mCamV').style.display='none';document.getElementById('mPrevV').style.display='block';stopCam();document.getElementById('mAddA').style.display='none'}
@@ -1928,14 +2349,13 @@ function mRetake(idx){mPrevPhoto=null;mPrevTS=null;document.getElementById('mPre
 function mConfirm(idx){
   const cp=CPS[idx];mSess.push({photo:mPrevPhoto,timestamp:mPrevTS});mPrevPhoto=null;mPrevTS=null;
   document.getElementById('mPrevV').style.display='none';document.getElementById('mAddA').style.display='block';
-  photos[cp.key]=mSess.map((p,i)=>({checkpoint:cp.key,label:cp.label,emoji:cp.emoji,photo:p.photo,timestamp:p.timestamp,multiIndex:i+1}));
+photos[cp.key]=mSess.map((p,i)=>({checkpoint:cp.key,label:cp.label,emoji:cp.emoji,photo:p.photo,photoUrl:p.photoUrl||null,timestamp:p.timestamp,multiIndex:i+1,restored:p.restored}));        
   post({action:'saveInspection',airline:sA,flightType:sT,flightNumber:sF,flightTimestamp:fTS,inspector:U.username,role:U.role,step:idx+1,item:`${cp.label} #${mSess.length}`,timestamp:mSess.slice(-1)[0].timestamp,status:'En Proceso',photoBase64:mSess.slice(-1)[0].photo});
   rMThumbs();updMUI();
 }
 function mDel(i){mSess.splice(i,1);rMThumbs();updMUI()}
 function mStopCam(){stopCam();document.getElementById('mCamV').style.display='none';document.getElementById('mAddA').style.display='block'}
-function mFinish(idx){if(mSess.length===0){alert('Capture al menos una foto');return}const cp=CPS[idx];photos[cp.key]=mSess.map((p,i)=>({checkpoint:cp.key,label:cp.label,emoji:cp.emoji,photo:p.photo,timestamp:p.timestamp,multiIndex:i+1}));stopCam();closeCP();renderMissions();checkComplete()}
-
+function mFinish(idx){if(mSess.length===0){alert('Capture al menos una foto');return}const cp=CPS[idx];photos[cp.key]=mSess.map((p,i)=>({checkpoint:cp.key,label:cp.label,emoji:cp.emoji,photo:p.photo,photoUrl:p.photoUrl||null,timestamp:p.timestamp,multiIndex:i+1,restored:p.restored}));stopCam();closeCP();renderMissions();checkComplete()}
 // ── CAM UTILS ──
 function stopCam(){if(camStream){camStream.getTracks().forEach(t=>t.stop());camStream=null}if(camTSint){clearInterval(camTSint);camTSint=null}}
 
@@ -1989,10 +2409,36 @@ function finalizeInsp(obs){
     const gt=billingItems.reduce((s,i)=>s+(i.amount||0),0);
     document.getElementById('cSvcTotal').textContent=`$${gt.toFixed(2)}`;
   }
+
+if(firmaFinalData){
+    document.getElementById('cFirmaCard').style.display='block';
+    const f=firmaFinalData;
+    let html=`<div class="sum-row"><span class="sum-lab">Encargado AS:</span><span class="sum-val">${f.asNombre}</span></div>`;
+    if(f.noAirline){
+      html+=`<div class="sum-row"><span class="sum-lab">Supervisor Aerolínea:</span><span class="sum-val" style="color:#fca5a5">⚠️ No disponible</span></div>`;
+      html+=`<div class="sum-row"><span class="sum-lab">Estado Factura:</span><span class="sum-val" style="color:#fbbf24">🕓 PENDIENTE DE FIRMA</span></div>`;
+    }else{
+      html+=`<div class="sum-row"><span class="sum-lab">Supervisor Aerolínea:</span><span class="sum-val">${f.airlineNombre}</span></div>`;
+    }
+    document.getElementById('cFirmaContent').innerHTML=html;
+  }
+        
   const gal=[];for(const k in photos){(photos[k]||[]).forEach((p,i)=>{if(p.photo){const lab=photos[k].length>1?`${p.emoji} ${p.label} #${i+1}`:`${p.emoji} ${p.label}`;gal.push(`<div class="gal-it"><img src="${p.photo}"><div class="gal-lab">${lab}</div></div>`)}})}
   document.getElementById('cGallery').innerHTML=gal.join('');
-  showSC('sC');document.getElementById('stepLabel').textContent='Inspección Completada';
-  post({action:'updateStatus',airline:sA,flightNumber:sF,flightType:sT,status:'Completado',flightTimestamp:fTS,incident:incData});
+showSC('sC');document.getElementById('stepLabel').textContent='Inspección Completada';
+  post({
+    action:          'updateStatus',
+    airline:          sA,
+    flightNumber:     sF,
+    flightType:       sT,
+    status:           'Completado',
+    flightTimestamp:  fTS,
+    inspector:        U.username,
+    posicion:         sPosicion,
+    observaciones:    obs,
+    incident:         incData,
+    billing:          billingItems
+  });
 }
 
 // ── INCIDENTE ──
@@ -2135,11 +2581,210 @@ function renderFlota(){
 function quickSol(id){const f=flota.find(i=>i.id===id);if(f){f.status='sol';renderFlota();toast(`📥 Solicitud: ${id}`)}}
 function quickLib(id){const f=flota.find(i=>i.id===id);if(f){f.status='avail';renderFlota();toast(`📤 ${id} liberado`)}}
 
+  // ── PERSONAL / CREDENCIALES ──
+function postSync(d){
+  return fetch(SCRIPT_URL,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(d)})
+    .then(r=>r.json()).catch(e=>{console.error(e);return {success:false,message:'Error de red'}});
+}
+
+let personalVuelo=[];
+let credStream=null,credTSint=null,credPhotoData=null;
+
+async function credStartCam(){
+  try{
+    credStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'},audio:false});
+    document.getElementById('credVid').srcObject=credStream;
+    document.getElementById('credCamV').style.display='block';
+    document.getElementById('credStartBtn').style.display='none';
+    credTSint=setInterval(()=>{const e=document.getElementById('credTs');if(e)e.textContent=fmt(new Date())},1000);
+  }catch(e){alert('Error cámara: '+e.message)}
+}
+function credStopCredStream(){if(credStream){credStream.getTracks().forEach(t=>t.stop());credStream=null}if(credTSint){clearInterval(credTSint);credTSint=null}}
+function credStopCam(){credStopCredStream();document.getElementById('credCamV').style.display='none';document.getElementById('credStartBtn').style.display='block'}
+function credCapture(){
+  const v=document.getElementById('credVid');const c=document.createElement('canvas');
+  c.width=v.videoWidth;c.height=v.videoHeight;c.getContext('2d').drawImage(v,0,0);
+  credPhotoData=c.toDataURL('image/jpeg',.85);
+  document.getElementById('credPrevImg').src=credPhotoData;
+  document.getElementById('credCamV').style.display='none';
+  document.getElementById('credPrevV').style.display='block';
+  credStopCredStream();
+}
+function credRetake(){credPhotoData=null;document.getElementById('credPrevV').style.display='none';credStartCam()}
+
+async function credProcess(){
+  if(!credPhotoData)return;
+  document.getElementById('credPrevV').style.display='none';
+  document.getElementById('credLoadingV').style.display='block';
+  const r=await postSync({action:'scanCredential',photoBase64:credPhotoData});
+  document.getElementById('credLoadingV').style.display='none';
+  if(!r.success){
+    alert('No se pudo leer la credencial: '+(r.message||'error desconocido'));
+    document.getElementById('credStartBtn').style.display='block';
+    return;
+  }
+  document.getElementById('credNombre').value=r.data.nombre||'';
+  document.getElementById('credCedula').value=r.data.cedula||'';
+  document.getElementById('credEmpresa').value=r.data.empresa||'';
+  document.getElementById('credVigencia').value=r.data.vigencia||'';
+  document.getElementById('credNumCred').value=r.data.numero_credencial||'';
+  document.getElementById('credFormV').style.display='block';
+}
+
+async function credConfirmAdd(){
+  const persona={
+    nombre:document.getElementById('credNombre').value.trim(),
+    cedula:document.getElementById('credCedula').value.trim(),
+    empresa:document.getElementById('credEmpresa').value.trim(),
+    vigencia:document.getElementById('credVigencia').value.trim(),
+    numeroCredencial:document.getElementById('credNumCred').value.trim(),
+    posicionPersona:sPosicion
+  };
+  if(!persona.nombre){alert('Ingrese al menos el nombre');return}
+  personalVuelo.push({...persona,horasExtra:0,jornada:'',horasDiurnas:0,horasNocturnas:0,fotoLocal:credPhotoData});
+  renderPersonalTable();
+  toast(`🪪 ${persona.nombre} agregado al vuelo`);
+
+  await postSync({
+    action:'savePersonal',airline:sA,flightType:sT,flightNumber:sF,flightTimestamp:fTS,
+    inspector:U.username,posicion:sPosicion,persona,photoBase64:credPhotoData
+  });
+
+  credPhotoData=null;
+  document.getElementById('credFormV').style.display='none';
+  document.getElementById('credStartBtn').style.display='block';
+  ['credNombre','credCedula','credEmpresa','credVigencia','credNumCred'].forEach(id=>document.getElementById(id).value='');
+}
+        
+function parseVigenciaDMY(v){
+  if(!v)return null;
+  const m=String(v).trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if(!m)return null;
+  return new Date(+m[3], +m[2]-1, +m[1]);
+}
+function vigenciaStatus(vigenciaStr){
+  const vd=parseVigenciaDMY(vigenciaStr);
+  if(!vd)return 'unknown';
+  const hoy=new Date();hoy.setHours(0,0,0,0);
+  const diffDays=Math.floor((vd-hoy)/86400000);
+  if(diffDays<0)return 'exp';
+  if(diffDays<=30)return 'warn';
+  return 'ok';
+}
+const HORAS_OPTS=['0','0.5','1','1.5','2','2.5','3','3.5','4'];
+function renderPersonalTable(){
+  const list=document.getElementById('persCardsList');
+  const hdr=document.getElementById('persTableHdr');
+  if(!list)return;
+  hdr.textContent=`Personal Registrado (${personalVuelo.length})`;
+  const jornadas=[['diurna','☀️ Diurna'],['tarde','🌤️ Tarde'],['nocturna','🌙 Nocturna'],['mixta','🔀 Mixta']];
+  list.innerHTML=personalVuelo.map((p,i)=>{
+    const status=vigenciaStatus(p.vigencia);
+    const badgeTxt=status==='exp'?`⛔ Vencida ${p.vigencia||''}`:status==='warn'?`⚠️ Vence pronto ${p.vigencia||''}`:status==='ok'?`✅ Vigente ${p.vigencia||''}`:'— Sin vigencia';
+    const badgeCls=status==='unknown'?'warn':status;
+    const photoSrc=p.fotoLocal||toDriveThumb(p.fotoUrl)||'';
+    const photoEl=photoSrc?`<img class="pers-photo" src="${photoSrc}">`:`<div class="pers-photo-ph">🪪</div>`;
+    const jornada=p.jornada||'';
+    return `<div class="pers-card">
+      <div class="pers-card-top">
+        ${photoEl}
+        <div class="pers-info">
+          <div class="pers-nombre">${p.nombre||'—'}</div>
+          <div class="pers-meta">🪪 ${p.cedula||'—'} · ${p.empresa||'—'}</div>
+          <div class="pers-meta">No. Cred: ${p.numeroCredencial||'—'}</div>
+          <span class="pers-vig-badge ${badgeCls}">${badgeTxt}</span>
+        </div>
+        <button class="pers-del-top" onclick="delPersonal(${i})">✕</button>
+      </div>
+      ${status==='exp'?`<div class="pers-alert-nostart">⛔ Credencial vencida — no puede ingresar a operación</div>`:''}
+
+  <div class="pers-block-title">📍 Posición del Colaborador</div>
+      <div class="pers-extra-row">
+        <select onchange="updatePersPosicion(${i},this.value)">
+          <option value="">— Posición —</option>
+          ${POSICIONES_RAMPA.map(pos=>`<option value="${pos}" ${(p.posicionPersona||'')===pos?'selected':''}>${pos}</option>`).join('')}
+        </select>
+      </div>
+      <div class="pers-block-title">⏱️ Horas Extra</div>
+      <div class="pers-extra-row" style="${jornada==='mixta'?'display:none':''}">
+        <select onchange="updatePersExtra(${i},'horasExtra',this.value)">
+          ${HORAS_OPTS.map(h=>`<option value="${h}" ${String(p.horasExtra||0)===h?'selected':''}>${h==='0'?'Sin extra':h+' h'}</option>`).join('')}
+        </select>
+      </div>
+      <div class="pers-jornada-grid">
+        ${jornadas.map(([k,l])=>`<div class="pers-jornada-item ${jornada===k?'sel':''}" onclick="updatePersExtra(${i},'jornada','${k}')">${l}</div>`).join('')}
+      </div>
+      <div class="pers-mixta-row ${jornada==='mixta'?'visible':''}">
+        <div style="flex:1"><span class="pers-mixta-lbl">Horas Diurnas</span>
+          <select onchange="updatePersExtra(${i},'horasDiurnas',this.value)">
+            ${HORAS_OPTS.map(h=>`<option value="${h}" ${String(p.horasDiurnas||0)===h?'selected':''}>${h} h</option>`).join('')}
+          </select>
+        </div>
+        <div style="flex:1"><span class="pers-mixta-lbl">Horas Nocturnas</span>
+          <select onchange="updatePersExtra(${i},'horasNocturnas',this.value)">
+            ${HORAS_OPTS.map(h=>`<option value="${h}" ${String(p.horasNocturnas||0)===h?'selected':''}>${h} h</option>`).join('')}
+          </select>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function updatePersExtra(i,field,value){
+  const p=personalVuelo[i];if(!p)return;
+  if(field==='jornada'){
+    p.jornada=value;
+    if(value==='mixta'){
+      p.horasDiurnas=p.horasDiurnas||0;p.horasNocturnas=p.horasNocturnas||0;
+      p.horasExtra=Math.min((parseFloat(p.horasDiurnas)||0)+(parseFloat(p.horasNocturnas)||0),4);
+    }
+  }else if(field==='horasDiurnas'||field==='horasNocturnas'){
+    p[field]=parseFloat(value)||0;
+    const total=(parseFloat(p.horasDiurnas)||0)+(parseFloat(p.horasNocturnas)||0);
+    if(total>4)alert('El máximo de horas extra por persona es 4. Ajuste los valores.');
+    p.horasExtra=Math.min(total,4);
+  }else if(field==='horasExtra'){
+    p.horasExtra=parseFloat(value)||0;
+  }
+  renderPersonalTable();
+  await postSync({
+    action:'updatePersonalHoras',airline:sA,flightType:sT,flightNumber:sF,flightTimestamp:fTS,
+    nombre:p.nombre,horasExtra:p.horasExtra,jornada:p.jornada||'',
+    horasDiurnas:p.horasDiurnas||0,horasNocturnas:p.horasNocturnas||0
+  });
+  toast(`💾 Horas extra actualizadas — ${p.nombre}`);
+}
+
+  async function updatePersPosicion(i,value){
+  const p=personalVuelo[i];if(!p)return;
+  p.posicionPersona=value;
+  await postSync({
+    action:'updatePersonalPosicion',airline:sA,flightType:sT,flightNumber:sF,flightTimestamp:fTS,
+    nombre:p.nombre,posicionPersona:value
+  });
+  toast(`📍 Posición actualizada — ${p.nombre}`);
+}
+  
+
+function delPersonal(i){
+  const p=personalVuelo[i];if(!p)return;
+  if(!confirm(`¿Quitar a ${p.nombre} de este vuelo?`))return;
+  postSync({action:'deletePersonal',airline:sA,flightType:sT,flightNumber:sF,flightTimestamp:fTS,nombre:p.nombre});
+  personalVuelo.splice(i,1);renderPersonalTable();
+}
+
+async function loadPersonalForFlight(){
+  personalVuelo=[];
+  const r=await postSync({action:'getPersonalList',airline:sA,flightType:sT,flightNumber:sF,flightTimestamp:fTS});
+  if(r&&r.success&&Array.isArray(r.rows))personalVuelo=r.rows;
+  renderPersonalTable();
+}
+
 // ── MODAL UTILS ──
 function openM(id){
   if(id==='mEquip')renderFlota();
   if(id==='mSvc')renderBillingList();
-  if(id==='mFinal')buildFinalSummary();
+    if(id==='mFinal'){buildFinalSummary();initFinalSignatures();}
   if(id==='mCancel'){
     document.getElementById('cancelConfirmStep').style.display='block';
     document.getElementById('cancelFormStep').classList.remove('visible');
@@ -2161,6 +2806,7 @@ function newReport(){
   sA='';sT='';sF='';sOrigen='';sDestino='';sPosicion='';fTS='';CPS=[];photos={};beaconOff=null;incData=null;segData=null;
   clearAlerts();stopCam();chatMsgStore={};chatTarget='';eqSolTipo='';urgVal='';
   billingItems=[];cancelConfirmed=false;cancelMotivo='';
+  _plantaExtraMin=0;noAirlineSupervisorFlag=false;firmaFinalData=null;
   if(coopesaInt){clearInterval(coopesaInt);coopesaInt=null}
   if(tiempoPosInt){clearInterval(tiempoPosInt);tiempoPosInt=null}
   document.getElementById('airlineSelect').value='';document.getElementById('flightTypeSelect').value='';
@@ -2569,6 +3215,10 @@ function buildFinalSummary(){
   const total=CPS.length;
   const pending=CPS.filter(c=>!c.optional&&!(photos[c.key]&&photos[c.key].length>0));
   let ph=0;for(const k in photos)(photos[k]||[]).forEach(p=>{if(p.photo)ph++});
+
+        // Planta eléctrica — tiempo excedido
+// Planta eléctrica y Aire Acondicionado — tiempo excedido (automático)
+  autoAddExcessCharges();
 
   // summary rows
   document.getElementById('finalSummaryRows').innerHTML=`
