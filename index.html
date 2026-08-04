@@ -1446,32 +1446,28 @@ const QS={
   // 2. Cargar checkpoints del tipo de vuelo
   CPS = QS[sT] || [];
 
-  // 3. Reconstruir fotos desde los checkpoints guardados en historial
+ // 3. Reconstruir fotos desde los checkpoints guardados en historial
   photos = {};
   (rep.checkpoints || []).forEach(cp => {
-    // Buscar la key del CPS que corresponde a este label
-    const def = CPS.find(c => c.label === cp.label) ||
-                CPS.find(c => c.key  === cp.key);
-    const key = def ? def.key : _slugify(cp.label);
-
+    const key = resolveCheckpointKey(cp);
+    const def = CPS.find(c => c.key === key);
     if (!photos[key]) photos[key] = [];
 
-    // Si ya hay una entrada (puede pasar con grupos), no duplicar
-    const alreadyHas = photos[key].some(p => (p.sub||'') === (cp.sub||'') && (p.sub !== undefined));
+    const subVal = cp.sub || undefined;
+    const alreadyHas = subVal !== undefined && photos[key].some(p => p.sub === subVal);
     if (!alreadyHas) {
       photos[key].push({
         checkpoint: key,
         label:      cp.label,
-        emoji:      cp.emoji   || def?.emoji || '✅',
+        emoji:      cp.emoji || (def && def.emoji) || '✅',
         timestamp:  cp.timestamp || new Date().toISOString(),
-        photo:      null,          // foto ya fue subida a Drive; no tenemos base64
+        photo:      null,
         photoUrl:   cp.photoUrl || null,
-        sub:        cp.sub     || undefined,
-        restored:   true           // flag para no re-subir a Drive
+        sub:        subVal,
+        restored:   true
       });
     }
   });
-
   // 4. Restaurar Beacon OFF si ya fue registrado
   const beaconCP = (rep.checkpoints || []).find(c =>
     c.label === 'Beacon OFF' || c.key === 'beacon_off'
@@ -1507,6 +1503,44 @@ const QS={
   ), 400);
 }
 
+
+// Helper: resuelve la key real de CPS a partir de un checkpoint del historial
+function resolveCheckpointKey(cp) {
+  if (cp.sub) {
+    const bySubs = CPS.find(c => Array.isArray(c.subs) && c.subs.includes(cp.sub));
+    if (bySubs) return bySubs.key;
+
+    if (['conecta','desconecta'].includes(cp.sub)) {
+      const p = CPS.find(c => c.type === 'planta');
+      if (p) return p.key;
+    }
+    if (['waste','water'].includes(cp.sub)) {
+      const w = CPS.find(c => c.type === 'waste_water');
+      if (w) return w.key;
+    }
+    const LIMP_SUB_KEYS = ['sube','baja','banios_delantero','banios_trasero','pasillos',
+      'cocina_delantera','cocina_trasera','basureros','bolsas_asiento','compartimentos'];
+    if (LIMP_SUB_KEYS.includes(cp.sub)) {
+      const l = CPS.find(c => c.type === 'limpieza_group');
+      if (l) return l.key;
+    }
+    if (/^fod_\d+$/.test(cp.sub)) {
+      const f = CPS.find(c => c.type === 'fod_group');
+      if (f) return f.key;
+    }
+    if (['bin_delantero','bin_trasero'].includes(cp.sub)) {
+      const b = CPS.find(c => c.type === 'bines_group');
+      if (b) return b.key;
+    }
+  }
+
+  const baseLabel = String(cp.label || '').replace(/\s#\d+\s*$/, '').trim();
+  const byLabel = CPS.find(c => c.label === baseLabel);
+  if (byLabel) return byLabel.key;
+
+  return _slugify(baseLabel || cp.label || '');
+}
+    
 // Helper: convierte un label a slug de clave
 function _slugify(str) {
   return String(str)
