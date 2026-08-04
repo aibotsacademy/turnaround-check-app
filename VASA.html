@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>VASA · Avianca Metahumana de Operaciones Disruptivas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --red: #E30613;
+    --maroon: #5A0A18;
+    --ink: #150E0D;
+    --paper: #F7F4EF;
+    --amber: #FFB300;
+    --line: rgba(247,244,239,0.16);
+  }
+
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html{ scroll-behavior:smooth; }
+  html,body{ height:100%; }
+
+  body{
+    font-family:'Inter', sans-serif;
+    color: var(--paper);
+    background:
+      radial-gradient(1200px 800px at 85% -10%, rgba(227,6,19,0.5), transparent 60%),
+      linear-gradient(160deg, #3E0712 0%, #5A0A18 45%, #7A0E22 100%);
+    min-height:100%;
+  }
+
+  /* ---------- Ambient flight path ---------- */
+  .skyline{ position:fixed; inset:0; z-index:0; pointer-events:none; opacity:0.3; }
+  .skyline svg{ width:100%; height:100%; }
+  .flight-path{ fill:none; stroke:var(--paper); stroke-opacity:0.18; stroke-width:1; stroke-dasharray:2 10; }
+  @media (prefers-reduced-motion: reduce){ .skyline{ display:none; } }
+
+  /* ---------- Header ---------- */
+  header{
+    position:relative; z-index:2;
+    display:flex; align-items:center; justify-content:space-between;
+    padding: clamp(14px,2.5vw,22px) clamp(18px,4vw,44px);
+    border-bottom:1px solid var(--line);
+  }
+  .brand{ display:flex; align-items:baseline; gap:9px; }
+  .brand-mark{
+    font-family:'Space Grotesk', sans-serif; font-weight:700;
+    font-size: clamp(17px,2vw,20px); letter-spacing:0.01em;
+  }
+  .brand-mark span{ color: var(--red); }
+  .brand-sub{
+    font-family:'Space Mono', monospace; font-size:10.5px;
+    letter-spacing:0.14em; text-transform:uppercase;
+    color: rgba(247,244,239,0.6);
+    border-left:1px solid var(--line); padding-left:9px;
+    display:none;
+  }
+  @media (min-width: 560px){ .brand-sub{ display:inline; } }
+  .status-chip{
+    display:flex; align-items:center; gap:7px;
+    font-family:'Space Mono', monospace; font-size:10.5px;
+    letter-spacing:0.12em; text-transform:uppercase; color: var(--amber);
+  }
+  .status-dot{
+    width:7px; height:7px; border-radius:50%; background: var(--amber);
+    animation: pulse 1.8s ease-out infinite;
+  }
+  @keyframes pulse{
+    0%{ box-shadow: 0 0 0 0 rgba(255,179,0,0.55); }
+    70%{ box-shadow: 0 0 0 8px rgba(255,179,0,0); }
+    100%{ box-shadow: 0 0 0 0 rgba(255,179,0,0); }
+  }
+
+  /* ---------- Hero: VASA + avatar at max dimension ---------- */
+  .hero{
+    position:relative; z-index:2;
+    display:flex; flex-direction:column; align-items:center;
+    text-align:center;
+    padding: clamp(22px,4vh,40px) clamp(16px,4vw,40px) clamp(10px,2vh,20px);
+    gap: clamp(10px,1.6vh,16px);
+  }
+  .eyebrow{
+    font-family:'Space Mono', monospace; font-size:11px;
+    letter-spacing:0.2em; text-transform:uppercase; color: var(--amber);
+    display:flex; align-items:center; gap:9px;
+  }
+  .eyebrow::before, .eyebrow::after{ content:""; width:20px; height:1px; background: var(--amber); }
+
+  .vasa-title{
+    font-family:'Space Grotesk', sans-serif; font-weight:700;
+    font-size: clamp(40px, 9vw, 84px);
+    line-height:0.95; letter-spacing:-0.01em;
+  }
+  .vasa-title small{
+    display:block;
+    font-family:'Space Mono', monospace;
+    font-weight:400;
+    font-size: clamp(11px, 1.6vw, 14px);
+    letter-spacing:0.2em;
+    text-transform:uppercase;
+    color: rgba(247,244,239,0.65);
+    margin-top:6px;
+  }
+
+  .vasa-lede{
+    max-width:56ch;
+    font-size: clamp(14.5px, 1.6vw, 16.5px);
+    line-height:1.6;
+    color: rgba(247,244,239,0.82);
+  }
+
+  .capabilities{
+    display:flex; flex-wrap:wrap; justify-content:center; gap:8px;
+    max-width:640px;
+  }
+  .cap{
+    font-size:12.5px; font-weight:500; padding:7px 13px;
+    border-radius:999px; border:1px solid var(--line);
+    background: rgba(247,244,239,0.06); white-space:nowrap;
+  }
+
+  /* ---------- Avatar stage: sized to fill available viewport ---------- */
+  .stage{
+    position:relative; z-index:2;
+    display:flex; justify-content:center;
+    padding: clamp(8px,1.6vh,18px) 16px clamp(24px,4vh,40px);
+  }
+  .avatar-frame{
+    position:relative;
+    width: min(92vw, 560px, calc(78svh * 9 / 16), calc(78vh * 9 / 16));
+    aspect-ratio: 9 / 16;
+    border-radius:22px;
+    overflow:hidden;
+    background: var(--ink);
+    box-shadow:
+      0 40px 80px -24px rgba(0,0,0,0.6),
+      0 0 0 1px rgba(247,244,239,0.08);
+  }
+  .avatar-frame::before{
+    content:""; position:absolute; inset:0; z-index:3; pointer-events:none;
+    border-radius:22px; box-shadow: inset 0 0 0 1px rgba(255,179,0,0.15);
+  }
+  .avatar-frame iframe{
+    width:100%; height:100%; border:0; display:block; aspect-ratio: 9/16;
+  }
+  .frame-tag{
+    position:absolute; top:12px; left:12px; z-index:4;
+    display:flex; align-items:center; gap:6px;
+    font-family:'Space Mono', monospace; font-size:10px;
+    letter-spacing:0.12em; text-transform:uppercase; color: var(--paper);
+    background: rgba(21,14,13,0.55); backdrop-filter: blur(4px);
+    padding:6px 9px; border-radius:999px; border:1px solid rgba(247,244,239,0.15);
+  }
+  .frame-tag .status-dot{ width:6px; height:6px; }
+
+  .howto{
+    display:flex; align-items:center; justify-content:center; gap:10px;
+    margin-top:14px; font-size:12.5px; color: rgba(247,244,239,0.68);
+  }
+  .mic-badge{
+    display:flex; align-items:center; justify-content:center;
+    width:28px; height:28px; border-radius:50%; background: var(--red); flex-shrink:0;
+  }
+  .mic-badge svg{ width:13px; height:13px; fill:var(--paper); }
+
+  /* ---------- Plan de Trabajo ---------- */
+  .roadmap{
+    position:relative; z-index:2;
+    background: rgba(21,14,13,0.35);
+    border-top:1px solid var(--line);
+    padding: clamp(40px,7vh,72px) clamp(18px,5vw,56px);
+  }
+  .roadmap-head{
+    max-width:760px; margin:0 auto clamp(28px,4vh,44px);
+    text-align:center;
+  }
+  .roadmap-head .eyebrow{ justify-content:center; margin-bottom:12px; }
+  .roadmap-head h2{
+    font-family:'Space Grotesk', sans-serif; font-weight:600;
+    font-size: clamp(26px, 3.6vw, 38px); letter-spacing:-0.01em; margin-bottom:10px;
+  }
+  .roadmap-head p{
+    font-size:14.5px; line-height:1.6; color: rgba(247,244,239,0.75);
+  }
+
+  .stations{
+    max-width:1120px; margin:0 auto;
+    display:grid; grid-template-columns: repeat(3, 1fr); gap:20px;
+  }
+  @media (max-width: 860px){ .stations{ grid-template-columns:1fr; gap:16px; max-width:560px; } }
+
+  .station{
+    position:relative;
+    border:1px solid var(--line);
+    background: rgba(247,244,239,0.04);
+    border-radius:16px;
+    padding: 24px 22px 22px;
+    display:flex; flex-direction:column; gap:16px;
+  }
+  .station-top{
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .station-code{
+    font-family:'Space Grotesk', sans-serif; font-weight:700;
+    font-size:30px; letter-spacing:-0.01em;
+  }
+  .station-badge{
+    font-family:'Space Mono', monospace; font-size:10px;
+    letter-spacing:0.1em; text-transform:uppercase;
+    padding:5px 9px; border-radius:999px;
+    border:1px solid var(--line); color: var(--amber);
+    white-space:nowrap;
+  }
+  .station-name{
+    font-size:13px; color: rgba(247,244,239,0.7);
+    margin-top:-8px;
+  }
+  .station-name b{ color: var(--paper); font-weight:600; }
+
+  .phases{ display:flex; flex-direction:column; gap:10px; }
+  .phase{
+    display:flex; gap:10px; align-items:flex-start;
+    font-size:12.5px; line-height:1.5; color: rgba(247,244,239,0.85);
+  }
+  .phase-num{
+    font-family:'Space Mono', monospace; font-size:10.5px; font-weight:700;
+    color: var(--amber); flex-shrink:0; margin-top:1px;
+  }
+
+  .roadmap-note{
+    max-width:760px; margin: 28px auto 0;
+    font-family:'Space Mono', monospace; font-size:10.5px;
+    letter-spacing:0.04em; color: rgba(247,244,239,0.4);
+    text-align:center; line-height:1.6;
+  }
+
+  /* ---------- Footer ---------- */
+  footer{
+    position:relative; z-index:2;
+    display:flex; align-items:center; justify-content:space-between;
+    padding: 16px clamp(18px,4vw,44px);
+    border-top:1px solid var(--line);
+    font-family:'Space Mono', monospace; font-size:10px;
+    letter-spacing:0.08em; color: rgba(247,244,239,0.45); text-transform:uppercase;
+    flex-wrap:wrap; gap:8px;
+  }
+</style>
+</head>
+<body>
+
+  <div class="skyline">
+    <svg viewBox="0 0 1000 600" preserveAspectRatio="none">
+      <path id="route" class="flight-path" d="M -50 480 C 200 420, 350 180, 600 140 S 900 40, 1050 -20" />
+      <circle r="2.5" fill="#FFB300">
+        <animateMotion dur="24s" repeatCount="indefinite" rotate="auto">
+          <mpath href="#route" />
+        </animateMotion>
+      </circle>
+    </svg>
+  </div>
+
+  <header>
+    <div class="brand">
+      <span class="brand-mark">avianca<span>·</span></span>
+      <span class="brand-sub">Programa VASA</span>
+    </div>
+    <div class="status-chip">
+      <span class="status-dot"></span>
+      <span>En línea</span>
+    </div>
+  </header>
+
+  <section class="hero">
+    <p class="eyebrow">Metahumana de operaciones disruptivas</p>
+    <h1 class="vasa-title">VASA<small>Virtual Assistant Agent</small></h1>
+    <p class="vasa-lede">
+      Cuando el vuelo no sale como estaba previsto, VASA es la primera respuesta.
+      Acompaña al pasajero con voz y rostro en tiempo real durante irregularidades
+      operacionales, con el contexto del vuelo siempre a la mano.
+    </p>
+    <div class="capabilities">
+      <span class="cap">Reacomodos</span>
+      <span class="cap">Conexiones en riesgo</span>
+      <span class="cap">Cancelaciones</span>
+      <span class="cap">Cambios de puerta</span>
+      <span class="cap">Equipaje afectado</span>
+    </div>
+  </section>
+
+  <section class="stage">
+    <div class="avatar-frame">
+      <span class="frame-tag"><span class="status-dot"></span>Live</span>
+      <iframe
+        src="https://embed.liveavatar.com/v1/f743e82c-6dd4-40f0-8f69-c919a5c2ce87?orientation=vertical"
+        allow="microphone"
+        title="LiveAvatar Embed"
+        style="aspect-ratio: 9/16;">
+      </iframe>
+    </div>
+  </section>
+  <div class="howto" style="margin-top:-18px; margin-bottom: 8px;">
+    <span class="mic-badge">
+      <svg viewBox="0 0 24 24"><path d="M12 14a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v5a3 3 0 0 0 3 3zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-3.08A7 7 0 0 0 19 11h-2z"/></svg>
+    </span>
+    <span>Toca el micrófono en pantalla y habla con VASA cuando quieras.</span>
+  </div>
+
+  <section class="roadmap">
+    <div class="roadmap-head">
+      <p class="eyebrow">Hoja de ruta de implementación</p>
+      <h2>Plan de trabajo</h2>
+      <p>Despliegue escalonado de VASA en tres estaciones clave de la red: Bogotá, San Salvador y Nueva York.</p>
+    </div>
+
+    <div class="stations">
+
+      <article class="station">
+        <div class="station-top">
+          <span class="station-code">BOG</span>
+          <span class="station-badge">Fase de piloto</span>
+        </div>
+        <p class="station-name">Bogotá · <b>El Dorado</b> — hub principal de conexiones</p>
+        <div class="phases">
+          <div class="phase"><span class="phase-num">01</span><span>Diagnóstico operativo y mapeo de flujos IROPS en mostradores de conexión.</span></div>
+          <div class="phase"><span class="phase-num">02</span><span>Piloto controlado en zona de reacomodos con monitoreo en vivo.</span></div>
+          <div class="phase"><span class="phase-num">03</span><span>Integración con torre de control de operaciones y datos de vuelo en tiempo real.</span></div>
+        </div>
+      </article>
+
+      <article class="station">
+        <div class="station-top">
+          <span class="station-code">SAL</span>
+          <span class="station-badge">En diseño</span>
+        </div>
+        <p class="station-name">San Salvador · <b>AeroJet Handling</b> — estación regional</p>
+        <div class="phases">
+          <div class="phase"><span class="phase-num">01</span><span>Configuración bilingüe ES/EN y ajuste al flujo de operación en tierra local.</span></div>
+          <div class="phase"><span class="phase-num">02</span><span>Piloto en sala de embarque para atención de irregularidades menores.</span></div>
+          <div class="phase"><span class="phase-num">03</span><span>Extensión a mostradores de check-in y equipaje.</span></div>
+        </div>
+      </article>
+
+      <article class="station">
+        <div class="station-top">
+          <span class="station-code">JFK</span>
+          <span class="station-badge">Próximamente</span>
+        </div>
+        <p class="station-name">Nueva York · <b>JFK</b> — estación internacional</p>
+        <div class="phases">
+          <div class="phase"><span class="phase-num">01</span><span>Validación normativa, accesibilidad y adecuación a estándares de EE. UU.</span></div>
+          <div class="phase"><span class="phase-num">02</span><span>Piloto en zona de conexiones internacionales de alto tráfico.</span></div>
+          <div class="phase"><span class="phase-num">03</span><span>Escalamiento a autoservicio 24/7 en horarios de mayor irregularidad.</span></div>
+        </div>
+      </article>
+
+    </div>
+
+    <p class="roadmap-note">
+      * Fases y estados de ejemplo — ajustar con fechas y criterios reales de cada estación.
+    </p>
+  </section>
+
+  <footer>
+    <span>Avianca · Programa VASA</span>
+    <span>Metahumana de operaciones disruptivas</span>
+  </footer>
+
+</body>
+</html>
